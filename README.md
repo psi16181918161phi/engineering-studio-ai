@@ -63,9 +63,27 @@ python -m engineering_studio.cli "Design a warehouse robot"
 | `src/engineering_studio/agents/` | One module per specialist (orchestrator, research, mechanical, electrical, firmware, simulation, business, challenge, quality_gate). |
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
+| `src/engineering_studio/api/` | Reserved: HTTP/WebSocket route definitions (see folder `README.md`). |
+| `src/engineering_studio/cli/` | Reserved: CLI subcommand modules, distinct from the single-command `cli.py` entry point. |
+| `src/engineering_studio/decorators/` | Reserved: cross-cutting decorators (retry, timing, structured logging). |
+| `src/engineering_studio/exceptions/` | Reserved: shared custom exception hierarchy. |
+| `src/engineering_studio/models/` | Reserved: `pydantic` data models/schemas shared across the pipeline. |
+| `src/engineering_studio/sdk/` | Reserved: in-process programmatic SDK for external consumers. |
+| `src/engineering_studio/utils/` | Reserved: small, reusable, pure helper functions. |
+| `src/engineering_studio/webapp/` | Reserved: web application instance mounting `api/` routes. |
 | `docs/task-specs.md` | The filled Task Specification blocks each agent call uses. |
+| `docs/RESPONSIBILITIES.md` | Team roles, responsibilities, and Definition of Done. |
+| `docs/TEAM_QA.md` | Per-role Q&A, mandatory color palette, testing bar, SecDevOps hygiene, phased timeline. |
+| `research/` | Role 2 — research findings, technology comparisons, prompt drafts. |
+| `frontend/` | Role 5 — web UI, dashboard, visualization (locked color palette in `frontend/styles/theme.css`). |
+| `backend/` | Role 3 — optional additional backend services (canonical code stays in `src/`). |
+| `deployment/` | Role 4 — Dockerfile, compose manifests, deploy config. |
+| `presentation/` | Role 6 — slide outline/deck. |
+| `demo/` | Role 5 + Role 6 — live demo script. |
+| `agents/` (root) | Non-code, per-specialist design notes (canonical code is `src/engineering_studio/agents/`). |
 | `tests/` | Unit tests with a mocked Fireworks client (no live network calls in CI). |
 | `AGENTS.md` | Condensed standards reference (see above). |
+| `SCAFFOLDING.md` | **Start here** — full per-role scaffolding guide and ownership-zone table to avoid merge conflicts. |
 
 ## Status
 

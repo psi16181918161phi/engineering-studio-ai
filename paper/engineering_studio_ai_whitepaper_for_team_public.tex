@@ -1,0 +1,1123 @@
+% Version: 2026.1.0.0
+% ============================================================================
+% Engineering Studio AI — Team & Public White Paper
+% Author: Hadrian Hu (hadrian.hu@gmail.com)
+% Governed by: coding_stds/documentation/latex_style_guide.txt
+% Date: \today
+% ============================================================================
+\documentclass[12pt]{article}
+
+% ============================================================================
+% PREAMBLE
+% ============================================================================
+
+% --- Font & Encoding ---------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+
+% --- Page Layout ---------------------------------------------------------
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\singlespacing
+
+% --- Headers & Footers ----------------------------------------------------
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage\ of \pageref{LastPage}}
+\lhead{Engineering Studio AI --- Team \& Public White Paper}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Math ------------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% --- Graphics & Tables -------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{ragged2e}
+
+% --- Lists -------------------------------------------------------------------
+\usepackage{enumitem}
+\setlist[enumerate]{itemsep=2pt, parsep=2pt}
+\setlist[enumerate]{itemsep=2pt, parsep=2pt}
+
+% --- Typography safety -------------------------------------------------------
+\usepackage[final]{microtype}
+\setlength{\emergencystretch}{15pt}
+\widowpenalty=10000
+\clubpenalty=10000
+
+% --- TOC ------------------------------------------------------------------
+\usepackage{tocloft}
+\setcounter{tocdepth}{2}
+
+% --- Hyperlinks -----------------------------------------------------------
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+    colorlinks=false,
+    pdftitle={Engineering Studio AI: Team and Public White Paper},
+    pdfauthor={Hadrian Hu},
+    pdfsubject={Multi-Agent Engineering Workflow Overview}
+}
+
+% --- Custom commands ---------------------------------------------------------
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\FN}[1]{\textsc{fn-#1}}
+
+% --- Long-filename citation macros ------------------------------------------
+\newcommand{\VisionClean}{\code{VISION\_MULTIMODAL\_\allowbreak DEPLOYABLE\_\allowbreak AGENTS\_CLEAN.md}}
+\newcommand{\VisionGov}{\code{VISION\_AGENTS\_\allowbreak COORDINATION\_\allowbreak ORCHESTRATION\_\allowbreak GOVERNANCE.md}}
+\newcommand{\VisionFunc}{\code{VISION\_AGENTS\_\allowbreak BY\_FUNCTION.md}}
+\newcommand{\VisionFlow}{\code{VISION\_AGENT\_\allowbreak WORKFLOW\_\allowbreak INTERAGENT\_\allowbreak COORDINATION.md}}
+\newcommand{\VisionHackathon}{\code{VISION\_AMD\_\allowbreak LABLAB\_\allowbreak HACKATHON\_\allowbreak ENGINEERING\_STUDIO.md}}
+
+% ============================================================================
+\begin{document}
+
+% ============================================================================
+% TITLE PAGE
+% ============================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\LARGE \textbf{Engineering Studio AI}}\\[0.3cm]
+    {\large A Multi-Agent, Multi-Modal Platform for the Full}\\
+    {\large Software and Hardware Engineering Lifecycle}\\[0.2cm]
+    {\large \textit{Team \& Public White Paper}}
+
+    \vspace{2cm}
+
+    {\large \textbf{Author}}\\
+    Hadrian Hu\\
+    \texttt{hadrian.hu@gmail.com}
+
+    \vspace{1cm}
+
+    {\large CodingStandardsRef Research Notes}\\
+    Multimodal Deployable Agents Platform (MDAP)
+
+    \vspace{2cm}
+
+    {\large \today}
+
+    \vfill
+    \noindent\rule{\textwidth}{0.4pt}\\[0.2cm]
+    {\small
+    This document is the team-and-public companion to the formal
+    mathematical paper
+    \textit{Engineering Studio AI: Formal Model and Mathematical Proofs}
+    (v2026.1.0.0).
+    The formal paper establishes the same architectural claims as
+    rigorous theorems; this document explains the same ideas
+    in plain language for a broader audience.
+    All architectural claims made here are backed by proofs in the
+    companion paper.
+    }
+\end{titlepage}
+
+% ============================================================================
+% ABSTRACT
+% ============================================================================
+\newpage
+\section*{Abstract}
+
+\noindent
+Engineering Studio AI is a new kind of software development platform.
+Instead of one large AI model trying to do everything at once, it
+assembles a coordinated \emph{team} of narrowly focused AI agents ---
+specialists, reviewers, testers, adversarial challengers, and a quality
+gate --- that collaborate on the full engineering lifecycle from a
+single natural-language product brief all the way to a reviewed,
+tested, and certified deliverable.
+
+\medskip\noindent
+This white paper explains what the platform does, why it is built the
+way it is, how its key safety and reliability properties have been
+formally verified, and what it means for teams and organizations that
+want to adopt AI-assisted engineering at scale.
+No mathematical background is required to read this document.
+Readers who want the rigorous proofs are referred to the companion
+formal paper.
+
+\bigskip
+\noindent\textbf{Keywords:}
+multi-agent systems,
+AI engineering,
+workflow automation,
+software lifecycle,
+hardware emulation,
+trust and safety,
+MDAP,
+Engineering Studio AI
+
+\newpage
+
+% ============================================================================
+% TABLE OF CONTENTS
+% ============================================================================
+\tableofcontents
+\newpage
+
+% ============================================================================
+\section{What Is Engineering Studio AI?}
+\label{sec:what}
+
+\subsection{The One-Sentence Version}
+
+Engineering Studio AI takes a plain-English product brief and
+automatically assembles a team of AI specialists that design, review,
+challenge, validate, test, document, and certify the resulting
+engineering deliverable --- covering both software and emulated
+hardware --- without any single agent ever being responsible for
+checking its own work.
+
+\subsection{The Problem It Solves}
+
+Building complex engineering products today requires many different
+disciplines working in concert: software architecture, firmware,
+electrical design, mechanical design, simulation, cost estimation,
+legal compliance, testing, and documentation.
+Coordinating all of these disciplines is expensive, error-prone, and
+slow --- especially when the team is large, distributed, or
+working across many simultaneous product lines.
+
+Current AI tools either:
+\begin{enumerate}
+    \item act as a single, general-purpose assistant that tries to do
+          everything but lacks deep discipline expertise, or
+    \item require manual orchestration by engineers who must themselves
+          know when to call which tool.
+\end{enumerate}
+
+Engineering Studio AI takes a different approach: it treats the
+engineering process as a \emph{workflow} that can be decomposed,
+formalized, and executed by a coordinated team of specialist agents,
+each with a narrow, well-defined role, operating under a strict set of
+governance rules that prevent any agent from silently certifying its
+own output.
+
+\subsection{The Platform in Plain English}
+
+When a user submits a product brief, here is what happens:
+
+\begin{enumerate}
+    \item \textbf{An Orchestrator reads the brief.}
+          The root Orchestrator agent (\FN{01}) decomposes the brief
+          into a set of parallel and sequential tasks, one for each
+          relevant engineering discipline.
+
+    \item \textbf{Specialists go to work.}
+          Domain Specialist agents (\FN{02}/\FN{03}) --- for example,
+          a Firmware Specialist, an Electrical Specialist, a Mechanical
+          Specialist --- each work on their assigned piece of the
+          deliverable independently.
+
+    \item \textbf{Reviewers check each output.}
+          A Reviewer agent (\FN{04}) examines each specialist's
+          deliverable against the relevant standard, checklist, or
+          specification.  The Reviewer never wrote the deliverable;
+          it only critiques it.
+
+    \item \textbf{Adversarial Challengers try to break it.}
+          A dedicated Challenge Division agent (\FN{09}) actively
+          looks for failure modes, edge cases, and hidden assumptions
+          that the Specialist and Reviewer may have missed.
+          Its entire job is to ask: ``How does this fail?''
+
+    \item \textbf{A Validator looks for contradictions.}
+          The Validator agent (\FN{05}) checks whether the deliverable
+          is internally consistent and whether it contradicts any other
+          artifact in the system.  Unlike the Reviewer, the Validator
+          never fixes anything --- it only reports contradictions.
+
+    \item \textbf{Testers verify behavior.}
+          Testing agents (\FN{07}) run the relevant automated tests
+          or simulations to confirm that the deliverable behaves as
+          specified.
+
+    \item \textbf{Documentation is generated.}
+          A Documentation agent (\FN{06}) produces the required
+          documentation artefacts alongside the deliverable.
+
+    \item \textbf{A Quality Gate makes the final call.}
+          Only the Quality Gate agent (\FN{08}) can issue a formal
+          approval certificate.
+          If the deliverable passes, it is certified and handed off.
+          If it fails, the run loops back for rework --- but only up
+          to a fixed, pre-defined number of times, after which the
+          system escalates rather than looping forever.
+\end{enumerate}
+
+Every one of these roles is performed by a \emph{different} agent.
+No agent reviews its own work.
+No agent can certify its own output.
+This is not a convention --- it is enforced by the architecture.
+
+% ============================================================================
+\section{Why This Architecture?}
+\label{sec:why}
+
+\subsection{The Problem with a Single AI Agent}
+
+Imagine asking one person to simultaneously design a product, review
+their own design, challenge their own assumptions, validate their own
+conclusions, run their own tests, and then certify their own work as
+production-ready.
+No serious engineering organization works this way --- for good
+reason.
+Self-review is not review.
+Self-certification is not certification.
+
+The same principle applies to AI agents.
+A single large-context AI model that performs all of these functions on
+the same artifact suffers from three independently fatal problems:
+
+\begin{enumerate}
+    \item \textbf{Responsibility collapse.}
+          When the same agent both builds and reviews a deliverable,
+          there is no independent party to catch self-inconsistency.
+          The agent is both judge and defendant.
+
+    \item \textbf{Context overload.}
+          A monolithic agent must simultaneously hold the full state
+          of every engineering discipline, every in-flight artifact,
+          all review history, and all governance rules.
+          As the project grows, the signal-to-noise ratio of every
+          individual decision degrades.
+
+    \item \textbf{Unverifiable trust.}
+          If a single agent produces and certifies its own output,
+          there is no principled way to assign that output a lower
+          trust level than the user's own instructions.
+          This creates a subtle but critical safety vulnerability:
+          the agent's own conclusions could silently override the
+          governance constraints it is supposed to operate within.
+\end{enumerate}
+
+Any one of these three problems is sufficient to disqualify a
+single-agent architecture for multi-disciplinary production use.
+Engineering Studio AI addresses all three by construction.
+
+\subsection{The Adopted Solution: Separation of Concerns at Scale}
+
+Engineering Studio AI applies the same principle that makes large
+engineering organizations work:
+\emph{separate the people who build from the people who review,
+and separate the people who review from the people who certify.}
+
+In the platform, this separation is formalized as the
+\textbf{Non-Overlap Rule}: no single agent instance may perform both
+a construction role and a critique role on the same artifact.
+This rule is not a guideline --- it is enforced structurally, and the
+companion formal paper proves that it requires \emph{at least four
+distinct agent instances} to cover the mandatory phases of any
+artifact lifecycle.
+
+\subsection{Statelessness: Each Agent Knows Only Its Job}
+
+Every agent in the platform is \emph{stateless}: it receives a
+well-defined task specification, performs its function, returns its
+output, and retains no memory of the interaction.
+This design choice has three important consequences:
+
+\begin{enumerate}
+    \item \textbf{Predictability.}
+          A stateless agent produces the same output given the same
+          input.  Its behavior can be tested, audited, and reproduced.
+
+    \item \textbf{Scalability.}
+          Stateless agents can be run in parallel without coordination
+          overhead.  Six domain specialists can work simultaneously on
+          six parallel tasks without needing shared state.
+
+    \item \textbf{Security.}
+          A stateless agent cannot accumulate context across sessions,
+          so it cannot be gradually manipulated over time into
+          violating its governance constraints.
+\end{enumerate}
+
+% ============================================================================
+\section{The Agent Catalog}
+\label{sec:catalog}
+
+\subsection{Twelve Function Classes}
+
+The platform organizes all agent roles into twelve function classes,
+labeled \FN{00} through \FN{11}.
+Table~\ref{tab:functions} summarizes these classes, their layer in the
+organizational hierarchy, and their role in plain English.
+
+\begin{table}[H]
+\centering
+\caption{The Twelve Agent Function Classes of the MDAP Platform.}
+\label{tab:functions}
+\begin{tabular}{@{}lllp{7cm}@{}}
+\toprule
+\textbf{Class} & \textbf{Layer} & \textbf{Name} & \textbf{What it does} \\
+\midrule
+\FN{00} & Layer 0 & Constitution &
+  The non-negotiable governance rules.
+  Never produces deliverables; everything else must operate within
+  its constraints. \\
+\FN{01} & Layer 1 & Orchestrator &
+  Reads the brief, decomposes tasks, dispatches agents, and
+  merges results. The conductor of the ensemble. \\
+\FN{02} & Layer 2 & Domain Specialist &
+  Builds the primary deliverable for one engineering discipline
+  (e.g., firmware, electrical, mechanical). \\
+\FN{03} & Layer 3 & Micro Specialist &
+  Handles a narrow sub-task within a domain (e.g., one specific
+  component of a PCB layout). \\
+\FN{04} & Layer 4 & Reviewer &
+  Critiques a deliverable against exactly one standard or checklist.
+  Never builds; never fixes. \\
+\FN{05} & Layer 5 & Validator &
+  Detects contradictions between artifacts or between an artifact
+  and its specification.  Never fixes --- only reports. \\
+\FN{06} & Layer 6 & Documentation &
+  Produces and maintains documentation artifacts alongside the
+  engineering deliverable. \\
+\FN{07} & Layer 7 & Testing &
+  Designs and executes automated tests or simulation runs to
+  verify behavior. \\
+\FN{08} & Layer 8 & Quality Gate &
+  The \emph{sole} agent authorized to issue a formal approval
+  certificate.  No other agent can certify a deliverable. \\
+\FN{09} & Challenge Div. & Adversarial Challenger &
+  Actively attempts to find failure modes, edge cases, and
+  hidden assumptions.  Its job is: ``How does this fail?'' \\
+\FN{10} & Guardrails & Guardrails &
+  Enforces cross-cutting mandates (safety, compliance, ethical
+  constraints) at every phase. \\
+\FN{11} & Utility & Utility &
+  Provides shared, read-only support capabilities (e.g., code
+  search, standard lookups) to any agent that needs them. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The Non-Overlap Rule in Plain English}
+
+The most important governance rule in the platform is simple:
+\textbf{the agent that builds a thing cannot be the same agent that
+reviews, validates, or adversarially challenges that thing.}
+
+This rule is not a best practice --- it is a hard architectural
+constraint.
+The companion formal paper proves that, as a direct consequence of
+this rule, any valid deployment requires \emph{at least four distinct
+agent instances} to handle one artifact's lifecycle:
+one to build it, one to review it, one to validate it, and one to
+adversarially challenge it.
+No deployment with three or fewer agent instances can satisfy this
+rule and cover all mandatory phases.
+
+\subsection{The Trust Tier Hierarchy}
+
+Not all instructions and outputs in the system carry the same weight.
+The platform assigns every piece of content a \emph{trust tier}:
+
+\begin{enumerate}
+    \item \textbf{Tier 0 (T-0):} Model constraints --- the
+          non-negotiable safety rules baked into the platform itself.
+          Nothing can override these.
+    \item \textbf{Tier 1 (T-1):} The Layer~0 constitution --- the
+          organization's own governance rules.
+    \item \textbf{Tier 2 (T-2):} Verified user instructions.
+    \item \textbf{Tier 3 (T-3):} Everything produced by a subagent,
+          including all specialist outputs, review reports, and
+          validation results.
+\end{enumerate}
+
+The key invariant --- proved formally in the companion paper --- is
+this: \textbf{a subagent's output starts at Tier~3 and can only be
+promoted to a higher trust tier by an explicit Quality Gate
+certificate.}
+No amount of individual subagent invocations, re-framings, or
+chaining can promote a Tier-3 output to Tier-2 status without that
+explicit certification step.
+This prevents a subtle class of attacks where a sequence of
+individually-valid instructions gradually escalates an untrusted
+output into a trusted one.
+
+% ============================================================================
+\section{The Workflow}
+\label{sec:workflow}
+
+\subsection{Eleven Phases, One Deliverable}
+
+Every artifact produced by the platform passes through eleven
+workflow phases in a defined order.
+The phases are not arbitrary --- they map directly to the natural
+structure of an engineering review process.
+Table~\ref{tab:phases} lists them in order.
+
+\begin{table}[H]
+\centering
+\caption{The Eleven Workflow Phases.}
+\label{tab:phases}
+\begin{tabular}{@{}rll@{}}
+\toprule
+\textbf{\#} & \textbf{Phase} & \textbf{What happens} \\
+\midrule
+1  & Plan          & Orchestrator reads brief, defines scope and tasks \\
+2  & EnvVerify     & Guardrails agent confirms the environment is safe to proceed \\
+3  & StdMap        & Standards applicable to this deliverable are identified \\
+4  & Impl          & Domain and Micro Specialists build the deliverable \\
+5  & Review        & Reviewer critiques the deliverable (runs concurrently with 6) \\
+6  & Challenge     & Adversarial Challenger tries to break the deliverable \\
+7  & Validate      & Validator checks for internal contradictions \\
+8  & Test          & Testing agent runs automated tests or simulations \\
+9  & Doc           & Documentation agent produces required documentation \\
+10 & CommitSync    & Changes are committed and synchronized \\
+11 & Gate          & Quality Gate issues the final approval or rejection \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Forward Progress and Rework}
+
+The workflow is designed so that phases always move \emph{forward}.
+There are no loops in the forward workflow: once the Gate phase
+completes, the run is done.
+
+However, the Gate phase can \emph{reject} a deliverable, sending it
+back to the beginning of the cycle for rework.
+This is the platform's rework mechanism.
+Each rework cycle consumes one unit of a pre-configured rework budget.
+When the budget is exhausted, the system escalates rather than looping
+forever.
+
+The companion formal paper proves that this design guarantees
+termination: \textbf{every run of the platform reaches either an
+approved state or an escalated state within a finite, pre-computable
+number of steps.}
+The maximum number of steps is $11 \times (1 + R)$, where $R$ is the
+per-phase rework budget configured at deployment time.
+
+\subsection{Concurrent Work and Join Points}
+
+Not all phases are strictly sequential.
+The Review phase and the Challenge phase run \emph{concurrently}: the
+Reviewer and the Adversarial Challenger both examine the
+implementation output in parallel, then the workflow joins at the
+Validate phase.
+
+This parallel structure is safe because:
+\begin{enumerate}
+    \item The two agents are examining the \emph{same} artifact
+          independently, not modifying it.
+    \item Neither agent can issue a final decision; only the Quality
+          Gate can do that.
+    \item The workflow only advances past the join point once
+          \emph{both} the Review and Challenge phases are complete.
+\end{enumerate}
+
+% ============================================================================
+\section{Hardware and Multi-Modal Capabilities}
+\label{sec:hardware}
+
+\subsection{What ``Multi-Modal'' Means Here}
+
+Engineering Studio AI is described as a multi-modal platform because
+it handles inputs and outputs beyond plain text:
+
+\begin{enumerate}
+    \item \textbf{Design files:} schematics, PCB layouts, mechanical
+          CAD models.
+    \item \textbf{Simulation outputs:} SPICE circuit simulation
+          results, Gazebo robot simulation outputs.
+    \item \textbf{Bill-of-materials:} structured cost and component
+          data.
+    \item \textbf{Code artifacts:} firmware images, software modules,
+          test suites.
+    \item \textbf{Documentation:} structured technical documentation,
+          compliance reports.
+\end{enumerate}
+
+Agents in the platform are not limited to reading and writing text;
+they can consume and produce any of these artifact types, depending on
+their domain specialization.
+
+\subsection{The Hardware Boundary}
+
+The current instantiation of the platform covers
+\emph{simulated and emulated hardware} --- not physical fabrication.
+``Hardware'' in this context means:
+\begin{enumerate}
+    \item Robot simulation in Gazebo.
+    \item Circuit simulation in SPICE.
+    \item Bill-of-materials generation.
+    \item Firmware targeting an emulated processor.
+\end{enumerate}
+
+Physical fabrication --- actually manufacturing a PCB, assembling
+a robot, or flashing firmware to real silicon --- is outside the
+current scope.
+This boundary is a disclosed design choice, not a gap:
+the platform is designed to validate engineering decisions in
+simulation \emph{before} any physical resource is committed.
+
+% ============================================================================
+\section{The Formal Guarantees (in Plain English)}
+\label{sec:guarantees}
+
+The companion formal paper provides rigorous mathematical proofs of
+four core properties of the platform.
+This section explains what those proofs mean in practical terms,
+without the mathematics.
+
+\subsection{Guarantee 1: The Workflow Always Makes Progress}
+
+The eleven workflow phases form a directed acyclic graph (DAG) ---
+a fancy way of saying that the phases are arranged in a strict
+forward order with no circular dependencies.
+
+\medskip
+\noindent\textbf{What this means in practice:}
+There is no combination of phase assignments that can cause the
+workflow to spin in a circle without making progress.
+Every legitimate execution path through the workflow eventually
+reaches the Gate phase.
+
+\medskip
+\noindent\textbf{Why it matters:}
+Without this guarantee, a subtle ordering bug in the workflow
+configuration could cause the system to loop between phases
+indefinitely, consuming resources without ever producing a
+deliverable.
+The formal proof rules this out by construction.
+
+\subsection{Guarantee 2: Rework Always Terminates}
+
+The rework loop --- where a rejected deliverable is sent back for
+revision --- is bounded.
+Specifically, no run can exceed $11 \times (1 + R)$ total phase
+transitions, where $R$ is the deployment-configured per-phase retry
+limit.
+
+\medskip
+\noindent\textbf{What this means in practice:}
+Before a run starts, you can compute the worst-case number of
+AI invocations.
+If $R = 2$ (two rework cycles per phase), the worst case is
+$11 \times 3 = 33$ phase transitions.
+No run can exceed this budget; it will either succeed or escalate.
+
+\medskip
+\noindent\textbf{Why it matters:}
+Without this guarantee, a pathological sequence of rejections could
+cause a run to loop indefinitely, making cost estimation and SLA
+guarantees impossible.
+The formal proof establishes that this scenario cannot occur.
+
+\subsection{Guarantee 3: Responsibilities Never Silently Collapse}
+
+The Non-Overlap Rule requires that the agent who builds a deliverable
+is never the same agent who reviews, validates, or adversarially
+challenges it.
+The formal paper proves this requires \emph{at least four distinct
+agents} per artifact lifecycle.
+
+\medskip
+\noindent\textbf{What this means in practice:}
+A deployment cannot satisfy the governance rules with fewer than four
+agents handling the mandatory phases.
+Any system configuration that tries to merge the Specialist, Reviewer,
+Validator, and Adversarial Challenger roles into fewer than four
+distinct agents is provably non-compliant.
+
+\medskip
+\noindent\textbf{Why it matters:}
+Without this lower bound, a resource-constrained deployment might
+silently collapse multiple roles into a single agent, re-introducing
+the self-review problem that the architecture was designed to
+eliminate.
+The formal proof makes this collapse detectable and auditable.
+
+\subsection{Guarantee 4: Trust Levels Cannot Be Forged}
+
+A subagent's output is always treated as Tier-3 (the lowest trust
+level) until the Quality Gate explicitly certifies it.
+No sequence of subagent invocations --- no matter how many, no matter
+how they are chained --- can promote a Tier-3 output to a higher tier
+without that explicit certification.
+
+\medskip
+\noindent\textbf{What this means in practice:}
+An adversarial prompt that tries to convince a subagent to claim
+it has higher authority than it actually has cannot succeed.
+The trust tier is tracked by the platform, not by the agents
+themselves, and can only be changed by the Quality Gate.
+
+\medskip
+\noindent\textbf{Why it matters:}
+Trust escalation attacks are a real concern in multi-agent systems:
+a sequence of individually-valid steps can sometimes lead to a state
+that violates a global invariant.
+The formal proof shows that this cannot happen in the trust-tier
+hierarchy of Engineering Studio AI.
+
+% ============================================================================
+\section{The AMD LabLabAI Hackathon Instantiation}
+\label{sec:hackathon}
+
+\subsection{Overview}
+
+The first concrete instantiation of Engineering Studio AI was built
+for the AMD LabLabAI Hackathon.
+This instantiation demonstrates the full platform workflow on a
+multi-disciplinary hardware-software engineering problem, covering six
+parallel specialist domains: Mechanical, Electrical, Firmware,
+Simulation, Cost, and Legal.
+
+\subsection{The Agent Team for One Product Brief}
+
+\begin{table}[H]
+\centering
+\caption{Agent Roles in the AMD LabLabAI Hackathon Instantiation.}
+\label{tab:hackathon-agents}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Agent} & \textbf{Function Class} & \textbf{Role} \\
+\midrule
+Orchestrator           & \FN{01} & Decomposes brief; dispatches specialists \\
+Mechanical Specialist  & \FN{02} & Designs mechanical components \\
+Electrical Specialist  & \FN{02} & Designs electrical/PCB components \\
+Firmware Specialist    & \FN{02} & Writes firmware for the target platform \\
+Simulation Specialist  & \FN{02} & Builds and runs simulation models \\
+Cost Specialist        & \FN{02} & Produces bill-of-materials and cost model \\
+Legal Specialist       & \FN{02} & Checks regulatory and compliance requirements \\
+Challenge Division     & \FN{09} & Adversarially reviews all specialist outputs \\
+Quality Gate           & \FN{08} & Issues the final certification \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{How the Numbers Work Out}
+
+With six domain specialists and one Orchestrator turn per phase,
+the worst-case number of subagent invocations for a run with
+rework budget $R$ is:
+\[
+N \;\leq\; 6 \times 11 \times (1 + R) \;=\; 66\,(1 + R).
+\]
+For a zero-rework run ($R = 0$), this is at most 66 subagent calls.
+For one rework cycle ($R = 1$), at most 132 calls.
+
+These are hard upper bounds, not averages.
+A typical successful run will use far fewer calls, because not every
+phase requires all six specialists and most phases will not require
+rework.
+
+\subsection{Hardware Scope}
+
+All hardware work in this instantiation is in simulation or emulation:
+\begin{enumerate}
+    \item Mechanical: Gazebo robot simulation.
+    \item Electrical: SPICE circuit simulation.
+    \item Firmware: emulated processor target.
+    \item BOM: generated cost model, not physical procurement.
+\end{enumerate}
+Physical fabrication is explicitly out of scope for this
+instantiation.
+
+% ============================================================================
+\section{Why This Matters for Teams}
+\label{sec:teams}
+
+\subsection{For Engineering Teams}
+
+\begin{enumerate}
+    \item \textbf{Every deliverable gets independent review.}
+          The architecture ensures that no specialist ever reviews
+          their own work.
+          For engineering teams, this means every AI-generated artifact
+          has been examined by at least three independent agents before
+          it reaches the Quality Gate.
+
+    \item \textbf{The system tells you when it cannot succeed.}
+          When the rework budget is exhausted, the system escalates
+          rather than looping.
+          The escalation report tells you exactly which phase failed
+          and how many rework cycles were attempted.
+          You never get a silent infinite loop.
+
+    \item \textbf{Trust levels are transparent.}
+          Every piece of content in the system has a visible trust
+          tier.
+          A Tier-3 output (specialist-generated) is clearly
+          distinguished from a Tier-2 user instruction and from a
+          Tier-0 system constraint.
+          You always know what has been formally certified and what
+          has not.
+
+    \item \textbf{The workflow is extensible without starting over.}
+          Adding a new engineering discipline to the platform means
+          adding a new Domain Specialist agent with a well-defined
+          function class.
+          The four formal guarantees (forward progress, bounded rework,
+          role separation, trust invariant) automatically extend to
+          cover the new agent, provided the Non-Overlap Rule is
+          respected.
+          No re-proof is required.
+\end{enumerate}
+
+\subsection{For Organizations Evaluating AI Adoption}
+
+\begin{enumerate}
+    \item \textbf{Auditability by design.}
+          Every decision in the workflow is traceable to a specific
+          agent with a specific role.
+          The audit trail is not an afterthought --- it is a
+          structural property of the architecture.
+
+    \item \textbf{Quantifiable worst-case costs.}
+          Before a run starts, the maximum number of AI invocations
+          is computable from the rework budget and the number of
+          phases.
+          Cost estimation for AI-assisted engineering is not
+          guesswork.
+
+    \item \textbf{No silent capability creep.}
+          The Non-Overlap Rule prevents any single agent from
+          accumulating responsibilities over time.
+          An agent deployed as a Reviewer cannot later be quietly
+          reassigned to also produce the artifacts it reviews without
+          a deliberate, auditable change to its function-class
+          assignment.
+
+    \item \textbf{Governance-first architecture.}
+          The platform's governance rules --- trust tiers, rework
+          bounds, role separation --- are not operational policies
+          bolted on after the fact.
+          They are structural properties of the system, verified by
+          formal mathematical proof.
+          This means they cannot be accidentally disabled by a
+          configuration change or a software update that does not
+          touch the core architecture.
+\end{enumerate}
+
+% ============================================================================
+\section{Relationship to the Formal Paper}
+\label{sec:formal}
+
+\subsection{What the Formal Paper Proves}
+
+The companion formal paper,
+\textit{Engineering Studio AI: Formal Model and Mathematical Proofs}
+(v2026.1.0.0), establishes the following four results as rigorous
+mathematical theorems:
+
+\begin{enumerate}
+    \item \textbf{Theorem~1 (Acyclicity):} The nominal workflow graph
+          is a directed acyclic graph.
+          This is proved by constructing an explicit labeling function
+          that assigns a strict numerical index to each phase, such
+          that every phase dependency points from a lower index to a
+          higher one --- ruling out any circular dependency by a
+          simple arithmetic argument.
+
+    \item \textbf{Theorem~2 (Bounded Termination):} Every run of the
+          artifact state machine reaches either an approved or an
+          escalated state within at most $P + B$ phase transitions,
+          where $P = 11$ is the number of phases and $B = R \times P$
+          is the total rework budget.
+          This is proved using a potential function (a counter) that
+          strictly decreases at every step and is bounded below by
+          zero, guaranteeing that the sequence of steps must be finite.
+
+    \item \textbf{Theorem~3 (Minimum Agent Multiplicity):} Any
+          Non-Overlap-compliant deployment requires at least four
+          distinct agent instances to cover the mandatory phases of
+          one artifact lifecycle.
+          This is proved by showing that the four mandatory function
+          classes (Specialist, Reviewer, Validator, Adversarial
+          Challenger) form a complete conflict graph: every pair of
+          them conflicts.
+          By a standard combinatorial argument (pigeonhole principle),
+          this means no compliant deployment can cover all four with
+          fewer than four agents.
+
+    \item \textbf{Theorem~4 (Trust-Tier Invariant):} For every
+          subagent-originated content item, across an invocation
+          sequence of any length, its trust tier remains at Tier~3
+          unless the Quality Gate has explicitly certified it.
+          This is proved by structural induction: the base case
+          is an empty session (trivially true); the inductive step
+          examines all three possible event types (user request,
+          subagent return, Quality Gate certificate) and shows that
+          none of them can promote a Tier-3 item without an explicit
+          Quality Gate event.
+\end{enumerate}
+
+A fifth result --- a bound on the total number of AI invocations ---
+is provided as an explicitly labeled proof sketch.
+The sketch is structurally complete, but rests on a per-invocation
+cost model that has not yet been empirically validated against a real
+deployment.
+The formal paper states precisely what additional work is needed to
+promote the sketch to a full proof.
+
+\subsection{What This White Paper Does Not Prove}
+
+This white paper explains the architectural ideas and their practical
+implications in plain language.
+It does not contain mathematical proofs.
+All formal claims in this document are backed by the companion formal
+paper; readers who require the rigorous justification are referred there.
+
+In particular, the following claims are \emph{not} proved in this
+document:
+\begin{enumerate}
+    \item The semantic correctness of any specialist agent's output
+          (e.g., whether a generated PCB layout is electrically valid).
+    \item Whether any specific LLM model will produce correct
+          specialist-domain outputs.
+    \item Cost estimates for any specific deployment configuration.
+\end{enumerate}
+These are runtime concerns that depend on the specific models,
+tooling, and domain specifications used in a deployment.
+They are outside the scope of both this document and the formal paper.
+
+% ============================================================================
+\section{Frequently Asked Questions}
+\label{sec:faq}
+
+\begin{enumerate}
+
+    \item \textbf{Does every run use all eleven phases?}
+
+          Not necessarily.
+          The eleven phases represent the full lifecycle of a
+          deliverable from planning to certification.
+          A simple deliverable may not require all phases to be
+          active (for example, a software-only deliverable may not
+          need a hardware simulation phase).
+          However, the phases that \emph{are} active always execute
+          in the defined order, and the Quality Gate is always the
+          final step.
+
+    \item \textbf{What happens if an agent produces incorrect output?}
+
+          The Review, Challenge, and Validate phases exist precisely to
+          catch incorrect specialist output before it reaches the
+          Quality Gate.
+          If all three catch it, the deliverable is rejected and sent
+          for rework.
+          If none of them catch it and the Quality Gate passes it, the
+          deliverable is certified as of the standards and specifications
+          that the agents were given --- but its \emph{domain-specific}
+          correctness (e.g., whether a circuit will actually work in
+          the real world) depends on how well the agents' specifications
+          matched the real problem.
+          This is why human review of the specification inputs is still
+          important.
+
+    \item \textbf{Can agents communicate with each other directly?}
+
+          No.
+          All inter-agent communication is routed through the
+          Orchestrator.
+          Agents cannot directly call or message each other.
+          This design prevents unauthorized information flows and
+          ensures the Orchestrator always has a complete view of the
+          workflow state.
+
+    \item \textbf{What is the rework budget and how do I set it?}
+
+          The rework budget $R$ is the maximum number of times any
+          single phase can be retried before the system escalates.
+          It is a deployment-level configuration parameter.
+          Setting $R = 0$ means the first rejection immediately
+          escalates (useful for fast-fail scenarios).
+          Setting $R = 3$ means each phase can be retried up to three
+          times before escalation.
+          The total worst-case transitions are $11 \times (1 + R)$;
+          use this formula to budget your AI invocations.
+
+    \item \textbf{Can I add new agent roles to the platform?}
+
+          Yes.
+          New agent roles are added by assigning them one or more of
+          the twelve function classes (\FN{00}--\FN{11}) and updating
+          the conflict graph to reflect any new Non-Overlap
+          constraints.
+          As long as the Non-Overlap Rule is respected, the four
+          formal guarantees automatically extend to the new role
+          without requiring new proofs.
+
+    \item \textbf{Is the platform limited to software engineering?}
+
+          No.
+          The platform covers the full software-and-hardware
+          engineering lifecycle, including firmware, mechanical
+          design, electrical design, simulation, cost modeling, and
+          legal compliance.
+          The current instantiation uses emulation and simulation for
+          hardware; physical fabrication is a planned future extension.
+
+    \item \textbf{Where can I read the rigorous mathematical proofs?}
+
+          The companion formal paper,
+          \textit{Engineering Studio AI: Formal Model and Mathematical
+          Proofs} (v2026.1.0.0), contains the complete mathematical
+          treatment: precise definitions, full theorem statements,
+          step-by-step proofs with all hypotheses explicitly stated,
+          and treatment of all boundary conditions and degenerate cases.
+
+\end{enumerate}
+
+% ============================================================================
+\section{Roadmap and Future Work}
+\label{sec:roadmap}
+
+\begin{enumerate}
+
+    \item \textbf{Empirical validation.}
+          Running one complete end-to-end vertical slice --- one full
+          product brief through all eleven phases on a real,
+          non-trivial engineering deliverable --- would provide
+          observational evidence to complement the formal guarantees.
+          This is the highest-priority near-term milestone.
+
+    \item \textbf{Completing the token-cost proof.}
+          The invocation-count bound (at most $66 \times (1 + R)$
+          calls for the six-specialist instantiation) is formally
+          proved.
+          Converting this to a token-cost bound requires validating
+          per-agent token-budget constants against a real deployment.
+          Once validated, the proof sketch in the companion paper
+          can be promoted to a full proof.
+
+    \item \textbf{Tighter multiplicity bounds.}
+          The current formal proof establishes that \emph{at least
+          four} distinct agents are required.
+          Future work will analyze the full conflict graph to derive
+          tighter bounds for specific deployment configurations,
+          which will improve resource planning for large deployments.
+
+    \item \textbf{Semantic correctness layer.}
+          The current formal model governs the \emph{structure} of the
+          workflow (who reviews whom, when, and under what trust level)
+          but not the \emph{content} of any deliverable.
+          A future extension will introduce domain-specific correctness
+          predicates that connect governance-layer guarantees to
+          domain-layer correctness, enabling end-to-end formal
+          assurances.
+
+    \item \textbf{Physical hardware extension.}
+          Extending the platform's hardware coverage from emulation
+          to physical fabrication is a planned future milestone,
+          requiring a separately validated instantiation of the
+          formal model.
+
+    \item \textbf{Expanding the MDAP catalog.}
+          The Multimodal Deployable Agents Platform (MDAP) catalog
+          currently contains approximately 250 agent roles.
+          As the catalog grows, the formal vocabulary of the companion
+          paper provides a stable foundation for auditing new roles
+          without re-deriving the four core theorems.
+
+\end{enumerate}
+
+% ============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Engineering Studio AI represents a principled answer to the question
+of how to apply AI effectively to complex, multi-disciplinary
+engineering work.
+
+Its core insight is simple: \textbf{the same structural rules that
+make large engineering organizations work --- separation of
+construction from review, review from certification, and human
+oversight of escalation --- apply just as much to AI agent teams as
+they do to human ones.}
+
+By formalizing these rules as a workflow graph, an artifact state
+machine, a trust-tier hierarchy, and a conflict graph, and by proving
+that the resulting system is acyclic, terminating, responsibility-safe,
+and trust-invariant, Engineering Studio AI provides something rare in
+the current AI landscape: a multi-agent system whose key safety and
+reliability properties are not just claimed or empirically observed,
+but \emph{mathematically proved}.
+
+The platform is designed to be extended.
+New disciplines, new agent roles, new hardware targets can all be
+added without invalidating the core guarantees, as long as the
+governance rules are respected.
+The formal vocabulary of the companion paper is the stable foundation
+on which that extension can be built.
+
+\bigskip
+\noindent
+For the complete mathematical treatment, see:
+\medskip
+
+\noindent
+Hu, H. (2026).
+\textit{Engineering Studio AI: Formal Model and Mathematical Proofs}
+(v2026.1.0.0).
+CodingStandardsRef Research Notes, Multimodal Deployable Agents Platform.
+
+% ============================================================================
+\newpage
+\section*{References}
+\label{sec:references}
+
+\begin{sloppypar}
+\begin{enumerate}
+    \item Hu, H. (2026). ``VISION\_MULTIMODAL\_\allowbreak DEPLOYABLE\_AGENTS\_CLEAN.md.''
+          Internal repository document, \texttt{markdowns/visions/}.
+    \item Hu, H. (2026). ``VISION\_AGENTS\_COORDINATION\_\allowbreak ORCHESTRATION\_\allowbreak GOVERNANCE.md.'' Internal repository document,
+          \texttt{markdowns/visions/}.
+    \item Hu, H. (2026). ``VISION\_AGENTS\_BY\_FUNCTION.md.'' Internal
+          repository document, \texttt{markdowns/visions/}.
+    \item Hu, H. (2026). ``VISION\_AGENT\_WORKFLOW\_INTERAGENT\_\allowbreak COORDINATION.md.'' Internal repository document,
+          \texttt{markdowns/visions/}.
+    \item Hu, H. (2026). ``VISION\_AMD\_LABLAB\_HACKATHON\_ENGINEERING\_\allowbreak STUDIO.md.'' Internal repository document,
+          \texttt{markdowns/visions/}.
+    \item Hu, H. (2026). \textit{Engineering Studio AI: Formal Model and
+          Mathematical Proofs} (v2026.1.0.0). CodingStandardsRef Research
+          Notes, Multimodal Deployable Agents Platform.
+    \item Cormen, T. H., Leiserson, C. E., Rivest, R. L., \& Stein, C.
+          (2009). \textit{Introduction to Algorithms} (3rd ed.). MIT Press.
+    \item Rosen, K. H. (2019). \textit{Discrete Mathematics and Its
+          Applications} (8th ed.). McGraw-Hill.
+\end{enumerate}
+\end{sloppypar}
+
+% ============================================================================
+\newpage
+\section*{Changelog}
+\label{sec:changelog}
+
+\begin{table}[H]
+\centering
+\caption{Document Revision History (YPSV: YEAR.MAJOR.MINOR.PATCH).}
+\begin{tabular}{@{}lllp{7.0cm}@{}}
+\toprule
+\textbf{Version} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
+\midrule
+2026.1.0.0 & 2026-07-05 & Hadrian Hu &
+  Initial creation: team-and-public white paper companion to the
+  formal mathematical paper.
+  Covers the architecture, the agent catalog, the workflow, the
+  formal guarantees (in plain English), the AMD LabLabAI Hackathon
+  instantiation, team implications, FAQ, and roadmap. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
+% ============================================================================
+% END OF DOCUMENT
+% ============================================================================

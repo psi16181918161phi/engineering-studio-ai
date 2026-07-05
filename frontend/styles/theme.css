@@ -1,0 +1,29 @@
+/**
+ * WHAT: Locked brand color palette as CSS custom properties.
+ * WHY: `docs/TEAM_QA.md` §4 mandates exactly these three colors for any
+ * frontend/visualization surface — this file is the single source of
+ * truth so no component hardcodes a slightly-off hex value.
+ * HOW: Import/link this file first in your app, then reference the
+ * variables (e.g. `color: var(--brand-accent);`) instead of literal hex
+ * codes.
+ */
+:root {
+  /* Soft rose pink — foreground OR background use. */
+  --brand-primary: #FFAEC9;
+
+  /* Near-black — background OR foreground use. */
+  --brand-ink: #000000;
+
+  /* Rose gold — accents ONLY (do not use as a large background fill). */
+  --brand-accent: #B76E79;
+}
+
+/* Example usage patterns (delete or adapt once real components exist): */
+body {
+  background-color: var(--brand-ink);
+  color: var(--brand-primary);
+}
+
+.accent {
+  color: var(--brand-accent);
+}

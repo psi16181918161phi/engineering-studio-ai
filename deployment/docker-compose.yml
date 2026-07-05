@@ -1,0 +1,15 @@
+# WHAT: Local multi-service compose for the demo environment.
+# WHY:  One command to bring up the pipeline (and, later, any web
+#       frontend/backend service Role 5/Role 3 add).
+# HOW:  `docker compose -f deployment/docker-compose.yml up`
+#       FIREWORKS_API_KEY is read from a local .env (never committed).
+
+services:
+  studio:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    env_file:
+      - ../.env
+    # Override the default entrypoint arg with your product brief, e.g.:
+    # command: ["Design a warehouse robot"]

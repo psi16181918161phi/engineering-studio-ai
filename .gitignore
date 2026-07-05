@@ -3,41 +3,170 @@
 # HOW:  Grouped by category; do not commit .env, __pycache__, or model caches.
 
 # --- Python ---
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-.eggs/
-.venv/
-venv/
-.mypy_cache/
-.pytest_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-dist/
-build/
+[_][_][Pp][Yy][Cc][Aa][Cc][Hh][Ee][_][_]/
+*.[Pp][Yy][CcOoDd]
+*$[Pp][Yy].[Cc][Ll][Aa][Ss][Ss]
+*.[Ee][Gg][Gg]-[Ii][Nn][Ff][Oo]/
+.[Ee][Gg][Gg][Ss]/
+.[Vv][Ee][Nn][Vv]/
+[Vv][Ee][Nn][Vv]/
+.[Mm][Yy][Pp][Yy][_][Cc][Aa][Cc][Hh][Ee]/
+.[Pp][Yy][Tt][Ee][Ss][Tt][_][Cc][Aa][Cc][Hh][Ee]/
+.[Rr][Uu][Ff][Ff][_][Cc][Aa][Cc][Hh][Ee]/
+.[Cc][Oo][Vv][Ee][Rr][Aa][Gg][Ee]
+[Hh][Tt][Mm][Ll][Cc][Oo][Vv]/
+[Dd][Ii][Ss][Tt]/
+[Bb][Uu][Ii][Ll][Dd]/
 
 # --- Secrets / environment ---
-.env
-.env.*
-!.env.example
-*.key
-*.pem
-secrets/
+.[Ee][Nn][Vv]
+.[Ee][Nn][Vv].*
+!.[Ee][Nn][Vv].[Ee][Xx][Aa][Mm][Pp][Ll][Ee]
+*.[Kk][Ee][Yy]
+*.[Pp][Ee][Mm]
+[Ss][Ee][Cc][Rr][Ee][Tt][Ss]/
 
 # --- Editors / OS ---
-.vscode/*
-!.vscode/extensions.json
-.idea/
-.DS_Store
-Thumbs.db
+.[Vv][Ss][Cc][Oo][Dd][Ee]/*
+!.[Vv][Ss][Cc][Oo][Dd][Ee]/[Ee][Xx][Tt][Ee][Nn][Ss][Ii][Oo][Nn][Ss].[Jj][Ss][Oo][Nn]
+.[Ii][Dd][Ee][Aa]/
+.[Dd][Ss][_][Ss][Tt][Oo][Rr][Ee]
+[Tt][Hh][Uu][Mm][Bb][Ss].[Dd][Bb]
 
 # --- Generated demo artifacts (regenerate per run, not source of truth) ---
-runs/
-*.log
+[Rr][Uu][Nn][Ss]/
+*.[Ll][Oo][Gg]
 
 # --- Node (if a web UI is added later) ---
-node_modules/
-.next/
-dist-web/
+[Nn][Oo][Dd][Ee][_][Mm][Oo][Dd][Uu][Ll][Ee][Ss]/
+.[Nn][Ee][Xx][Tt]/
+[Dd][Ii][Ss][Tt]-[Ww][Ee][Bb]/
+
+# --- LaTeX ---
+*.[Aa][Uu][Xx]
+*.[Bb][Bb][Ll]
+*.[Bb][Cc][Ff]
+*.[Bb][Ll][Gg]
+*.[Ff][Dd][Bb][_][Ll][Aa][Tt][Ee][Xx][Mm][Kk]
+*.[Ff][Ll][Ss]
+*.[Ll][Oo][Ff]
+*.[Ll][Oo][Gg]
+*.[Ll][Oo][Tt]
+*.[Oo][Uu][Tt]
+*.[Rr][Uu][Nn].[Xx][Mm][Ll]
+*.[Ss][Yy][Nn][Cc][Tt][Ee][Xx].[Gg][Zz]
+*.[Tt][Oo][Cc]
+*.[Xx][Dd][Vv]
+[_][Mm][Ii][Nn][Tt][Ee][Dd]*/
+
+# --- JavaScript / TypeScript ---
+[Nn][Pp][Mm]-[Dd][Ee][Bb][Uu][Gg].[Ll][Oo][Gg]*
+[Yy][Aa][Rr][Nn]-[Ee][Rr][Rr][Oo][Rr].[Ll][Oo][Gg]*
+.[Pp][Nn][Pp]-[Ss][Tt][Oo][Rr][Ee]/
+.[Ee][Ss][Ll][Ii][Nn][Tt][_][Cc][Aa][Cc][Hh][Ee]
+.[Tt][Ss][Bb][Uu][Ii][Ll][Dd][Ii][Nn][Ff][Oo]
+*.[Tt][Ss][Bb][Uu][Ii][Ll][Dd][Ii][Nn][Ff][Oo].[Jj][Ss][Oo][Nn]
+.[Pp][Aa][Rr][Cc][Ee][Ll]-[Cc][Aa][Cc][Hh][Ee]/
+.[Vv][Ii][Tt][Ee]-[Cc][Aa][Cc][Hh][Ee]/
+*.[Mm][Ii][Nn].[Jj][Ss]
+*.[Mm][Ii][Nn].[Cc][Ss][Ss]
+
+# --- Ruby ---
+.[Bb][Uu][Nn][Dd][Ll][Ee]/
+.[Yy][Aa][Rr][Dd][Oo][Cc]/
+.[Rr][Ss][Pp][Ee][Cc][_][Ss][Tt][Aa][Tt][Uu][Ss]
+[Vv][Ee][Nn][Dd][Oo][Rr]/[Bb][Uu][Nn][Dd][Ll][Ee]/
+[Gg][Ee][Mm][Ss].[Ll][Oo][Cc][Kk][Ee][Dd]
+*.[Gg][Ee][Mm]
+
+# --- Java / Kotlin / JVM ---
+*.[Cc][Ll][Aa][Ss][Ss]
+*.[Jj][Aa][Rr]
+*.[Ww][Aa][Rr]
+*.[Ee][Aa][Rr]
+*.[Hh][Pp][Rr][Oo][Ff]
+.[Gg][Rr][Aa][Dd][Ll][Ee]/
+.[Gg][Rr][Aa][Dd][Ll][Ee][_][Ww][Rr][Aa][Pp][Pp][Ee][Rr]/
+[Gg][Rr][Aa][Dd][Ll][Ee]-[Ww][Rr][Aa][Pp][Pp][Ee][Rr]/
+.[Mm][Vv][Nn]/
+[Tt][Aa][Rr][Gg][Ee][Tt]/
+[Oo][Uu][Tt]/
+
+# --- Go ---
+[Bb][Ii][Nn]/
+[Pp][Kk][Gg]/
+*.[Tt][Ee][Ss][Tt]
+[Gg][Oo].[Ww][Oo][Rr][Kk].[Ss][Uu][Mm]
+
+# --- Rust ---
+[Tt][Aa][Rr][Gg][Ee][Tt]/
+[Cc][Aa][Rr][Gg][Oo].[Ll][Oo][Cc][Kk]
+**/*.[Rr][Ss].[Bb][Kk]
+
+# --- C / C++ ---
+*.[Oo]
+*.[Aa]
+*.[Ss][Oo]
+*.[Ss][Oo].*
+*.[Dd][Ll][Ll]
+*.[Ee][Xx][Ee]
+*.[Oo][Uu][Tt]
+*.[Dd][Ss][Yy][Mm]/
+.[Cc][Mm][Aa][Kk][Ee]/
+[Cc][Mm][Aa][Kk][Ee][Ff][Ii][Ll][Ee][Ss].[Tt][Xx][Tt]
+[Cc][Mm][Aa][Kk][Ee][Cc][Aa][Cc][Hh][Ee]/
+
+# --- C# / .NET ---
+*.[Ss][Uu][Oo]
+*.[Uu][Ss][Ee][Rr]
+*.[Uu][Ss][Ee][Rr][Pp][Rr][Ee][Ff][Ss]
+.[Vv][Ss]/
+[Bb][Ii][Nn]/
+[Oo][Bb][Jj]/
+[Pp][Uu][Bb][Ll][Ii][Ss][Hh]/
+*.[Nn][Uu][Pp][Kk][Gg]
+*.[Ss][Nn][Uu][Pp][Kk][Gg]
+*.[Pp][Aa][Cc][Kk][Aa][Gg][Ee][Ss]
+.[Nn][Uu][Gg][Ee][Tt]/
+
+# --- PHP ---
+[Vv][Ee][Nn][Dd][Oo][Rr]/
+[Cc][Oo][Mm][Pp][Oo][Ss][Ee][Rr].[Ll][Oo][Cc][Kk]
+.[Pp][Hh][Pp][_][Cc][Ss].[Cc][Aa][Cc][Hh][Ee]
+.[Pp][Hh][Pp][Ss][Tt][Aa][Nn].[Cc][Aa][Cc][Hh][Ee]/
+
+# --- Swift / Xcode ---
+.[Dd][Ss][_][Ss][Tt][Oo][Rr][Ee]
+*.[Xx][Cc][Uu][Ss][Ee][Rr][Ss][Tt][Aa][Tt][Ee]
+*.[Xx][Cc][Ww][Oo][Rr][Kk][Ss][Pp][Aa][Cc][Ee]/[Xx][Cc][Uu][Ss][Ee][Rr][Dd][Aa][Tt][Aa]/
+*.[Xx][Cc][Oo][Dd][Ee][Pp][Rr][Oo][Jj][Ee][Cc][Tt]/[Xx][Cc][Uu][Ss][Ee][Rr][Dd][Aa][Tt][Aa]/
+[Dd][Ee][Rr][Ii][Vv][Ee][Dd][Dd][Aa][Tt][Aa]/
+.[Ss][Pp][Mm]/
+
+# --- Shell / Bash ---
+*.[Ss][Ww][Pp]
+*~
+.[Hh][Ii][Ss][Tt][Oo][Rr][Yy]
+
+# --- R ---
+.[Rr][Hh][Ii][Ss][Tt][Oo][Rr][Yy]
+.[Rr][Dd][Aa][Tt][Aa]
+.[Rr][Pp][Rr][Oo][Jj].[Uu][Ss][Ee][Rr]
+*.[Rr][Dd][Ss]
+*-[Ee][Xx][_][Ff][Ii][Ll][Ee][Ss]/
+*_[Cc][Aa][Cc][Hh][Ee]/
+
+# --- Jupyter Notebooks ---
+.[Ii][Pp][Yy][Nn][Bb]_[Cc][Hh][Ee][Cc][Kk][Pp][Oo][Ii][Nn][Tt][Ss]/
+*-[Cc][Hh][Ee][Cc][Kk][Pp][Oo][Ii][Nn][Tt].[Ii][Pp][Yy][Nn][Bb]
+
+# --- Terraform / Infrastructure ---
+.[Tt][Ee][Rr][Rr][Aa][Ff][Oo][Rr][Mm]/
+*.[Tt][Ff][Ss][Tt][Aa][Tt][Ee]
+*.[Tt][Ff][Ss][Tt][Aa][Tt][Ee].*
+.[Tt][Ee][Rr][Rr][Aa][Ff][Oo][Rr][Mm].[Ll][Oo][Cc][Kk].[Hh][Cc][Ll]
+[Tt][Ee][Rr][Rr][Aa][Ff][Oo][Rr][Mm].[Tt][Ff][Ss][Tt][Aa][Tt][Ee].[Bb][Aa][Cc][Kk][Uu][Pp]
+[Cc][Rr][Aa][Ss][Hh].[Ll][Oo][Gg]
+
+# --- Docker ---
+.[Dd][Oo][Cc][Kk][Ee][Rr][Ee][Nn][Vv]

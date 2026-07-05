@@ -4,12 +4,131 @@
 
 * text=auto eol=lf
 
-*.png binary
-*.jpg binary
-*.jpeg binary
-*.gif binary
-*.ico binary
-*.woff2 binary
+*.[Pp][Nn][Gg] binary
+*.[Jj][Pp][Gg] binary
+*.[Jj][Pp][Ee][Gg] binary
+*.[Gg][Ii][Ff] binary
+*.[Ii][Cc][Oo] binary
+*.[Ww][Oo][Ff][Ff][2] binary
 
-*.lock -diff
-package-lock.json -diff linguist-generated=true
+*.[Ll][Oo][Cc][Kk] -diff
+[Pp][Aa][Cc][Kk][Aa][Gg][Ee]-[Ll][Oo][Cc][Kk].[Jj][Ss][Oo][Nn] -diff linguist-generated=true
+
+*.[Mm][Dd] text eol=lf
+*.[Mm][Dd][Xx] text eol=lf
+*.[Tt][Xx][Tt] text eol=lf
+*.[Cc][Ss][Vv] text eol=lf
+*.[Yy][Mm][Ll] text eol=lf
+*.[Yy][Aa][Mm][Ll] text eol=lf
+*.[Tt][Oo][Mm][Ll] text eol=lf
+*.[Xx][Mm][Ll] text eol=lf
+*.[Hh][Tt][Mm][Ll] text eol=lf
+*.[Cc][Ss][Ss] text eol=lf
+*.[Ss][Cc][Ss][Ss] text eol=lf
+*.[Ss][Vv][Gg] text eol=lf
+
+# LFS: Large binary assets tracked via Git Large File Storage
+*.[Pp][Nn][Gg] filter=lfs diff=lfs merge=lfs -text
+*.[Jj][Pp][Gg] filter=lfs diff=lfs merge=lfs -text
+*.[Jj][Pp][Ee][Gg] filter=lfs diff=lfs merge=lfs -text
+*.[Gg][Ii][Ff] filter=lfs diff=lfs merge=lfs -text
+*.[Ii][Cc][Oo] filter=lfs diff=lfs merge=lfs -text
+*.[Ww][Oo][Ff][Ff] filter=lfs diff=lfs merge=lfs -text
+*.[Ww][Oo][Ff][Ff][2] filter=lfs diff=lfs merge=lfs -text
+*.[Tt][Tt][Ff] filter=lfs diff=lfs merge=lfs -text
+*.[Oo][Tt][Ff] filter=lfs diff=lfs merge=lfs -text
+*.[Ee][Oo][Tt] filter=lfs diff=lfs merge=lfs -text
+*.[Mm][Pp][4] filter=lfs diff=lfs merge=lfs -text
+*.[Mm][Pp][3] filter=lfs diff=lfs merge=lfs -text
+*.[Ww][Ee][Bb][Mm] filter=lfs diff=lfs merge=lfs -text
+*.[Ww][Ee][Bb][Pp] filter=lfs diff=lfs merge=lfs -text
+*.[Pp][Dd][Ff] filter=lfs diff=lfs merge=lfs -text
+*.[Zz][Ii][Pp] filter=lfs diff=lfs merge=lfs -text
+*.[Tt][Aa][Rr] filter=lfs diff=lfs merge=lfs -text
+*.[Gg][Zz] filter=lfs diff=lfs merge=lfs -text
+*.[Pp][Ss][Dd] filter=lfs diff=lfs merge=lfs -text
+*.[Aa][Ii] filter=lfs diff=lfs merge=lfs -text
+*.[Ss][Kk][Ee][Tt][Cc][Hh] filter=lfs diff=lfs merge=lfs -text
+*.[Ff][Ii][Gg] filter=lfs diff=lfs merge=lfs -text
+
+# Programming & scripting languages
+*.[Pp][Yy] text eol=lf
+*.[Pp][Yy][Ii] text eol=lf
+*.[Jj][Ss] text eol=lf
+*.[Cc][Jj][Ss] text eol=lf
+*.[Mm][Jj][Ss] text eol=lf
+*.[Tt][Ss] text eol=lf
+*.[Tt][Ss][Xx] text eol=lf
+*.[Jj][Ss][Xx] text eol=lf
+*.[Rr][Bb] text eol=lf
+*.[Jj][Aa][Vv][Aa] text eol=lf
+*.[Kk][Tt] text eol=lf
+*.[Kk][Tt][Ss] text eol=lf
+*.[Gg][Oo] text eol=lf
+*.[Rr][Ss] text eol=lf
+*.[Cc] text eol=lf
+*.[Cc][Pp][Pp] text eol=lf
+*.[Cc][Cc] text eol=lf
+*.[Hh] text eol=lf
+*.[Hh][Pp][Pp] text eol=lf
+*.[Cc][Ss] text eol=lf
+*.[Ff][Ss] text eol=lf
+*.[Ss][Cc][Aa][Ll][Aa] text eol=lf
+*.[Ss][Ww][Ii][Ff][Tt] text eol=lf
+*.[Mm] text eol=lf
+*.[Mm][Mm] text eol=lf
+*.[Pp][Hh][Pp] text eol=lf
+*.[Pp][Ll] text eol=lf
+*.[Pp][Mm] text eol=lf
+*.[Rr] text eol=lf
+*.[Ll][Uu][Aa] text eol=lf
+*.[Dd][Aa][Rr][Tt] text eol=lf
+*.[Ee][Xx] text eol=lf
+*.[Ee][Xx][Ss] text eol=lf
+*.[Cc][Ll][Jj] text eol=lf
+*.[Cc][Ll][Jj][Ss] text eol=lf
+*.[Cc][Ll][Jj][Cc] text eol=lf
+*.[Hh][Ss] text eol=lf
+*.[Ll][Hh][Ss] text eol=lf
+*.[Ee][Rr][Ll] text eol=lf
+*.[Hh][Rr][Ll] text eol=lf
+*.[Vv][Uu][Ee] text eol=lf
+*.[Ss][Vv][Ee][Ll][Tt][Ee] text eol=lf
+*.[Gg][Rr][Aa][Pp][Hh][Qq][Ll] text eol=lf
+*.[Gg][Qq][Ll] text eol=lf
+*.[Pp][Rr][Oo][Tt][Oo] text eol=lf
+*.[Tt][Hh][Rr][Ii][Ff][Tt] text eol=lf
+*.[Ss][Qq][Ll] text eol=lf
+
+# Shell & scripting
+*.[Ss][Hh] text eol=lf
+*.[Bb][Aa][Ss][Hh] text eol=lf
+*.[Zz][Ss][Hh] text eol=lf
+*.[Ff][Ii][Ss][Hh] text eol=lf
+*.[Pp][Ss][1] text eol=lf
+*.[Pp][Ss][Mm][1] text eol=lf
+*.[Pp][Ss][Dd][1] text eol=lf
+*.[Bb][Aa][Tt] text eol=crlf
+*.[Cc][Mm][Dd] text eol=crlf
+
+# Config & build
+*.[Ee][Nn][Vv] text eol=lf
+*.[Ii][Nn][Ii] text eol=lf
+*.[Cc][Ff][Gg] text eol=lf
+*.[Cc][Oo][Nn][Ff] text eol=lf
+*.[Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] text eol=lf
+*.[Tt][Ff] text eol=lf
+*.[Tt][Ff][Vv][Aa][Rr][Ss] text eol=lf
+*.[Hh][Cc][Ll] text eol=lf
+*.[Dd][Oo][Cc][Kk][Ee][Rr][Ff][Ii][Ll][Ee] text eol=lf
+[Dd][Oo][Cc][Kk][Ee][Rr][Ff][Ii][Ll][Ee] text eol=lf
+*.[Mm][Aa][Kk][Ee][Ff][Ii][Ll][Ee] text eol=lf
+[Mm][Aa][Kk][Ee][Ff][Ii][Ll][Ee] text eol=lf
+*.[Mm][Kk] text eol=lf
+*.[Cc][Mm][Aa][Kk][Ee] text eol=lf
+[Cc][Mm][Aa][Kk][Ee][Ll][Ii][Ss][Tt][Ss].[Tt][Xx][Tt] text eol=lf
+*.[Gg][Rr][Aa][Dd][Ll][Ee] text eol=lf
+*.[Pp][Oo][Mm] text eol=lf
+*.[Nn][Uu][Ss][Pp][Ee][Cc] text eol=lf
+*.[Cc][Ss][Pp][Rr][Oo][Jj] text eol=lf
+*.[Ss][Ll][Nn] text eol=lf

@@ -1,0 +1,43 @@
+# WHAT: Ignore rules for Engineering Studio AI (Python + Node-adjacent tooling).
+# WHY:  Keeps caches, secrets, and local venvs out of the public repo.
+# HOW:  Grouped by category; do not commit .env, __pycache__, or model caches.
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# --- Secrets / environment ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# --- Editors / OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Generated demo artifacts (regenerate per run, not source of truth) ---
+runs/
+*.log
+
+# --- Node (if a web UI is added later) ---
+node_modules/
+.next/
+dist-web/

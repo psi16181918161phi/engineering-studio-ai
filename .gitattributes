@@ -1,0 +1,15 @@
+# WHAT: Normalizes line endings and marks generated/binary paths.
+# WHY:  Prevents CRLF/LF churn across Windows/Linux contributors and CI.
+# HOW:  Text files normalized to LF; binary/lockfiles marked explicitly.
+
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff2 binary
+
+*.lock -diff
+package-lock.json -diff linguist-generated=true

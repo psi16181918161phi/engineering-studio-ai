@@ -6,7 +6,13 @@ HOW: Uses the real docs/task-specs.md (no live network calls needed).
 
 from __future__ import annotations
 
-from engineering_studio.task_specs import get_task_spec, load_task_specs
+import pytest
+
+from engineering_studio.task_specs import (
+    TaskSpecNotFoundError,
+    get_task_spec,
+    load_task_specs,
+)
 
 
 def test_load_task_specs_finds_all_nine_stages() -> None:
@@ -18,3 +24,8 @@ def test_get_task_spec_returns_scope_declaration() -> None:
     spec = get_task_spec("mechanical-specialist-pass")
     assert "SCOPE:" in spec
     assert "artifacts/mechanical/" in spec
+
+
+def test_get_task_spec_raises_for_unknown_slug() -> None:
+    with pytest.raises(TaskSpecNotFoundError, match="no-such-slug"):
+        get_task_spec("no-such-slug")

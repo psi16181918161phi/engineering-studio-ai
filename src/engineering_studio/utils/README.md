@@ -3,7 +3,7 @@
 WHAT: Reserved package for small, reusable helper functions shared
 across agents and modules (e.g. path/artifact-folder helpers, safe
 write-to-temp-then-rename, structured-log setup).
-WHY: Several specialist agents and `../cli.py` need the same small
+WHY: Several specialist agents and `../cli/` need the same small
 utilities (artifact path resolution, log formatting); centralizing them
 here avoids copy-pasted helpers drifting out of sync, per `AGENTS.md`
 §2 (pure functions where practical) and §7 (structured logging).

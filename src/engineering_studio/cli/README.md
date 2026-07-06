@@ -1,16 +1,19 @@
-# `engineering_studio/cli/` — CLI subcommand modules (reserved)
+# `engineering_studio/cli/` — CLI entry point package
 
-WHAT: Reserved package for splitting CLI subcommands into their own
-modules if the single entry point in [`../cli.py`](../cli.py) grows
-beyond one command (e.g. `run`, `status`, `list-artifacts`).
-WHY: `../cli.py` (`python -m engineering_studio.cli "<brief>"`) is the
-canonical entry point for the hackathon demo and stays that way unless
-the CLI surface grows enough to warrant subcommands — see AGENTS.md §1
+WHAT: The `python -m engineering_studio.cli "<brief>"` entry point
+(`main()` in [`__init__.py`](__init__.py), invoked via
+[`__main__.py`](__main__.py)). Previously split across a sibling
+`cli.py` file and this package; merged into one package during the W7
+coverage-closure workstream after the split was found to silently break
+`python -m engineering_studio.cli` (the package shadowed the sibling
+file at the `engineering_studio.cli` import path).
+WHY: One canonical location for the CLI surface — see AGENTS.md §1
 (single-responsibility modules) and §2 (OCP: add, don't rewrite).
-HOW: Currently an empty placeholder (`__init__.py` only) — a valid end
-state if `../cli.py` remains a single-command CLI for the demo. When
-populated, one module per subcommand, dispatched from `../cli.py`'s
-`main()` rather than duplicating argument parsing there.
+HOW: `main()` loads `.env`, calls `agents.orchestrator.run_pipeline`,
+and prints where each artifact landed. If the CLI surface grows beyond
+one command (e.g. `run`, `status`, `list-artifacts`), add sibling
+modules here (one per subcommand) dispatched from `main()`, rather than
+duplicating argument parsing.
 
 ## Ownership
 
@@ -19,4 +22,5 @@ Role 3 (AI Pipeline & Backend Engineering) — see
 
 ## Related
 
-- [`../cli.py`](../cli.py) — current single-command entry point.
+- [`__init__.py`](__init__.py) — `main()` implementation.
+- [`__main__.py`](__main__.py) — `python -m engineering_studio.cli` entry point.

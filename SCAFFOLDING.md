@@ -154,7 +154,7 @@ first; once stable, promote the exact heading structure into
 ### 3.3 Role 3 — AI Pipeline & Backend Engineering
 
 Code lives in `src/engineering_studio/` (already scaffolded: `agents/`,
-`artifacts/`, `cli.py`, `fireworks_client.py`, `task_specs.py`) — see
+`artifacts/`, `cli/`, `fireworks_client.py`, `task_specs.py`) — see
 `README.md` §Repository layout. Root [`backend/`](backend/README.md) is
 reserved for optional additional services only (e.g. a thin REST API
 wrapper if the demo needs one) — do not duplicate `src/` content there.

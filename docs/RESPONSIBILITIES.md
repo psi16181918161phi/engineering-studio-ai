@@ -251,6 +251,38 @@ Possible work includes:
 - Quality reports
 - CI pipeline
 
+#### Current Todos (as of the W1/W2/W3/W7 implementation pass)
+
+The following became relevant to Role 4 once `exceptions/`, `decorators/`,
+`models/`, `utils/palette.py`, and `sdk/` were populated with real code
+(previously empty stub packages) and a strict coverage gate was enabled:
+
+- [x] `pyproject.toml` now enforces `--cov-fail-under=100` via
+  `[tool.pytest.ini_options]` — `.github/workflows/ci.yml`'s existing
+  `pytest tests -v --tb=short` step picks this up automatically (no
+  workflow change needed; `requirements-dev.txt` already installs
+  `pytest-cov`). Verify on the next CI run that the gate actually fires
+  in the hosted runner, not just locally.
+- [ ] Security review of `decorators.requires_env` and
+  `exceptions.ConfigurationError`: confirm no code path logs the
+  *value* of an environment variable (only its name) — `log_call` in
+  `decorators/__init__.py` was written to log only `func.__qualname__`,
+  never argument values, specifically to avoid leaking a product brief
+  or credential into aggregated logs; audit this holds as new call
+  sites adopt the decorator.
+- [ ] When `api/` (W5) and `webapp/` (W6a) are implemented in a future
+  session, run `bandit -r src` (OWASP-relevant static analysis) against
+  the new HTTP-facing code before merge — none of this session's work
+  (`exceptions/`, `decorators/`, `models/`, `utils/palette.py`, `sdk/`)
+  is network- or web-facing, so it was not in scope for that scan yet.
+- [ ] `gui/` (W6b, `textual`) will be a new runtime dependency under a
+  `gui` optional-dependency extra, not yet added to `pyproject.toml` —
+  run `pip-audit`/dependency review on it once W6b lands.
+- [ ] Confirm the `feat/full-sdk-cli-api-webapp-gui` branch's PR (once
+  opened) targets `main` per the team's actual observed practice (not
+  the stale local `develop`), and that branch protection / required
+  checks still apply to it.
+
 ---
 
 ### Role 5 — Frontend, Visualization & Demonstration

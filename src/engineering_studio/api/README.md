@@ -2,7 +2,7 @@
 
 WHAT: Reserved package for the FastAPI (or equivalent ASGI) route
 definitions that expose the multi-agent pipeline over HTTP, if the demo
-needs a web-facing endpoint in addition to the CLI (`../cli.py`).
+needs a web-facing endpoint in addition to the CLI (`../cli/`).
 WHY: Keeps transport-layer code (routes, request/response wiring)
 separate from orchestration logic (`../agents/orchestrator.py`) per
 `AGENTS.md` §1 (single-responsibility modules) — a route handler should

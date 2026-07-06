@@ -64,10 +64,10 @@ python -m engineering_studio.cli "Design a warehouse robot"
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
 | `src/engineering_studio/api/` | Reserved: HTTP/WebSocket route definitions (see folder `README.md`). |
-| `src/engineering_studio/cli/` | Reserved: CLI subcommand modules, distinct from the single-command `cli.py` entry point. |
-| `src/engineering_studio/decorators/` | Reserved: cross-cutting decorators (retry, timing, structured logging). |
-| `src/engineering_studio/exceptions/` | Reserved: shared custom exception hierarchy. |
-| `src/engineering_studio/models/` | Reserved: `pydantic` data models/schemas shared across the pipeline. |
+| `src/engineering_studio/cli/` | CLI entry point package — `main()` (`__init__.py`) invoked via `__main__.py` for `python -m engineering_studio.cli "<brief>"`. Formerly split across a sibling `cli.py` file; merged into this package (see folder `README.md`). |
+| `src/engineering_studio/decorators/` | `log_call`, `validate_args`, `requires_env` cross-cutting decorators — 100% test coverage. |
+| `src/engineering_studio/exceptions/` | `EngineeringStudioError` base + `ConfigurationError`/`ModelUnavailableError`/`ValidationError`/`PipelineExecutionError`/`ArtifactWriteError` — 100% test coverage. |
+| `src/engineering_studio/models/` | `pydantic` data models: `ProductBrief`, `SpecialistArtifact`, `PipelineResult` — 100% test coverage. |
 | `src/engineering_studio/sdk/` | Reserved: in-process programmatic SDK for external consumers. |
 | `src/engineering_studio/utils/` | Reserved: small, reusable, pure helper functions. |
 | `src/engineering_studio/webapp/` | Reserved: web application instance mounting `api/` routes. |

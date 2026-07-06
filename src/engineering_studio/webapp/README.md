@@ -10,7 +10,7 @@ WHY: Keeps "there is a runnable web app" (this package) separate from
 [`frontend/`](../../../frontend/README.md) (client-side UI/dashboard),
 per `AGENTS.md` §1 (single-responsibility modules).
 HOW: Currently an empty placeholder (`__init__.py` only) — a valid end
-state if the demo ships CLI-only or `../cli.py`-driven. When populated,
+state if the demo ships CLI-only or `../cli/`-driven. When populated,
 this module constructs and configures the app instance; `../api/`
 supplies the route handlers it mounts.
 

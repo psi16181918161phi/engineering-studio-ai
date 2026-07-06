@@ -1,6 +1,8 @@
 """WHAT: Package marker for shared, pure helper functions.
-WHY: Centralizes small utilities (path helpers, log setup) reused
-across agents and the CLI, avoiding copy-pasted, drifting helpers.
-HOW: Empty placeholder. See README.md in this folder for scope and
-current status (not yet populated as of the initial scaffolding pass).
+WHY: Centralizes small utilities (path helpers, log setup, palette
+tokens) reused across agents, CLI, API, webapp, and GUI, avoiding
+copy-pasted, drifting helpers.
+HOW: See `engineering_studio.utils.palette` for the Variant A/B color
+token module grounded in `coding_stds/visualization/aesthetic_standards.txt`
+§1.2.
 """

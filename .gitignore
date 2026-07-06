@@ -37,6 +37,11 @@
 [Rr][Uu][Nn][Ss]/
 *.[Ll][Oo][Gg]
 
+# --- run_scripts pipeline outputs (regenerate via run_pipeline.py) ---
+[Rr][Ee][Pp][Oo][Rr][Tt][Ss]/
+[Dd][Ii][Ss][Tt]_[Bb][Ii][Nn]/
+[Bb][Uu][Ii][Ll][Dd]_[Ss][Pp][Ee][Cc]/
+
 # --- Node (if a web UI is added later) ---
 [Nn][Oo][Dd][Ee][_][Mm][Oo][Dd][Uu][Ll][Ee][Ss]/
 .[Nn][Ee][Xx][Tt]/

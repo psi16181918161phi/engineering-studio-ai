@@ -1,18 +1,20 @@
-# `engineering_studio/api/` — HTTP/WebSocket route definitions
+# `engineering_studio/api/` — HTTP/SSE route definitions
 
-WHAT: Reserved package for the FastAPI (or equivalent ASGI) route
-definitions that expose the multi-agent pipeline over HTTP, if the demo
-needs a web-facing endpoint in addition to the CLI (`../cli.py`).
+WHAT: FastAPI route definitions that expose the multi-agent pipeline over
+HTTP as a command-and-control surface, in addition to the CLI (`../cli.py`).
 WHY: Keeps transport-layer code (routes, request/response wiring)
 separate from orchestration logic (`../agents/orchestrator.py`) per
-`AGENTS.md` §1 (single-responsibility modules) — a route handler should
-call into `agents.orchestrator.run_pipeline`, never reimplement it.
-HOW: Currently an empty placeholder (`__init__.py` only) — this is a
-valid end state if the hackathon demo ships CLI-only. When populated,
-one module per resource/route group (e.g. `runs.py`, `health.py`), each
-importable by root [`backend/`](../../../backend/README.md) (optional
-external service wrapper) or [`webapp/`](../webapp/README.md) (this
-package's own app instance).
+`AGENTS.md` §1 (single-responsibility modules) — every route handler here
+calls into `engineering_studio.runs.runs` (itself a thin wrapper around
+`agents.orchestrator.run_pipeline`), never reimplements pipeline logic.
+HOW: One module per resource/route group:
+
+| Module | Routes | Purpose |
+|---|---|---|
+| `runs.py` | `POST /api/runs`, `GET /api/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/stream`, `GET /api/runs/{id}/artifacts/{stage}` | Launch a run, list/inspect runs, stream live stage status (SSE), fetch a stage's artifact text. |
+| `health.py` | `GET /api/health` | Liveness probe. |
+
+Both routers are mounted by [`../webapp/app.py`](../webapp/README.md).
 
 ## Ownership
 

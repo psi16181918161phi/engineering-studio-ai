@@ -1,0 +1,364 @@
+/**
+ * WHAT: Layout and component styles for the command-and-control dashboard.
+ * WHY: `theme.css` only defines the three locked brand colors; this file
+ * is every visual decision built on top of them, kept in one place so the
+ * whole surface "reads as one product" (AGENTS.md SS6 aesthetics rule).
+ * HOW: Loaded after theme.css; references --brand-primary/--brand-ink/
+ * --brand-accent exclusively — no literal hex codes below. State (pending/
+ * running/done/error/skipped) is distinguished by border style, icon
+ * glyph, and text label together, never by color alone (WCAG "use of
+ * color" success criterion, frontend/README.md accessibility note).
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.4;
+}
+
+h1, h2, h3 {
+  margin: 0 0 0.4rem 0;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible,
+textarea:focus-visible,
+.run-history__button:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+/* --- Top bar --- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--brand-accent);
+  flex-wrap: wrap;
+}
+
+.topbar__subtitle {
+  margin: 0;
+  color: var(--brand-accent);
+  font-size: 0.9rem;
+}
+
+.topbar__status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.topbar__status .dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  border: 1px solid var(--brand-primary);
+  background: transparent;
+}
+
+.topbar__status[data-state="ok"] .dot {
+  background: var(--brand-primary);
+}
+
+.topbar__status[data-state="down"] .dot {
+  background: var(--brand-accent);
+  border-style: dashed;
+}
+
+/* --- Layout --- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem 2.5rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  border: 1px solid var(--brand-accent);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+
+/* --- Launch panel --- */
+
+.launch-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.launch-panel label {
+  font-size: 0.85rem;
+  color: var(--brand-accent);
+}
+
+.launch-panel textarea {
+  resize: vertical;
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-accent);
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-family: inherit;
+}
+
+.launch-panel button {
+  background: var(--brand-primary);
+  color: var(--brand-ink);
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+}
+
+.launch-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: var(--brand-accent);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.history-heading {
+  margin-top: 1.5rem;
+}
+
+.run-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.run-history__empty {
+  color: var(--brand-accent);
+  font-size: 0.85rem;
+}
+
+.run-history__button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-accent);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
+.run-history__item.is-active .run-history__button {
+  border-style: solid;
+  border-width: 2px;
+}
+
+.run-history__brief {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.run-history__badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  flex-shrink: 0;
+}
+
+/* --- Pipeline panel --- */
+
+.pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.run-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.run-meta__id {
+  color: var(--brand-accent);
+  font-family: ui-monospace, monospace;
+}
+
+.run-meta__badge {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--brand-primary);
+  font-weight: 600;
+}
+
+.pipeline-empty {
+  color: var(--brand-accent);
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.gate-banner {
+  margin: 0.75rem 0;
+  padding: 0.7rem 0.9rem;
+  border: 2px solid var(--brand-primary);
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.gate-banner[data-state="error"] {
+  border-style: dashed;
+  border-color: var(--brand-accent);
+}
+
+/* --- Stage grid --- */
+
+.stage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 700px) {
+  .stage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stage-card {
+  grid-column: span 1;
+  border: 1px solid var(--brand-accent);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* WHAT: Sequential stages (research, business, challenge, quality_gate)
+   span the full grid width so the four parallel specialists visually
+   read as one concurrent row between them. */
+.stage-card[data-lane="sequential"] {
+  grid-column: 1 / -1;
+}
+
+.stage-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.stage-card__title {
+  font-size: 1rem;
+}
+
+.stage-card__role {
+  font-size: 0.75rem;
+  color: var(--brand-accent);
+}
+
+.stage-card__status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--brand-accent);
+  width: fit-content;
+}
+
+.stage-card__status[data-state="pending"] {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.stage-card__status[data-state="running"] {
+  border-style: solid;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.stage-card__status[data-state="done"] {
+  border-color: var(--brand-primary);
+  border-style: solid;
+  font-weight: 600;
+}
+
+.stage-card__status[data-state="error"] {
+  border-style: double;
+  border-width: 4px;
+  font-weight: 700;
+}
+
+.stage-card__status[data-state="skipped"] {
+  opacity: 0.35;
+  border-style: dotted;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.stage-card__toggle {
+  align-self: flex-start;
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.stage-card__output {
+  margin: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--brand-accent);
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.8rem;
+}

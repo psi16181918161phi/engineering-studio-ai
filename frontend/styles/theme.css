@@ -18,7 +18,7 @@
   --brand-accent: #B76E79;
 }
 
-/* Example usage patterns (delete or adapt once real components exist): */
+/* WHAT: Base page colors, relied on by app.css (command-and-control UI). */
 body {
   background-color: var(--brand-ink);
   color: var(--brand-primary);

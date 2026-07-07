@@ -283,7 +283,123 @@ The following became relevant to Role 4 once `exceptions/`, `decorators/`,
   the stale local `develop`), and that branch protection / required
   checks still apply to it.
 
----
+#### Current Todos (as of the W4 CLI-subcommand / CI-hardening pass, 2026-07-07)
+
+- [x] **`ci.yml` bug fixed**: the `Lint (ruff)` step ran `ruff check .`
+  (whole repo) while `Type check (mypy)` only ran `mypy src` — a scope
+  mismatch. This wasn't a false positive: `run_scripts/` (a real,
+  intentional part of the repo, not excluded anywhere) had 17 genuine
+  ruff violations (12× `F541` extraneous `f`-string prefix, 5× `E402` on
+  a documented, intentional `sys.path` guard pattern in
+  `run_scripts/__main__.py`). Fixed by auto-fixing the `F541`s and adding
+  targeted `# noqa: E402` on the justified late imports — `ruff check .`
+  now passes clean; no scope was narrowed/excluded to hide the problem.
+- [x] **CVE/security scanning baked into CI**: added `bandit -r src -ll`
+  (OWASP-relevant static analysis, per this Role's own earlier todo
+  above) and `pip-audit` (dependency CVE audit) as blocking CI steps,
+  plus a `pip install --upgrade pip setuptools wheel` step before them
+  (the local venv's bundled pip 24.0/setuptools 65.5.0 had 10 known,
+  unrelated CVEs — upgrading first, as GitHub-hosted runners' own
+  base image already does more consistently, avoids a flaky gate on
+  base tooling rather than the project's own declared dependencies,
+  which audited clean). Both tools added to `requirements-dev.txt`.
+- [x] **W4 delivered**: `cli/commands.py` (`cmd_run`/`cmd_status`/
+  `cmd_artifacts`) built on `sdk.EngineeringStudioClient` per the plan;
+  `cli/__init__.py` now dispatches `run`/`status`/`artifacts`
+  subcommands plus an optional `--artifacts-root PATH`, preserving the
+  pre-W4 bare-brief invocation as an implicit `run` for backward
+  compatibility. 100% coverage maintained (67 tests).
+- [x] **Real bug found and fixed while closing W4's coverage gap**:
+  `fireworks_client.ModelUnavailableError` and
+  `exceptions.ModelUnavailableError` were two distinct sibling classes
+  (both inheriting `EngineeringStudioError` directly, but not each
+  other) — so `sdk.EngineeringStudioClient.run()`'s
+  `except ModelUnavailableError: raise` special-case, and the CLI's own
+  `except ModelUnavailableError` branch, could never actually match a
+  *real* pipeline failure (only ones constructed from `exceptions`
+  directly, as in `test_sdk.py`). Every genuine model-unavailable error
+  from `agents.orchestrator.run_pipeline` was silently falling through
+  to the generic `PipelineExecutionError` wrap instead, losing its
+  specific identity. Fixed by re-exporting
+  `exceptions.ModelUnavailableError` from `fireworks_client` (same
+  class, not a new subclass) — import path and class name unchanged for
+  callers, but `isinstance` now actually holds.
+- [ ] **Merge safety check requested by the user**: reviewed
+  `84a818c` (`Merge pull request #1 from Umaima-Mughal/feature/research-role2`)
+  — diff-only touches `research/research-findings.md` (+87/-9 lines),
+  no code/CI/dependency files changed. Confirmed low-risk. No other
+  merged PRs exist on `main` as of this session (`git log --oneline`
+  shows only this one merge commit plus direct commits). Re-check this
+  item once additional PRs from other team members land.
+- [ ] W5 (`api/`, FastAPI), W6a (`webapp/`), W6b (`gui/`, `textual`) are
+  still not implemented — each needs a new runtime dependency added to
+  `pyproject.toml` (`fastapi`+`uvicorn`(+`httpx` for tests) for W5/W6a,
+  `textual` for W6b) and its own `pip-audit`/`bandit` pass before merge,
+  per this Role's standing todos above.
+
+#### Current Todos (as of the W5/W6a/W6b/W8 acceleration pass, 2026-07-07 continuation)
+
+- [x] **W5 delivered**: `api/__init__.py` — `create_app()` FastAPI
+  factory exposing `GET /health`, `POST /pipeline/run`,
+  `GET /pipeline/{id}`, built on `sdk.EngineeringStudioClient`. Job
+  registry is in-memory only (disclosed limitation, not a fabricated
+  durable store). 100% coverage (`tests/test_api.py`).
+- [x] **W6a delivered**: `webapp/__init__.py` — FastAPI + Jinja2
+  server-rendered pages (`GET /`, `POST /run`, `GET /pipeline/{id}`)
+  consuming the W5 app in-process via `httpx.AsyncClient` +
+  `httpx.ASGITransport` (no real socket). 100% coverage
+  (`tests/test_webapp.py`).
+- [x] **W6b delivered**: `gui/__init__.py` — `textual` TUI
+  (`EngineeringStudioApp`), consuming the SDK directly. 100% coverage
+  via `textual`'s headless `Pilot` API, run under `anyio`'s pytest
+  plugin (no `pytest-asyncio` dependency needed) (`tests/test_gui.py`).
+- [x] **W8 (branch/dependency resync)**: confirmed no new commits landed
+  on `main` since the prior session (`git log origin/main..origin/feat/...`
+  empty) — no additional merge-safety review was needed this pass.
+  `pyproject.toml` gained `api`/`webapp`/`gui` optional-dependency
+  groups (`fastapi`, `uvicorn`, `jinja2`, `python-multipart`,
+  `textual`) plus `httpx` under `dev` (for `TestClient`/`AsyncClient` in
+  tests); `requirements.txt`/`requirements-dev.txt` and `ci.yml`'s
+  install step updated to match (`pip install -e ".[api,webapp,gui]"`).
+- [x] **Coverage-tooling finding**: a FastAPI async route's branch body
+  (the `if response.status_code >= 400:` arm in `webapp/__init__.py`)
+  showed as uncovered by `coverage.py` even when a passing test
+  demonstrably exercised it (verified via a standalone reproduction
+  script) — traced to the branch living directly in the coroutine's
+  post-`await` continuation when driven through
+  `starlette.testclient.TestClient`'s background event-loop portal.
+  Fixed by extracting the branch into an ordinary (non-async) helper
+  function (`_render_api_response()`) called as the sole statement after
+  each `await`, rather than adding a blind `# pragma: no cover`. Verified
+  fix: `100%` on `webapp/__init__.py` before and after is a genuine
+  measurement, not a suppressed gap.
+- [x] **Palette deviation, explicitly disclosed**: the 2026-07-06 plan's
+  chosen foreground values (`#E8A0A8`/`#F5E6E8`, inside the standard's
+  recommended range) were superseded this session by the user's own
+  explicit, twice-repeated hex directive — `#FFAEC9`
+  (foreground/background), `#000000` (background/foreground), shared
+  `#B76E79` accent. `#FFAEC9` sits slightly outside
+  `aesthetic_standards.txt` Table R.1's recommended reference range;
+  the deviation is recorded in `utils/palette.py`'s module docstring
+  per the grounding-disclosure rule (explicit repeated user instruction
+  on the project's own scheme supersedes a non-binding recommended
+  range).
+- [x] **Playwright integration — planning only, per explicit user
+  request**: `docs/PLAYWRIGHT_INTEGRATION_PLAN.md` documents two modes
+  (Mode A: live demo recording against a real `uvicorn` process/real
+  model calls; Mode B: CI-safe mocked E2E tests) plus proposed files,
+  `pyproject.toml`/`ci.yml` changes, and a draft demo-prompt set
+  flagged `[NEEDS CONFIRMATION]`. No Playwright package, test file, or
+  CI job was added this session — planning artifact only.
+- [ ] Full lint/mypy --strict/bandit/pip-audit/pytest(100% coverage,
+  86 tests) all pass locally as of this session's end; still pending:
+  opening the actual PR to `main` for this branch (git commit made
+  locally; no push performed — pushing requires explicit user
+  confirmation per this platform's Tier-3 authorization rule).
+- [ ] W7 (closing coverage gaps on already-real modules) — no gaps found
+  this pass; all pre-existing modules remained at 100% throughout.
+
+
 
 ### Role 5 — Frontend, Visualization & Demonstration
 

@@ -1,18 +1,20 @@
-# `engineering_studio/api/` — HTTP/WebSocket route definitions
+# `engineering_studio/api/` — FastAPI HTTP route definitions (W5)
 
-WHAT: Reserved package for the FastAPI (or equivalent ASGI) route
-definitions that expose the multi-agent pipeline over HTTP, if the demo
-needs a web-facing endpoint in addition to the CLI (`../cli/`).
+WHAT: `create_app()` in [`__init__.py`](__init__.py) builds a FastAPI
+app exposing `GET /health`, `POST /pipeline/run`, and
+`GET /pipeline/{id}` over the multi-agent pipeline, for callers other
+than the CLI (`../cli/`) — notably [`../webapp/`](../webapp/README.md)
+(W6a), which consumes this app in-process.
 WHY: Keeps transport-layer code (routes, request/response wiring)
 separate from orchestration logic (`../agents/orchestrator.py`) per
-`AGENTS.md` §1 (single-responsibility modules) — a route handler should
-call into `agents.orchestrator.run_pipeline`, never reimplement it.
-HOW: Currently an empty placeholder (`__init__.py` only) — this is a
-valid end state if the hackathon demo ships CLI-only. When populated,
-one module per resource/route group (e.g. `runs.py`, `health.py`), each
-importable by root [`backend/`](../../../backend/README.md) (optional
-external service wrapper) or [`webapp/`](../webapp/README.md) (this
-package's own app instance).
+`AGENTS.md` §1 (single-responsibility modules) — every route delegates
+to `sdk.EngineeringStudioClient`, never reimplements pipeline logic.
+HOW: `create_app()` is a factory (fresh app + in-memory job registry per
+call) so tests get isolation; the module-level `app` is a ready instance
+for `uvicorn engineering_studio.api:app`. The job registry is in-memory
+only — deliberately not persisted, per the live-data-honesty rule (no
+fabricated "durable job store"). 100% test coverage in
+[`../../../tests/test_api.py`](../../../tests/test_api.py).
 
 ## Ownership
 

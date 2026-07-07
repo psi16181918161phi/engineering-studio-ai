@@ -143,7 +143,7 @@ def _tests_present(test_dir: str) -> bool:
     OUTPUTS: bool.
     """
     if _is_bad_str(test_dir):
-        raise TypeError(f"test_dir must be non-empty str")
+        raise TypeError("test_dir must be non-empty str")
     return Path(test_dir).is_dir()
 
 
@@ -157,7 +157,7 @@ def _source_present(source_dir: str) -> bool:
     OUTPUTS: bool.
     """
     if _is_bad_str(source_dir):
-        raise TypeError(f"source_dir must be non-empty str")
+        raise TypeError("source_dir must be non-empty str")
     return Path(source_dir).is_dir()
 
 

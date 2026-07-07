@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% block title %}Result — Engineering Studio AI{%
+endblock %} {% block content %}
+<div class="accent-border">
+	<h2>Job {{ result.id }}</h2>
+	<p><strong>Brief:</strong> {{ result.product_brief }}</p>
+	<p><strong>Artifacts ({{ result.artifacts|length }}):</strong></p>
+	<ul>
+		{% for artifact in result.artifacts %}
+		<li>
+			{{ artifact.discipline }} &rarr;
+			<code>{{ artifact.output_path }}</code>
+		</li>
+		{% endfor %}
+	</ul>
+</div>
+<p><a href="/">&larr; Run another brief</a></p>
+{% endblock %}

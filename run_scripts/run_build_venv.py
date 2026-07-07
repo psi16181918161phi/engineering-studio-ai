@@ -155,9 +155,9 @@ def create_venv(python_executable: str, venv_dir: str) -> int:  # IMPURE
     OUTPUTS: int — 0 on success, non-zero on failure.
     """
     if _is_bad_str(python_executable):
-        raise TypeError(f"python_executable must be non-empty str")
+        raise TypeError("python_executable must be non-empty str")
     if _is_bad_str(venv_dir):
-        raise TypeError(f"venv_dir must be non-empty str")
+        raise TypeError("venv_dir must be non-empty str")
     print(f"[run_build_venv] creating venv at {venv_dir}")  # IMPURE
     result = subprocess.run(  # IMPURE
         [python_executable, "-m", "venv", venv_dir],
@@ -177,9 +177,9 @@ def install_requirements(venv_dir: str, requirements_file: str) -> int:  # IMPUR
     OUTPUTS: int — 0 on success, non-zero on failure, 0 if skipped.
     """
     if _is_bad_str(venv_dir):
-        raise TypeError(f"venv_dir must be non-empty str")
+        raise TypeError("venv_dir must be non-empty str")
     if _is_bad_str(requirements_file):
-        raise TypeError(f"requirements_file must be non-empty str")
+        raise TypeError("requirements_file must be non-empty str")
     if not _requirements_present(requirements_file):
         print(f"[run_build_venv] no requirements.txt found at {requirements_file} — skipping install.")  # IMPURE
         return 0

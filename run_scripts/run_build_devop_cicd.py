@@ -115,7 +115,7 @@ def _pre_commit_config_present(config_path: str) -> bool:
     OUTPUTS: bool.
     """
     if _is_bad_str(config_path):
-        raise TypeError(f"config_path must be non-empty str")
+        raise TypeError("config_path must be non-empty str")
     return Path(config_path).exists()
 
 
@@ -194,7 +194,7 @@ def run_pre_commit(config_path: str) -> int:  # IMPURE
     if not _check_pre_commit_available():  # IMPURE
         print("[run_build_devop_cicd] pre-commit not available — skipping.")  # IMPURE
         return 0
-    print(f"[run_build_devop_cicd] running pre-commit --all-files")  # IMPURE
+    print("[run_build_devop_cicd] running pre-commit --all-files")  # IMPURE
     result = subprocess.run(  # IMPURE
         ["pre-commit", "run", "--all-files", "--config", config_path],
         cwd=str(_PROJECT_ROOT),

@@ -54,6 +54,11 @@ python -m venv .venv
 pip install -r requirements.txt
 Copy-Item .env.example .env   # then fill in FIREWORKS_API_KEY
 python -m engineering_studio.cli "Design a warehouse robot"
+# or, equivalently, the explicit `run` subcommand plus a custom artifacts root:
+python -m engineering_studio.cli run "Design a warehouse robot" --artifacts-root runs/demo/artifacts
+# inspect a prior run without re-invoking the pipeline:
+python -m engineering_studio.cli status --artifacts-root runs/demo/artifacts
+python -m engineering_studio.cli artifacts --artifacts-root runs/demo/artifacts
 ```
 
 ## Repository layout
@@ -64,7 +69,7 @@ python -m engineering_studio.cli "Design a warehouse robot"
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
 | `src/engineering_studio/api/` | Reserved: HTTP/WebSocket route definitions (see folder `README.md`). |
-| `src/engineering_studio/cli/` | CLI entry point package — `main()` (`__init__.py`) invoked via `__main__.py` for `python -m engineering_studio.cli "<brief>"`. Formerly split across a sibling `cli.py` file; merged into this package (see folder `README.md`). |
+| `src/engineering_studio/cli/` | CLI entry point package — `main()` (`__init__.py`) invoked via `__main__.py`. Subcommands: `run "<brief>" [--artifacts-root PATH]` (default when no subcommand is given, for backward compatibility), `status [--artifacts-root PATH]` (lists discipline folders present), `artifacts [--artifacts-root PATH]` (lists artifact files) — implementations in `commands.py`. |
 | `src/engineering_studio/decorators/` | `log_call`, `validate_args`, `requires_env` cross-cutting decorators — 100% test coverage. |
 | `src/engineering_studio/exceptions/` | `EngineeringStudioError` base + `ConfigurationError`/`ModelUnavailableError`/`ValidationError`/`PipelineExecutionError`/`ArtifactWriteError` — 100% test coverage. |
 | `src/engineering_studio/models/` | `pydantic` data models: `ProductBrief`, `SpecialistArtifact`, `PipelineResult` — 100% test coverage. |

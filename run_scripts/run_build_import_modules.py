@@ -189,7 +189,7 @@ def attempt_import(module_name: str, project_root: Path) -> ImportResult:  # IMP
     OUTPUTS: ImportResult.
     """
     if _is_bad_str(module_name):
-        raise TypeError(f"module_name must be non-empty str")
+        raise TypeError("module_name must be non-empty str")
     root_str = str(project_root)
     if root_str not in sys.path:
         sys.path.insert(0, root_str)  # IMPURE
@@ -236,7 +236,7 @@ def main() -> int:  # IMPURE
     print(f"[run_build_import_modules] source dir:    {_SOURCE_DIR}")  # IMPURE
 
     if not Path(_SOURCE_DIR).is_dir():
-        print(f"[run_build_import_modules] source dir absent — skipping.")  # IMPURE
+        print("[run_build_import_modules] source dir absent — skipping.")  # IMPURE
         return 0
 
     modules: list[str] = (

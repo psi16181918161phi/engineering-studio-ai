@@ -166,7 +166,7 @@ def generate_html_report(
     cmd = [
         python_exe, "-m", "coverage", "html",
         f"--data-file={coverage_data}",
-        f"-d", html_dir,
+        "-d", html_dir,
     ]
     print(f"[run_build_pipeline_reports] generating HTML report → {html_dir}")  # IMPURE
     result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
@@ -195,7 +195,7 @@ def generate_json_report(
     cmd = [
         python_exe, "-m", "coverage", "json",
         f"--data-file={coverage_data}",
-        f"-o", json_out,
+        "-o", json_out,
     ]
     print(f"[run_build_pipeline_reports] generating JSON report → {json_out}")  # IMPURE
     result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE

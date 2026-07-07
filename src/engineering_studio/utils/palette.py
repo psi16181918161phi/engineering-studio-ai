@@ -1,12 +1,26 @@
 """WHAT: Variant A ("Plot/Data Surface") and Variant B ("Interface Surface")
 color palette tokens, grounded in
-`coding_stds/visualization/aesthetic_standards.txt` §1.2.
+`coding_stds/visualization/aesthetic_standards.txt` §1.2, as overridden by
+explicit user-directed hex values (2026-07-07 session instruction).
 WHY: Every plot/chart (Variant A) and every GUI window, TUI surface, web
 interface background, or applet host chrome (Variant B) in this project
 must draw its colors from exactly one named constant here — never a
 hard-coded hex literal at the call site — so the palette can be audited
 and changed in one place, and so §1.2.4's "never mix A and B on one
 surface layer" rule is enforced by which constant a module imports.
+
+DEVIATION DISCLOSURE (grounding invariant, disclosed not silent): the
+2026-07-06 plan chose foreground values `#E8A0A8`/`#F5E6E8`, which sit
+inside `aesthetic_standards.txt` Table R.1's recommended reference range
+(`#E8A0A8`-`#F2B5BC`). On 2026-07-07 the user explicitly, and repeatedly,
+directed this exact two-color-plus-accent scheme instead: `#FFAEC9`
+(foreground or background), `#000000` (background or foreground), and a
+shared `#B76E79` rose-gold accent. `#FFAEC9` falls slightly outside that
+recommended range. Per the trust-tier rules, an explicit repeated user
+instruction on the project's own color scheme supersedes a non-binding
+"recommended reference range" in a shared standards corpus — this module
+now implements the user's literal values, with this note as the disclosed
+deviation record.
 HOW: Two flat `Palette` NamedTuples (`PALETTE_A`, `PALETTE_B`) built from
 individually-named module-level constants (so call sites can import the
 single token they need, e.g. `PALETTE_A_ACCENT`), plus a
@@ -22,22 +36,23 @@ from typing import NamedTuple
 
 # --- Variant A: Plot/Data Surface Palette -----------------------------------
 # Applies to all plots/charts regardless of host surface (aesthetic_standards
-# .txt §1.2, Table R.1). Near-black background, rose pink foreground, rose
-# gold accent.
-PALETTE_A_BACKGROUND = "#0D0D0D"
-PALETTE_A_FOREGROUND_PRIMARY = "#E8A0A8"
+# .txt §1.2, Table R.1, as overridden 2026-07-07 — see module docstring).
+# Black background, rose pink foreground, rose gold accent.
+PALETTE_A_BACKGROUND = "#000000"
+PALETTE_A_FOREGROUND_PRIMARY = "#FFAEC9"
 PALETTE_A_ACCENT = "#B76E79"
 
 # --- Variant B: Interface Surface Palette -----------------------------------
 # Applies to all GUI windows, TUI surfaces, web interface backgrounds,
 # applet host chrome, toolbars, menus, dialogs, and panels (aesthetic_
-# standards.txt §1.2). Deep dark background, near-white rose text, rose gold
-# accent (shared value with Variant A, separately named per §1.2.3.3), rose
-# pink highlight, desaturated rose-grey muted tone.
-PALETTE_B_BACKGROUND = "#110E0F"
-PALETTE_B_FOREGROUND_PRIMARY = "#F5E6E8"
+# standards.txt §1.2, as overridden 2026-07-07 — see module docstring).
+# Black background, rose pink text, rose gold accent (shared value with
+# Variant A, separately named per §1.2.3.3), lighter rose-pink highlight,
+# desaturated rose-grey muted tone.
+PALETTE_B_BACKGROUND = "#000000"
+PALETTE_B_FOREGROUND_PRIMARY = "#FFAEC9"
 PALETTE_B_ACCENT = "#B76E79"
-PALETTE_B_HIGHLIGHT = "#C47A82"
+PALETTE_B_HIGHLIGHT = "#FFC7DA"
 PALETTE_B_MUTED = "#5A4A4C"
 
 # --- Semantic status colors --------------------------------------------------

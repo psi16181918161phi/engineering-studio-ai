@@ -16,21 +16,9 @@ import os
 
 import requests
 
-from engineering_studio.exceptions import EngineeringStudioError
+from engineering_studio.exceptions import ModelUnavailableError
 
-
-class ModelUnavailableError(EngineeringStudioError):
-    """Raised when a model backend cannot be reached or returns an error.
-
-    WHAT: Signals a hard failure of an inference call.
-    WHY: Callers must surface this explicitly rather than silently
-    substituting a fabricated result (grounding/live-data-honesty rule).
-    Inherits from `engineering_studio.exceptions.EngineeringStudioError` so
-    SDK/CLI/API callers can catch every domain error with one `except`
-    clause; the class name/import path here is unchanged for compatibility.
-    HOW: Wraps the underlying `requests` exception or HTTP status detail
-    in `args[0]`; carries no partial/garbage response payload.
-    """
+__all__ = ["ModelClient", "ModelUnavailableError"]
 
 
 class ModelClient:

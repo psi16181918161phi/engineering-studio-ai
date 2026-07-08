@@ -61,6 +61,21 @@ python -m engineering_studio.cli status --artifacts-root runs/demo/artifacts
 python -m engineering_studio.cli artifacts --artifacts-root runs/demo/artifacts
 ```
 
+### Command & Control web dashboard
+
+The same pipeline is also reachable through a browser-based command-and-control
+center — one process, one URL, live per-agent status:
+
+```powershell
+uvicorn engineering_studio.webapp:app --reload --app-dir src
+```
+
+Open <http://127.0.0.1:8000/>, type a product brief, and watch each agent
+(Research, Mechanical, Electrical, Firmware, Simulation, Cost/Business/Legal,
+Challenge Division, Quality Gate) move through pending → running → done in
+real time, with each stage's artifact viewable inline. See
+[frontend/README.md](frontend/README.md) for details.
+
 ## Repository layout
 
 | Path | Purpose |
@@ -68,14 +83,16 @@ python -m engineering_studio.cli artifacts --artifacts-root runs/demo/artifacts
 | `src/engineering_studio/agents/` | One module per specialist (orchestrator, research, mechanical, electrical, firmware, simulation, business, challenge, quality_gate). |
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
-| `src/engineering_studio/api/` | Reserved: HTTP/WebSocket route definitions (see folder `README.md`). |
+| `src/engineering_studio/api/` | HTTP/SSE route definitions for the command-and-control dashboard (`runs.py`, `health.py`) — see folder `README.md`. |
+| `src/engineering_studio/runs.py` | In-memory run registry + pub/sub that tracks live per-stage status for the web API; dispatches `agents.orchestrator.run_pipeline` on a background thread per run. |
 | `src/engineering_studio/cli/` | CLI entry point package — `main()` (`__init__.py`) invoked via `__main__.py`. Subcommands: `run "<brief>" [--artifacts-root PATH]` (default when no subcommand is given, for backward compatibility), `status [--artifacts-root PATH]` (lists discipline folders present), `artifacts [--artifacts-root PATH]` (lists artifact files) — implementations in `commands.py`. |
 | `src/engineering_studio/decorators/` | `log_call`, `validate_args`, `requires_env` cross-cutting decorators — 100% test coverage. |
 | `src/engineering_studio/exceptions/` | `EngineeringStudioError` base + `ConfigurationError`/`ModelUnavailableError`/`ValidationError`/`PipelineExecutionError`/`ArtifactWriteError` — 100% test coverage. |
 | `src/engineering_studio/models/` | `pydantic` data models: `ProductBrief`, `SpecialistArtifact`, `PipelineResult` — 100% test coverage. |
-| `src/engineering_studio/sdk/` | Reserved: in-process programmatic SDK for external consumers. |
-| `src/engineering_studio/utils/` | Reserved: small, reusable, pure helper functions. |
-| `src/engineering_studio/webapp/` | Reserved: web application instance mounting `api/` routes. |
+| `src/engineering_studio/sdk/` | `EngineeringStudioClient` — in-process programmatic SDK wrapping `run_pipeline`, typed with `models/`, raising `exceptions/`; consumed by `cli/` and `gui/` (NOT by `runs.py`, which calls the orchestrator directly for its background-thread/event-callback needs). |
+| `src/engineering_studio/utils/` | `palette.py` — shared Variant A/B color-token constants for every visual surface (`gui/`, and historically `webapp/`'s retired Jinja2 templates). |
+| `src/engineering_studio/gui/` | `textual` terminal UI (`EngineeringStudioApp`) — an alternate, SDK-backed demo surface to the browser dashboard, for terminal-only environments. |
+| `src/engineering_studio/webapp/` | The FastAPI app instance (`app.py`) mounting `api/` routes and serving `frontend/` as static files. |
 | `docs/task-specs.md` | The filled Task Specification blocks each agent call uses. |
 | `docs/RESPONSIBILITIES.md` | Team roles, responsibilities, and Definition of Done. |
 | `docs/TEAM_QA.md` | Per-role Q&A, mandatory color palette, testing bar, SecDevOps hygiene, phased timeline. |

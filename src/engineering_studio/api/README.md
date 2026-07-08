@@ -1,20 +1,20 @@
-# `engineering_studio/api/` — FastAPI HTTP route definitions (W5)
+# `engineering_studio/api/` — HTTP/SSE route definitions
 
-WHAT: `create_app()` in [`__init__.py`](__init__.py) builds a FastAPI
-app exposing `GET /health`, `POST /pipeline/run`, and
-`GET /pipeline/{id}` over the multi-agent pipeline, for callers other
-than the CLI (`../cli/`) — notably [`../webapp/`](../webapp/README.md)
-(W6a), which consumes this app in-process.
+WHAT: FastAPI route definitions that expose the multi-agent pipeline over
+HTTP as a command-and-control surface, in addition to the CLI (`../cli.py`).
 WHY: Keeps transport-layer code (routes, request/response wiring)
 separate from orchestration logic (`../agents/orchestrator.py`) per
-`AGENTS.md` §1 (single-responsibility modules) — every route delegates
-to `sdk.EngineeringStudioClient`, never reimplements pipeline logic.
-HOW: `create_app()` is a factory (fresh app + in-memory job registry per
-call) so tests get isolation; the module-level `app` is a ready instance
-for `uvicorn engineering_studio.api:app`. The job registry is in-memory
-only — deliberately not persisted, per the live-data-honesty rule (no
-fabricated "durable job store"). 100% test coverage in
-[`../../../tests/test_api.py`](../../../tests/test_api.py).
+`AGENTS.md` §1 (single-responsibility modules) — every route handler here
+calls into `engineering_studio.runs.runs` (itself a thin wrapper around
+`agents.orchestrator.run_pipeline`), never reimplements pipeline logic.
+HOW: One module per resource/route group:
+
+| Module | Routes | Purpose |
+|---|---|---|
+| `runs.py` | `POST /api/runs`, `GET /api/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/stream`, `GET /api/runs/{id}/artifacts/{stage}` | Launch a run, list/inspect runs, stream live stage status (SSE), fetch a stage's artifact text. |
+| `health.py` | `GET /api/health` | Liveness probe. |
+
+Both routers are mounted by [`../webapp/app.py`](../webapp/README.md).
 
 ## Ownership
 

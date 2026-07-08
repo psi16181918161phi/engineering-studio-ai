@@ -1,22 +1,23 @@
-# `engineering_studio/webapp/` — FastAPI + Jinja2 server-rendered app (W6a)
+# `engineering_studio/webapp/` — web application instance
 
-WHAT: `create_app()` in [`__init__.py`](__init__.py) builds a FastAPI app
-with two human-facing routes — `GET /` (a brief-submission form) and
-`POST /run` (submits it) — plus `GET /pipeline/{id}` to re-view a prior
-result. Every route consumes [`../api/`](../api/README.md)'s app
-in-process (via an `httpx.AsyncClient` over `httpx.ASGITransport` — no
-real socket, no separate server process); this package never calls the
-SDK or orchestrator directly.
+WHAT: The ASGI application instance (`app.py`, a FastAPI `app = FastAPI()`)
+that mounts the routes defined in [`../api/`](../api/README.md) and serves
+[`frontend/`](../../../frontend/README.md) as static files at `/`.
 WHY: Keeps "there is a runnable web app" (this package) separate from
 "here are the routes it serves" (`../api/`) and from Role 5's
 [`frontend/`](../../../frontend/README.md) (client-side UI/dashboard),
 per `AGENTS.md` §1 (single-responsibility modules).
-HOW: Server-rendered [`templates/`](templates/) (Jinja2, no separate JS
-build toolchain per PREPLAN Q4), styled exclusively from
-`utils.palette.PALETTE_B` (Variant B interface-surface palette) passed
-into the template context — no template hard-codes a color literal.
-100% test coverage in
-[`../../../tests/test_webapp.py`](../../../tests/test_webapp.py).
+HOW: `app.py` constructs the FastAPI instance, adds permissive CORS
+middleware (safe default for a hackathon demo; tighten `allow_origins`
+before any non-demo deployment), includes the `../api/` routers, then
+mounts `frontend/` as static files — in that order, so `/api/*` always
+resolves to a route handler before the catch-all static mount is
+considered. `__init__.py` re-exports `app` so
+`uvicorn engineering_studio.webapp:app` finds it directly. Run it with:
+
+```powershell
+uvicorn engineering_studio.webapp:app --reload --app-dir src
+```
 
 ## Ownership
 

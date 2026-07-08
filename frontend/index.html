@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engineering Studio AI — Command &amp; Control</title>
+  <link rel="stylesheet" href="styles/theme.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__title">
+      <h1>Engineering Studio AI</h1>
+      <p class="topbar__subtitle">Command &amp; Control — Multi-Agent Engineering Pipeline</p>
+    </div>
+    <div class="topbar__status" id="server-status" data-state="unknown">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="server-status-text">Checking backend…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel launch-panel" aria-labelledby="launch-heading">
+      <h2 id="launch-heading">Launch a Run</h2>
+      <form id="launch-form">
+        <label for="brief-input">Product brief</label>
+        <textarea
+          id="brief-input"
+          name="product_brief"
+          rows="3"
+          maxlength="2000"
+          placeholder="e.g. Design a warehouse robot"
+          required
+        ></textarea>
+        <button type="submit" id="launch-button">Launch Run</button>
+        <p id="launch-error" class="error-text" role="alert" hidden></p>
+      </form>
+
+      <h2 class="history-heading">Run History</h2>
+      <ul id="run-history" class="run-history" aria-live="polite">
+        <li class="run-history__empty">No runs yet.</li>
+      </ul>
+    </section>
+
+    <section class="panel pipeline-panel" aria-labelledby="pipeline-heading">
+      <div class="pipeline-header">
+        <h2 id="pipeline-heading">Pipeline</h2>
+        <div id="run-meta" class="run-meta" hidden>
+          <span class="run-meta__id" id="run-meta-id"></span>
+          <span class="run-meta__badge" id="run-meta-status" data-state="pending">Idle</span>
+        </div>
+      </div>
+
+      <div id="gate-banner" class="gate-banner" hidden></div>
+
+      <div id="pipeline-empty" class="pipeline-empty">
+        Launch a run to see the agent team go to work.
+      </div>
+
+      <div id="stage-grid" class="stage-grid" hidden></div>
+    </section>
+  </main>
+
+  <template id="stage-card-template">
+    <article class="stage-card" data-stage="">
+      <header class="stage-card__header">
+        <h3 class="stage-card__title"></h3>
+        <span class="stage-card__role"></span>
+      </header>
+      <div class="stage-card__status" data-state="pending">
+        <span class="stage-card__status-icon" aria-hidden="true">○</span>
+        <span class="stage-card__status-text">Idle</span>
+      </div>
+      <button type="button" class="stage-card__toggle" hidden>View output</button>
+      <pre class="stage-card__output" hidden></pre>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

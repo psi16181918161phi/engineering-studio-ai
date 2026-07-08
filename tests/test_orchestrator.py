@@ -59,8 +59,113 @@ def test_run_pipeline_dispatches_research_specialists_and_business(
         "firmware",
         "simulation",
         "business",
+        "challenge",
+        "quality_gate",
     }
     for discipline, path in outputs.items():
         assert path.exists(), f"missing artifact for {discipline}"
     business_text = outputs["business"].read_text(encoding="utf-8")
     assert business_text.startswith("business:")
+    assert outputs["challenge"].read_text(encoding="utf-8").startswith("challenge:")
+    assert outputs["quality_gate"].read_text(encoding="utf-8").startswith("quality_gate:")
+
+
+def test_run_pipeline_reports_lifecycle_events_in_stage_order(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FakeAgent)
+
+    events: list[tuple[str, str, str | None]] = []
+    orchestrator.run_pipeline(
+        "build a small survey drone", tmp_path, on_event=lambda *args: events.append(args)
+    )
+
+    seen_stages = {stage for stage, _status, _detail in events}
+    assert seen_stages == set(orchestrator.STAGE_ORDER)
+    # WHAT: Every stage must report "running" then "done" (never skip
+    # straight to "done", and never report "error" on the happy path).
+    statuses_by_stage: dict[str, list[str]] = {}
+    for stage, status, _detail in events:
+        statuses_by_stage.setdefault(stage, []).append(status)
+    for stage, statuses in statuses_by_stage.items():
+        assert statuses == ["running", "done"], f"{stage} had unexpected transitions: {statuses}"
+
+
+def test_run_pipeline_emits_error_event_and_reraises_on_specialist_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+
+    class _FailingAgent(_FakeAgent):
+        def run(self, system_prompt: str, user_prompt: str) -> Path:
+            if self.discipline == "electrical":
+                raise RuntimeError("simulated model failure")
+            return super().run(system_prompt, user_prompt)
+
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FailingAgent)
+
+    events: list[tuple[str, str, str | None]] = []
+    with pytest.raises(RuntimeError, match="simulated model failure"):
+        orchestrator.run_pipeline(
+            "build a small survey drone", tmp_path, on_event=lambda *args: events.append(args)
+        )
+
+    error_events = [e for e in events if e[1] == "error" and e[0] == "electrical"]
+    assert len(error_events) == 1
+    assert "simulated model failure" in (error_events[0][2] or "")
+
+
+def test_run_pipeline_marks_all_downstream_stages_error_when_specialist_client_unavailable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.delenv("FIREWORKS_MODEL_SPECIALIST", raising=False)
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FakeAgent)
+
+    events: list[tuple[str, str, str | None]] = []
+    with pytest.raises(ValueError, match="FIREWORKS_MODEL_SPECIALIST"):
+        orchestrator.run_pipeline(
+            "build a small survey drone", tmp_path, on_event=lambda *args: events.append(args)
+        )
+
+    errored_stages = {stage for stage, status, _detail in events if status == "error"}
+    assert errored_stages == {
+        "mechanical",
+        "electrical",
+        "firmware",
+        "simulation",
+        "business",
+        "challenge",
+        "quality_gate",
+    }
+
+
+def test_emit_swallows_observer_exceptions(tmp_path: Path) -> None:
+    def _bad_observer(stage: str, status: str, detail: str | None) -> None:
+        raise RuntimeError("observer bug must never break the pipeline")
+
+    # WHAT: Must not raise even though the observer itself always raises.
+    orchestrator._emit(_bad_observer, "research", "running", None)
+
+
+def test_run_pipeline_emits_research_error_and_reraises_when_research_client_unavailable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.delenv("FIREWORKS_MODEL_RESEARCH", raising=False)
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FakeAgent)
+
+    events: list[tuple[str, str, str | None]] = []
+    with pytest.raises(ValueError, match="FIREWORKS_MODEL_RESEARCH"):
+        orchestrator.run_pipeline(
+            "build a small survey drone", tmp_path, on_event=lambda *args: events.append(args)
+        )
+
+    assert events == [("research", "error", events[0][2])]
+    assert "FIREWORKS_MODEL_RESEARCH" in (events[0][2] or "")

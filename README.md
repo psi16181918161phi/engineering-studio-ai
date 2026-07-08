@@ -106,6 +106,9 @@ real time, with each stage's artifact viewable inline. See
 | `tests/` | Unit tests with a mocked Fireworks client (no live network calls in CI). |
 | `AGENTS.md` | Condensed standards reference (see above). |
 | `SCAFFOLDING.md` | **Start here** — full per-role scaffolding guide and ownership-zone table to avoid merge conflicts. |
+| `CONTRIBUTION.md` | Onboarding, branch naming, commit style, PR process, local quality gate. |
+| `SECURITY.md` | Vulnerability reporting, scope, secrets handling. |
+| `COMMUNITY.md` | Communication norms and the merge-conflict resolution playbook. |
 
 ## Status
 

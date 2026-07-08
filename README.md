@@ -56,6 +56,21 @@ Copy-Item .env.example .env   # then fill in FIREWORKS_API_KEY
 python -m engineering_studio.cli "Design a warehouse robot"
 ```
 
+### Command & Control web dashboard
+
+The same pipeline is also reachable through a browser-based command-and-control
+center — one process, one URL, live per-agent status:
+
+```powershell
+uvicorn engineering_studio.webapp:app --reload --app-dir src
+```
+
+Open <http://127.0.0.1:8000/>, type a product brief, and watch each agent
+(Research, Mechanical, Electrical, Firmware, Simulation, Cost/Business/Legal,
+Challenge Division, Quality Gate) move through pending → running → done in
+real time, with each stage's artifact viewable inline. See
+[frontend/README.md](frontend/README.md) for details.
+
 ## Repository layout
 
 | Path | Purpose |
@@ -63,14 +78,15 @@ python -m engineering_studio.cli "Design a warehouse robot"
 | `src/engineering_studio/agents/` | One module per specialist (orchestrator, research, mechanical, electrical, firmware, simulation, business, challenge, quality_gate). |
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
-| `src/engineering_studio/api/` | Reserved: HTTP/WebSocket route definitions (see folder `README.md`). |
+| `src/engineering_studio/api/` | HTTP/SSE route definitions for the command-and-control dashboard (`runs.py`, `health.py`) — see folder `README.md`. |
+| `src/engineering_studio/runs.py` | In-memory run registry + pub/sub that tracks live per-stage status for the web API. |
 | `src/engineering_studio/cli/` | Reserved: CLI subcommand modules, distinct from the single-command `cli.py` entry point. |
 | `src/engineering_studio/decorators/` | Reserved: cross-cutting decorators (retry, timing, structured logging). |
 | `src/engineering_studio/exceptions/` | Reserved: shared custom exception hierarchy. |
 | `src/engineering_studio/models/` | Reserved: `pydantic` data models/schemas shared across the pipeline. |
 | `src/engineering_studio/sdk/` | Reserved: in-process programmatic SDK for external consumers. |
 | `src/engineering_studio/utils/` | Reserved: small, reusable, pure helper functions. |
-| `src/engineering_studio/webapp/` | Reserved: web application instance mounting `api/` routes. |
+| `src/engineering_studio/webapp/` | The FastAPI app instance (`app.py`) mounting `api/` routes and serving `frontend/` as static files. |
 | `docs/task-specs.md` | The filled Task Specification blocks each agent call uses. |
 | `docs/RESPONSIBILITIES.md` | Team roles, responsibilities, and Definition of Done. |
 | `docs/TEAM_QA.md` | Per-role Q&A, mandatory color palette, testing bar, SecDevOps hygiene, phased timeline. |

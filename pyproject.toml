@@ -3,7 +3,7 @@ name = "engineering-studio-ai"
 version = "0.1.0"
 description = "Multi-agent Engineering Studio AI demo for the AMD LabLabAI Hackathon (Act II)"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 license = { text = "MIT" }
 dependencies = [
     "requests>=2.31",
@@ -36,7 +36,7 @@ where = ["src"]
 line-length = 100
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 strict = true
 
 [tool.pytest.ini_options]

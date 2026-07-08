@@ -134,7 +134,7 @@ regression never blocks the fast unit-test gate:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14.4"
       - run: pip install -e ".[e2e]"
       - run: playwright install --with-deps chromium
       - run: pytest tests/e2e -v --tb=short
@@ -144,14 +144,12 @@ regression never blocks the fast unit-test gate:
 slower browser-based job only runs if that passes, per standard CI
 layering (fast gates first, slow gates second).
 
-**[NEEDS CONFIRMATION]** — an earlier WIP edit to this section proposed
-`python-version: "3.14.6"` instead of `"3.11"`. `pyproject.toml` declares
-`requires-python = ">=3.11"` and every other CI job in this repo pins
-`"3.11"`, so `"3.11"` is what's written above for consistency; flagging
-this explicitly since the discrepancy was never confirmed with the user
-and this repo's Python-version policy (per user memory) is "3.14.4 x64
-for new venvs" specifically, not 3.14.6 — a future session should
-confirm the intended CI Python version before implementing this job.
+**Resolved (2026-07-08):** the project's `requires-python`, `ci.yml`'s
+existing `test` job, and the local dev venv were all upgraded to Python
+3.14.4 this session (user confirmed, after verifying 3.14.4 — not the
+originally proposed 3.14.6 — is what's actually installed locally). The
+future e2e job above is now consistent with the rest of the project;
+no open version discrepancy remains.
 
 ## 7. Demo-Prompt Set (draft — for user confirmation before recording)
 
@@ -175,13 +173,11 @@ recorded mid-edit, not through an explicit turn in this conversation.
 2. "Develop a simple web application that allows users to track their daily habits and visualize their progress over time."
 3. "Write a command-line tool that analyzes text files and generates a summary report of word frequency and sentiment."
 
-**[NEEDS CONFIRMATION]** — the user should give one final explicit
-confirmation of the software-first list above (or replace it) before
-any Mode A recording session, since each prompt will trigger a real
-Fireworks AI model call once Mode A is actually executed. A prior WIP
-edit to this file recorded a self-confirmation ("I, as user, confirm
-this is sufficient for demo purposes") — carried forward here as
-context, not as a substitute for that final go-ahead.
+**Confirmed (2026-07-08)** — the user gave explicit final confirmation
+of the software-first list above during this session. It is now the
+agreed prompt set for any future Mode A recording session; each prompt
+will trigger a real Fireworks AI model call once Mode A is actually
+executed.
 
 ## 8. Aesthetic Compliance for the Recording
 
@@ -249,3 +245,4 @@ plan:
 | :--- | :--- | :--- | :--- |
 | 2026.1.0.0 | 2026-07-07 | Hadrian Hu | Initial Playwright integration plan (planning only, per explicit user request). |
 | 2026.1.1.0 | 2026-07-07 | Hadrian Hu | Updated all architecture references from the retired synchronous Jinja2 webapp to the adopted async SSE + JS-frontend implementation following the same-day reconciliation merge; cleaned up malformed tables from a WIP edit; flagged the CI Python-version and demo-prompt confirmations as still open; added Section 10 on coordinating with in-flight teammate agent work. |
+| 2026.1.2.0 | 2026-07-08 | Hadrian Hu | User confirmed the software-first demo-prompt set as final; resolved the CI Python-version question by confirming project-wide upgrade to 3.14.4 (verified installed locally; user's originally-requested 3.14.6 is not available on this machine). |

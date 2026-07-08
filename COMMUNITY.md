@@ -63,6 +63,7 @@ disagreement or architecture-decision deadlock.
    git log --oneline HEAD..origin/main
    git diff HEAD..origin/main --stat
    ```
+
    Don't wait until you're ready to open your own PR to discover what
    changed underneath you.
 
@@ -180,6 +181,6 @@ cross-team disagreement unilaterally in a merge commit.
 
 ## Changelog
 
-| Version | Date       | Author     | Description                                        |
-| :------ | :--------- | :--------- | :--------------------------------------------------- |
-| 0.1.0   | 2026-07-07 | Hadrian Hu | Initial community guide, incl. merge-conflict playbook grounded in the SSE-vs-Jinja2 web-surface incident. |
+| Version    | Date       | Author     | Description                                                                                                |
+| :--------- | :--------- | :--------- | :--------------------------------------------------------------------------------------------------------- |
+| 2026.0.1.0 | 2026-07-07 | Hadrian Hu | Initial community guide, incl. merge-conflict playbook grounded in the SSE-vs-Jinja2 web-surface incident. |

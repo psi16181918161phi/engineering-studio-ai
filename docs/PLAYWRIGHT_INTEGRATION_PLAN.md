@@ -249,4 +249,3 @@ plan:
 | :--- | :--- | :--- | :--- |
 | 2026.1.0.0 | 2026-07-07 | Hadrian Hu | Initial Playwright integration plan (planning only, per explicit user request). |
 | 2026.1.1.0 | 2026-07-07 | Hadrian Hu | Updated all architecture references from the retired synchronous Jinja2 webapp to the adopted async SSE + JS-frontend implementation following the same-day reconciliation merge; cleaned up malformed tables from a WIP edit; flagged the CI Python-version and demo-prompt confirmations as still open; added Section 10 on coordinating with in-flight teammate agent work. |
-

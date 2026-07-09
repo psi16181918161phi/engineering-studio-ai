@@ -445,6 +445,31 @@ The following became relevant to Role 4 once `exceptions/`, `decorators/`,
   coordination note to GitHub; pushing this session's commits to
   `origin` (all Tier-2/3 actions pending explicit user confirmation).
 
+#### Current Todos (as of the private_prompt_3 follow-up pass, 2026-07-09)
+
+- [x] **CI failure root cause fixed in code**: `src/engineering_studio/fireworks_client.py`
+  now normalizes `base_url` through a typed intermediate (`resolved_base_url`)
+  before `.rstrip("/")`, removing a strict-mypy `union-attr` error that could
+  fail the CI `mypy src` gate.
+- [x] **Local CI-equivalent validation rerun** after the fix:
+  `ruff check .` clean, `mypy src` clean, `bandit -r src -ll` clean,
+  `pip-audit` clean (with the expected local-package skip note), and
+  project tests at 100% coverage (`111 passed`, gate met).
+- [x] **Merge-safety re-check on last-night teammate pushes** completed:
+  PR #8 lineage commits (`728d609`, `a264f3d`, merge `91a3b50`) touch
+  `.dockerignore` only; no application runtime code, dependency manifests,
+  or workflow logic changed in those teammate commits. Classified low risk.
+- [x] **Project-level CVE/security gates remain baked into CI** and were
+  revalidated in this pass: `bandit` (static scan) + `pip-audit`
+  (dependency CVEs) are active and green.
+- [ ] **Meta-project security propagation check** (outside this submodule)
+  remains a coordination task: mirror equivalent CVE/static-analysis gate
+  enforcement in parent-repo workflows where not already present.
+- [ ] **Human-content placeholders still open** (non-code):
+  `presentation/slides-outline.md` and `demo/demo-script.md` contain
+  `[SECTION INCOMPLETE — REQUIRES HUMAN INPUT]` blocks and need owner input
+  before final presentation lock.
+
 
 
 ### Role 5 — Frontend, Visualization & Demonstration

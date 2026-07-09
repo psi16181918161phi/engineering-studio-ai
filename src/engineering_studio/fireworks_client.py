@@ -48,7 +48,10 @@ class ModelClient:
         api_key: str | None = None,
         timeout_s: float = 60.0,
     ) -> None:
-        self.base_url = (base_url or os.environ.get("FIREWORKS_BASE_URL", "")).rstrip("/")
+        resolved_base_url = (
+            base_url if base_url is not None else os.environ.get("FIREWORKS_BASE_URL", "")
+        )
+        self.base_url = resolved_base_url.rstrip("/")
         self.api_key = api_key or os.environ.get("FIREWORKS_API_KEY", "")
         self.model = model
         self.timeout_s = timeout_s

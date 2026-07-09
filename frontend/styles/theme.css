@@ -1,21 +1,47 @@
 /**
- * WHAT: Locked brand color palette as CSS custom properties.
+ * WHAT: Locked brand color palette as CSS custom properties, plus the
+ * Light Mode / Dark Mode semantic theme swap for the promotional poster
+ * pair (`promotions/X_STUDIO_X.png` = light, `promotions/
+ * X_STUDIO_X_ALT.png` = dark).
  * WHY: `docs/TEAM_QA.md` §4 mandates exactly these three colors for any
  * frontend/visualization surface — this file is the single source of
- * truth so no component hardcodes a slightly-off hex value.
+ * truth so no component hardcodes a slightly-off hex value. Light Mode
+ * and Dark Mode are the ONLY two supported webapp themes — both reuse
+ * the exact same 3 locked hex values, only the fg/bg role assignment of
+ * `--brand-primary`/`--brand-ink` swaps between them.
+ *
+ * DISAMBIGUATION (do not confuse the two): `src/engineering_studio/utils/
+ * palette.py` ALSO defines "Variant A"/"Variant B", but on a completely
+ * different axis — Variant A = Plot/Data Surface, Variant B = Interface
+ * Surface, and BOTH of those are black-background (`aesthetic_standards.
+ * txt` §1.2 surface-kind split, not a light/dark split). This file's
+ * Light Mode/Dark Mode toggle is unrelated to that Python-side Variant
+ * A/B and intentionally avoids reusing that name to prevent confusion.
+ *
  * HOW: Import/link this file first in your app, then reference the
- * variables (e.g. `color: var(--brand-accent);`) instead of literal hex
- * codes.
+ * semantic variables (e.g. `color: var(--brand-accent);`) instead of
+ * literal hex codes. Toggle themes by setting
+ * `document.documentElement.dataset.theme = "light" | "dark"` (see
+ * `app.js` `initTheme()`) — no other file needs to change.
  */
 :root {
-  /* Soft rose pink — foreground OR background use. */
-  --brand-primary: #FFAEC9;
+  /* The 3 locked hex values (`docs/TEAM_QA.md` §4) — never change these. */
+  --brand-pink: #FFAEC9;
+  --brand-black: #000000;
+  --brand-accent: #B76E79; /* Rose gold — accents ONLY, never a fill. */
 
-  /* Near-black — background OR foreground use. */
-  --brand-ink: #000000;
+  /* Dark Mode is the default semantic mapping: black bg, pink fg. */
+  --brand-primary: var(--brand-pink);
+  --brand-ink: var(--brand-black);
+}
 
-  /* Rose gold — accents ONLY (do not use as a large background fill). */
-  --brand-accent: #B76E79;
+/* Light Mode: swap fg/bg roles — pink bg, black fg. Palette itself is
+   unchanged; every component below keeps working unmodified because they
+   all reference --brand-primary/--brand-ink semantically, never the
+   literal hex values directly. */
+:root[data-theme="light"] {
+  --brand-primary: var(--brand-black);
+  --brand-ink: var(--brand-pink);
 }
 
 /* WHAT: Base page colors, relied on by app.css (command-and-control UI). */

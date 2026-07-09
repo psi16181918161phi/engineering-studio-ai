@@ -2,7 +2,7 @@
 title: "Security Policy — Engineering Studio AI"
 author: "Hadrian Hu"
 date: "2026-07-07"
-version: "0.1.0"
+version: "2026.0.1.0"
 keywords: ["security", "vulnerability-disclosure", "secrets", "hackathon"]
 ---
 # Security Policy — Engineering Studio AI
@@ -20,10 +20,10 @@ This is a short-lived hackathon submission (AMD LabLabAI, Act II —
 Unicorn Track), not a long-term maintained product. There is a single
 active line of development:
 
-| Component | Supported | Notes |
-| :--------- | :--------: | :----- |
-| `main` branch (current release) | ✅ Yes | Active during and shortly after the hackathon |
-| Any tagged/archived snapshot | ❌ No | Point-in-time submission artifact only |
+| Component                         | Supported | Notes                                         |
+| :-------------------------------- | :-------: | :-------------------------------------------- |
+| `main` branch (current release) |  ✅ Yes  | Active during and shortly after the hackathon |
+| Any tagged/archived snapshot      |   ❌ No   | Point-in-time submission artifact only        |
 
 ---
 
@@ -43,9 +43,9 @@ active line of development:
 
 Given the hackathon timeline, response is **best-effort**, not SLA-backed:
 
-| Milestone | Target |
-| :--------- | :------ |
-| Acknowledgement | 3–5 calendar days |
+| Milestone         | Target                                                          |
+| :---------------- | :-------------------------------------------------------------- |
+| Acknowledgement   | 3–5 calendar days                                              |
 | Fix or mitigation | As soon as practical; critical findings prioritized immediately |
 
 ---
@@ -100,6 +100,6 @@ Given the hackathon timeline, response is **best-effort**, not SLA-backed:
 
 ## Changelog
 
-| Version | Date       | Author     | Description            |
-| :------ | :--------- | :--------- | :---------------------- |
-| 0.1.0   | 2026-07-07 | Hadrian Hu | Initial security policy. |
+| Version    | Date       | Author     | Description              |
+| :--------- | :--------- | :--------- | :----------------------- |
+| 2026.0.1.0 | 2026-07-07 | Hadrian Hu | Initial security policy. |

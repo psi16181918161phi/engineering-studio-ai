@@ -2,7 +2,7 @@
 title: "Engineering Studio AI — Full Team Scaffolding & Ownership Zones"
 author: Hadrian Hu
 date: 2026-07-05
-version: "0.2.0"
+version: "2026.0.2.0"
 keywords:
   - ci-cd
   - color-palette
@@ -13,11 +13,11 @@ keywords:
   - team-onboarding
 status: "Draft"
 changelog:
-  - version: "0.2.0"
+  - version: "2026.0.2.0"
     date: "2026-07-05"
     author: "Hadrian Hu"
     description: "Scaffolded README.md + barebones __init__.py for the eight new Role 3 subpackages (api, cli, decorators, exceptions, models, sdk, utils, webapp) under src/engineering_studio/; updated SS3.3."
-  - version: "0.1.0"
+  - version: "2026.0.1.0"
     date: "2026-07-05"
     author: "Hadrian Hu"
     description: "Initial full-team scaffolding guide: per-role starter folders/files and ownership-zone table to minimize merge conflicts."
@@ -260,7 +260,7 @@ editing pins independently.
 
 ## Changelog
 
-| Version | Date       | Author     | Description                                                                                                                                                                              |
-| :------ | :--------- | :--------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.0   | 2026-07-05 | Hadrian Hu | Scaffolded README.md + barebones `__init__.py` for the eight new Role 3 subpackages (`api`, `cli`, `decorators`, `exceptions`, `models`, `sdk`, `utils`, `webapp`) under `src/engineering_studio/`; updated §3.3. |
-| 0.1.0   | 2026-07-05 | Hadrian Hu | Initial full-team scaffolding guide and ownership-zone table.                                                                                                                            |
+| Version    | Date       | Author     | Description                                                                                                                                                                                                                           |
+| :--------- | :--------- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026.0.2.0 | 2026-07-05 | Hadrian Hu | Scaffolded README.md + barebones`__init__.py` for the eight new Role 3 subpackages (`api`, `cli`, `decorators`, `exceptions`, `models`, `sdk`, `utils`, `webapp`) under `src/engineering_studio/`; updated §3.3. |
+| 2026.0.1.0 | 2026-07-05 | Hadrian Hu | Initial full-team scaffolding guide and ownership-zone table.                                                                                                                                                                         |

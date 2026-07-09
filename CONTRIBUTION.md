@@ -30,11 +30,11 @@ keywords: ["contributing", "git", "onboarding", "merge-conflicts", "workflow", "
 
 ## 1. Onboarding — First-Time Setup
 
-| Requirement | Minimum Version |
-| :----------- | :--------------- |
-| Git          | 2.30              |
-| Python       | 3.14.4 x64        |
-| PowerShell (Windows contributors) | 5.1+ |
+| Requirement                       | Minimum Version |
+| :-------------------------------- | :-------------- |
+| Git                               | 2.30            |
+| Python                            | 3.14.4 x64      |
+| PowerShell (Windows contributors) | 5.1+            |
 
 ```powershell
 git clone https://github.com/psi16181918161phi/engineering-studio-ai.git
@@ -53,11 +53,11 @@ Copy-Item .env.example .env   # fill in FIREWORKS_API_KEY, never commit it
 Follows `docs/RESPONSIBILITIES.md`'s `main` → `develop` → `feature/<name>`
 strategy:
 
-| Type        | Example                         | Merges Into |
-| :---------- | :------------------------------- | :---------- |
-| `feature/` | `feature/research-role2`        | `develop` |
-| `fix/`     | `fix/sse-keepalive-timeout`     | `develop` |
-| `chore/`   | `chore/update-deps`             | `develop` |
+| Type         | Example                       | Merges Into |
+| :----------- | :---------------------------- | :---------- |
+| `feature/` | `feature/research-role2`    | `develop` |
+| `fix/`     | `fix/sse-keepalive-timeout` | `develop` |
+| `chore/`   | `chore/update-deps`         | `develop` |
 
 Do not commit directly to `main`. `develop` (if used) or a `feature/*`
 branch off `main` is always the starting point.
@@ -68,8 +68,7 @@ branch off `main` is always the starting point.
 
 Keep commits **small and descriptive**. Prefer a Conventional-Commits-style
 prefix (`feat:`, `fix:`, `docs:`, `chore:`, `merge:`, `build:`) even though
-this repo does not enforce it via a commit hook — it makes `git log
---oneline` scannable when six people are committing in parallel.
+this repo does not enforce it via a commit hook — it makes `git log --oneline` scannable when six people are committing in parallel.
 
 ---
 
@@ -140,19 +139,19 @@ all pass, no known CVEs) before merging to `main`.
 
 ## 8. Key References
 
-| Topic | Source |
-| :---- | :----- |
-| Team roles & Definition of Done | `docs/RESPONSIBILITIES.md` |
-| Ownership zones / merge-conflict avoidance | `SCAFFOLDING.md` |
-| Condensed engineering standards | `AGENTS.md` |
+| Topic                                            | Source                                  |
+| :----------------------------------------------- | :-------------------------------------- |
+| Team roles & Definition of Done                  | `docs/RESPONSIBILITIES.md`            |
+| Ownership zones / merge-conflict avoidance       | `SCAFFOLDING.md`                      |
+| Condensed engineering standards                  | `AGENTS.md`                           |
 | Extended standards (JPL, ARIA, testing taxonomy) | `.github/agents/STANDARDS_SUMMARY.md` |
-| Security policy | `SECURITY.md` |
-| Community norms & merge-conflict playbook | `COMMUNITY.md` |
+| Security policy                                  | `SECURITY.md`                         |
+| Community norms & merge-conflict playbook        | `COMMUNITY.md`                        |
 
 ---
 
 ## Changelog
 
-| Version | Date       | Author     | Description                    |
-| :------ | :--------- | :--------- | :------------------------------ |
-| 0.1.0   | 2026-07-07 | Hadrian Hu | Initial CONTRIBUTION guide.     |
+| Version    | Date       | Author     | Description                 |
+| :--------- | :--------- | :--------- | :-------------------------- |
+| 2026.0.1.0 | 2026-07-07 | Hadrian Hu | Initial CONTRIBUTION guide. |

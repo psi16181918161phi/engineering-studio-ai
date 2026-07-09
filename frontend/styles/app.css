@@ -78,6 +78,20 @@ textarea:focus-visible,
   border-style: dashed;
 }
 
+.theme-toggle {
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-accent);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.theme-toggle:hover {
+  border-color: var(--brand-primary);
+}
+
 /* --- Layout --- */
 
 .layout {

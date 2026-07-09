@@ -399,6 +399,52 @@ The following became relevant to Role 4 once `exceptions/`, `decorators/`,
 - [ ] W7 (closing coverage gaps on already-real modules) — no gaps found
   this pass; all pre-existing modules remained at 100% throughout.
 
+#### Current Todos (as of the teammate-integration / Playwright-readiness pass, 2026-07-08)
+
+- [x] **Merged `origin/main`** (3 commits: `feature/prompt-drafts` #4,
+  `domain-specialist-agents` #5, `research-business-agents` #6, all
+  `Umaima-Mughal`) into `feat/full-sdk-cli-api-webapp-gui` — clean merge,
+  no conflicts. Re-verified 102/102 tests, 100.00% coverage, `ruff check .`
+  clean both before and after.
+- [x] **Reconciled `research/prompt-drafts/` (22 files) into
+  `.github/agents/`**: upgraded 8 existing roster files with richer
+  Operating-Flow/Evaluation-Criteria content (and corrected
+  `systems-engineering-specialist.agent.md`'s scope to cross-domain-
+  integration-only, since Firmware/Simulation are separately-dispatched
+  code stages); created 6 new roster files
+  (`firmware-specialist.agent.md`, `simulation-specialist.agent.md`,
+  `product-strategy-specialist.agent.md`, `benchmarking-specialist.agent.md`,
+  `technology-scout-specialist.agent.md`,
+  `challenge-division/engineering-cross-domain-review.agent.md`). Every
+  file cites its `research/prompt-drafts/...` source + PR number.
+- [x] **Built a real Light Mode / Dark Mode toggle** for the webapp
+  (`#theme-toggle` in `frontend/index.html`, `initTheme()`/`applyTheme()`
+  in `frontend/app.js`, semantic fg/bg swap in `frontend/styles/theme.css`
+  — zero changes needed to `app.css`). Matches the promotional poster
+  pair (`promotions/X_STUDIO_X.png` = light, `X_STUDIO_X_ALT.png` = dark).
+  **Naming-collision disclosure**: this is unrelated to
+  `utils/palette.py`'s own "Variant A/B" (Plot vs. Interface Surface,
+  both black-bg) — deliberately named "Light/Dark Mode" instead to avoid
+  overloading that name; documented in both files.
+- [x] **Extended `docs/PLAYWRIGHT_INTEGRATION_PLAN.md`** (now v2026.1.3.0)
+  with §11 (theme-aware screen-recording/screen-capture execution steps)
+  and §12 (modularized `tests/e2e/` file table + frontend-modularization
+  guidance) — still planning-only, no `playwright` package/test/CI job
+  added.
+- [x] **Investigate -> Preplan -> Plan -> Prompt docs written**: see
+  `markdowns/investigations/INVESTIGATE_2026-07-08_...md`,
+  `markdowns/preplans/PREPLAN_2026-07-08_...md`,
+  `markdowns/plans/PLAN_2026-07-08_...md`,
+  `markdowns/plans/PROMPT_2026-07-08_...md` (the literal next-session
+  task spec for the deferred `docs/task-specs.md` upgrade + real
+  Playwright implementation).
+- [ ] **Not done this session (deferred, see PROMPT doc)**: upgrading
+  `docs/task-specs.md`'s per-discipline content from the reconciled
+  roster; installing `playwright`/writing real test files; recording any
+  demo video/screenshot; posting the drafted (unposted) teammate
+  coordination note to GitHub; pushing this session's commits to
+  `origin` (all Tier-2/3 actions pending explicit user confirmation).
+
 
 
 ### Role 5 — Frontend, Visualization & Demonstration

@@ -22,7 +22,7 @@ per-specialist Task Specifications.
 ## Output Format
 
 ```json
-{"role": "Problem Analysis", "problem_statement": "...", "constraints": ["..."], "open_questions": ["..."], "confidence": 0.0-1.0, "requires_human_review": true|false}
+{"role": "Problem Analysis", "problem_statement": "...", "constraints": ["..."], "open_questions": ["..."], "feasibility_risks": ["..."], "confidence": 0.0-1.0, "requires_human_review": true|false}
 ```
 
 ## Changelog
@@ -30,3 +30,4 @@ per-specialist Task Specifications.
 | Version | Date       | Author     | Description        |
 | :------ | :--------- | :--------- | :-------------------|
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation, condensed from the MDAP Research Division. |
+| 0.1.1   | 2026-07-08 | Hadrian Hu | Reconciled with `research/prompt-drafts/research-agents/feasibility_analysis.md` (PR #6) — added feasibility_risks field to cover implementation-risk/resource-limitation framing that draft introduced. |

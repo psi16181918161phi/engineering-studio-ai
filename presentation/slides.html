@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Engineering Studio AI — Pitch Deck</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--
+  WHAT: A self-contained, dependency-free HTML slide deck for the AMD
+  LabLabAI Hackathon (Unicorn Track) live pitch, built from
+  presentation/slides-outline.md's 9 slides.
+  WHY: No external build tooling (Marp/reveal.js/PowerPoint) is required
+  mid-hackathon, and the exact locked palette (#FFAEC9 / #000000 /
+  #B76E79, Variants A & B per ../promotions/) can be reproduced pixel-
+  precisely in plain CSS rather than fighting a slide tool's theme system.
+  HOW: One <section class="slide variant-a|variant-b"> per outline
+  heading. Variant A = pink background / black text (mirrors
+  promotions/X_STUDIO_X.png); Variant B = black background / pink text
+  (mirrors promotions/X_STUDIO_X_ALT.png). Both share the rose-gold
+  (#B76E79) border/accent. Plain-JS keyboard/click navigation, no
+  dependencies, no network calls.
+-->
+<style>
+  :root {
+    --pink: #FFAEC9;
+    --black: #000000;
+    --rose-gold: #B76E79;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Georgia, "Times New Roman", serif;
+    background: var(--black);
+  }
+  .deck {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .slide {
+    display: none;
+    width: min(90vw, 1280px);
+    aspect-ratio: 16 / 9;
+    border: 6px solid var(--rose-gold);
+    border-radius: 4px;
+    padding: 3.5rem 4rem;
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide.active { display: flex; }
+  .variant-a { background: var(--pink); color: var(--black); }
+  .variant-b { background: var(--black); color: var(--pink); }
+  .slide h1 {
+    font-weight: 700;
+    font-size: 2.6rem;
+    letter-spacing: 0.04em;
+    margin: 0 0 1.25rem 0;
+    border-bottom: 3px solid var(--rose-gold);
+    padding-bottom: 0.5rem;
+  }
+  .slide .eyebrow {
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--rose-gold);
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+  }
+  .slide ul { font-size: 1.15rem; line-height: 1.55; padding-left: 1.4rem; margin: 0; }
+  .slide li { margin-bottom: 0.7rem; }
+  .slide p { font-size: 1.15rem; line-height: 1.55; }
+  .slide .subtitle { font-size: 1.3rem; font-style: italic; margin-top: 0.5rem; }
+  .slide pre {
+    font-family: "Consolas", monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow: auto;
+  }
+  .variant-b .slide pre { background: rgba(255, 255, 255, 0.08); }
+  .slide-number {
+    position: absolute;
+    bottom: 1rem;
+    right: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--rose-gold);
+    font-weight: 700;
+  }
+  .nav {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    z-index: 10;
+  }
+  .nav button {
+    background: var(--black);
+    color: var(--pink);
+    border: 2px solid var(--rose-gold);
+    border-radius: 4px;
+    padding: 0.5rem 1.25rem;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .nav button:hover { background: var(--rose-gold); color: var(--black); }
+  .nav span {
+    color: var(--pink);
+    font-weight: 700;
+    align-self: center;
+    font-size: 1rem;
+  }
+  .disclosure {
+    font-size: 0.85rem;
+    font-style: italic;
+    opacity: 0.85;
+    margin-top: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <section class="slide variant-a active">
+    <p class="eyebrow">AMD LabLabAI Hackathon &mdash; Unicorn Track</p>
+    <h1>Engineering Studio AI</h1>
+    <p class="subtitle">One product brief in &mdash; a complete, multi-discipline
+    engineering package out.</p>
+    <p>A multi-agent AI team (Mechanical, Electrical, Firmware, Simulation,
+    Cost/Business, Legal) collaborating over Fireworks AI-hosted models.</p>
+  </section>
+
+  <section class="slide variant-b">
+    <p class="eyebrow">Problem</p>
+    <h1>Engineering hand-offs are slow, inconsistent, and hard to audit</h1>
+    <ul>
+      <li>Turning one product idea into a complete engineering package today
+      means separately briefing a mechanical, electrical, firmware, and
+      simulation engineer, plus a cost/business analyst &mdash; then
+      manually reconciling all of their outputs.</li>
+      <li>Each specialist works from a slightly different re-telling of the
+      brief, and no single place shows how every artifact traces back to
+      the same original brief.</li>
+      <li>Existing single-model "ask an LLM for code" tools solve only the
+      software half &mdash; none produce a full multi-discipline package
+      with an adversarial review and an explicit pass/fail quality
+      verdict.</li>
+    </ul>
+  </section>
+
+  <section class="slide variant-a">
+    <p class="eyebrow">Solution</p>
+    <h1>Engineering Studio AI</h1>
+    <p>One prompt in &rarr; multi-agent collaboration &rarr; complete
+    engineering package out:</p>
+    <ul>
+      <li>Bill of Materials (BOM)</li>
+      <li>Wiring / power notes</li>
+      <li>Firmware skeleton</li>
+      <li>Simulation config (emulation-only &mdash; no physical fabrication claimed)</li>
+      <li>Cost estimate</li>
+      <li>Documentation export</li>
+    </ul>
+  </section>
+
+  <section class="slide variant-b">
+    <p class="eyebrow">Architecture</p>
+    <h1>Orchestrator &rarr; Parallel Specialists &rarr; Quality Gate</h1>
+    <pre>Orchestrator ──► Research (problem framing)
+                     │
+       ┌─────────────┼─────────────┬──────────────┐
+       ▼             ▼             ▼              ▼
+  Mechanical    Electrical     Firmware      Simulation
+       │             │             │              │
+       └─────────────┴──────┬──────┴──────────────┘
+                             ▼
+                    Cost/Business + Legal
+                             │
+                             ▼
+                    Challenge Division (critique)
+                             │
+                             ▼
+                    Quality Gate (verdict)</pre>
+    <p>Every specialist writes ONLY to its own artifacts folder &mdash; strict
+    scope control per <code>AGENTS.md</code>.</p>
+  </section>
+
+  <section class="slide variant-a">
+    <p class="eyebrow">Live Demo</p>
+    <h1>Watch the pipeline run, live</h1>
+    <ul>
+      <li>Type a real product brief into the dashboard.</li>
+      <li>Watch specialists complete in parallel via live SSE-driven stage updates.</li>
+      <li>Reach the Quality Gate verdict, then download the full artifact set.</li>
+    </ul>
+    <p class="disclosure">Fallback plan is disclosed and rehearsed &mdash; see
+    <code>demo/demo-script.md</code> &sect; Fallback plan.</p>
+  </section>
+
+  <section class="slide variant-b">
+    <p class="eyebrow">AMD Ecosystem Usage</p>
+    <h1>Fireworks AI live today; AMD MI300X is a disclosed, cost-modeled fallback</h1>
+    <ul>
+      <li><strong>Primary (live in this demo):</strong> Fireworks AI
+      OpenAI-compatible chat-completions API, chosen for structured/JSON-mode
+      output the multi-stage pipeline parses per stage.</li>
+      <li><strong>Fallback (researched, NOT yet provisioned):</strong> AMD
+      Developer Cloud on-demand GPU droplets exposing AMD Instinct MI300X
+      (192&nbsp;GB HBM3), running a ROCm-enabled vLLM Docker image behind an
+      OpenAI-compatible endpoint &mdash; funded by the AMD AI Developer
+      Program's ~$100 credit (~50 GPU-hours at ~$1.99/hr).</li>
+    </ul>
+    <p class="disclosure">Honesty note: AMD hardware usage in this submission
+    is documented and cost-modeled, not yet exercised live &mdash; see
+    <code>research/technology-comparisons.md</code>'s own Verified? column.</p>
+  </section>
+
+  <section class="slide variant-a">
+    <p class="eyebrow">Results / Validation</p>
+    <h1>100% test pass, 100% coverage</h1>
+    <ul>
+      <li>111 unit + integration tests passing, 100.00% statement coverage
+      (640/640), enforced by a CI coverage gate.</li>
+      <li>17 end-to-end Playwright tests passing (0 failures, 0 errors) across
+      both themes and all 3 confirmed demo prompts &mdash; real browser,
+      real SSE, Mode&nbsp;B pipeline.</li>
+      <li>ruff, mypy --strict, bandit, and pip-audit all clean.</li>
+    </ul>
+    <p class="disclosure">Full evidence: <code>docs/E2E_EVIDENCE.md</code>.</p>
+  </section>
+
+  <section class="slide variant-b">
+    <p class="eyebrow">Startup Potential / Roadmap</p>
+    <h1>A domain-agnostic orchestration core</h1>
+    <ul>
+      <li>Near-term: provision the MI300X/ROCm/vLLM fallback path for real,
+      add more domain specialists, and support multi-run brief iteration.</li>
+      <li>The orchestrator &rarr; parallel specialists &rarr; adversarial
+      review &rarr; quality-gate shape is domain-agnostic &mdash; swap the
+      specialist roster and Task Specifications for another discipline set
+      and the same core applies.</li>
+    </ul>
+    <p class="disclosure">Honest caveat: no market validation, pricing, or
+    customer discovery has been performed &mdash; this is an
+    architecture-level extensibility claim, not a validated business plan.</p>
+  </section>
+
+  <section class="slide variant-a">
+    <p class="eyebrow">Team &amp; Thanks</p>
+    <h1>Six ownership roles, one shared build</h1>
+    <ul>
+      <li>Orchestrator &amp; core pipeline &mdash; Hadrian</li>
+      <li>Roles 2&ndash;6 (Backend/API, Frontend/Visualization, Quality/
+      Security/DevOps, Documentation/Paper/Presentation, and shared demo
+      ownership) per <code>docs/RESPONSIBILITIES.md</code>.</li>
+    </ul>
+    <p>Thank you to the AMD LabLabAI Hackathon organizers and judges.</p>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" type="button">&larr; Prev</button>
+  <span id="pageIndicator">1 / 9</span>
+  <button id="nextBtn" type="button">Next &rarr;</button>
+</div>
+
+<script>
+  (function () {
+    "use strict";
+    var slides = document.querySelectorAll(".slide");
+    var indicator = document.getElementById("pageIndicator");
+    var current = 0;
+
+    function show(index) {
+      if (index < 0 || index >= slides.length) { return; }
+      slides[current].classList.remove("active");
+      current = index;
+      slides[current].classList.add("active");
+      indicator.textContent = (current + 1) + " / " + slides.length;
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", function () {
+      show(current - 1);
+    });
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      show(current + 1);
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowRight" || event.key === " ") { show(current + 1); }
+      if (event.key === "ArrowLeft") { show(current - 1); }
+    });
+  })();
+</script>
+
+</body>
+</html>

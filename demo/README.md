@@ -13,6 +13,8 @@ demo video file here once produced (large binaries — consider Git LFS per
 | File | Purpose |
 |---|---|
 | `demo-script.md` | Beat-by-beat narration + corresponding on-screen action, mapped to the Demo Flow sequence diagram. |
+| `demo_prompts.json` | The 3 confirmed, software-first demo prompts (single source of truth), consumed by `playwright_demo_script.py`, `tests/e2e/test_pipeline_stream.py`, and `run_demo_sequence.py`. |
+| `run_demo_sequence.py` | CLI-only (no browser) rehearsal launcher: runs each confirmed prompt through the pipeline in order, writing timestamped artifacts + a `manifest.json` for presenter handoff. Complements the browser-based `playwright_demo_script.py`. |
 
 ## Coordination rule
 

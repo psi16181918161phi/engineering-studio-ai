@@ -1,0 +1,17 @@
+{
+  "_comment": "WHAT: The 3 confirmed, software-first demo prompts used consistently across demo/playwright_demo_script.py, tests/e2e/test_pipeline_stream.py, and demo/run_demo_sequence.py. WHY: A single source of truth prevents the prompt wording drifting between the browser-recording script, the e2e test suite, and the CLI rehearsal launcher. HOW: docs/PLAYWRIGHT_INTEGRATION_PLAN.md \u00a77 'Software-first set (preferred for the live demo)' is the origin of this exact wording; do not edit the 'text' fields without updating all three consumers.",
+  "prompts": [
+    {
+      "id": "backup-automation",
+      "text": "Create a Python script that automates the backup of important files to a cloud storage service."
+    },
+    {
+      "id": "habit-tracker-webapp",
+      "text": "Develop a simple web application that allows users to track their daily habits and visualize their progress over time."
+    },
+    {
+      "id": "text-analysis-cli",
+      "text": "Write a command-line tool that analyzes text files and generates a summary report of word frequency and sentiment."
+    }
+  ]
+}

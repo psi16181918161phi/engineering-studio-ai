@@ -14,3 +14,4 @@ prescribed) from that outline.
 | File | Purpose |
 |---|---|
 | `slides-outline.md` | Slide-by-slide content plan for the final pitch. |
+| `slides.html` | Self-contained, dependency-free HTML slide deck built from `slides-outline.md`, styled to match `../promotions/` Variant A/B art (pink/black/rose-gold palette). Open directly in a browser; arrow keys or the on-screen Prev/Next buttons navigate. |

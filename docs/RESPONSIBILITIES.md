@@ -2,13 +2,17 @@
 ---
 title: "AI Engineering Studio — AMD Hackathon Team Roles & Responsibilities"
 author: "Hadrian Hu"
-date: "2026-07-05"
-version: "2026.1.0.0"
+date: "2026-07-09"
+version: "2026.1.1.0"
 keywords: ["agent-collaboration", "engineering-studio", "hackathon", "responsibilities", "roles", "team-organization", "workflow"]
 status: "Draft"
 project_lead: "Hadrian [psi16181918161phi]"
 repository: "engineering-studio-ai"
 changelog:
+  - version: "2026.1.1.0"
+    date: "2026-07-09"
+    author: "Hadrian Hu"
+    description: "Completed WISHLIST_2026-07-09_demo-one-more-round (W-01 through W-06); added presentation/slides.html; confirmed full green regression."
   - version: "2026.1.0.0"
     date: "2026-07-05"
     author: "Hadrian Hu"
@@ -465,10 +469,64 @@ The following became relevant to Role 4 once `exceptions/`, `decorators/`,
 - [ ] **Meta-project security propagation check** (outside this submodule)
   remains a coordination task: mirror equivalent CVE/static-analysis gate
   enforcement in parent-repo workflows where not already present.
-- [ ] **Human-content placeholders still open** (non-code):
-  `presentation/slides-outline.md` and `demo/demo-script.md` contain
-  `[SECTION INCOMPLETE — REQUIRES HUMAN INPUT]` blocks and need owner input
-  before final presentation lock.
+- [x] **Human-content placeholders resolved** (non-code):
+  `presentation/slides-outline.md` and `demo/demo-script.md` placeholders
+  were filled in the 2026-07-09 "demo one more round" pass below.
+
+#### Current Todos (as of the WISHLIST_2026-07-09_demo-one-more-round completion pass, 2026-07-09)
+
+- [x] **W-01 — `demo/demo-script.md` fallback plan written**: replaced the
+  `[SECTION INCOMPLETE]` placeholder with a full 5-step truthful fallback
+  flow (disclose the failure, prove `/api/health`, play pre-recorded
+  Mode-B recordings, reveal a completed artifact set via CLI/dashboard,
+  optionally retry live) plus a "Preparation checklist" subsection.
+- [x] **W-02 — `presentation/slides-outline.md` placeholders filled**:
+  Slide 2 (Problem), Slide 6 (AMD Ecosystem Usage — Fireworks AI live,
+  MI300X/ROCm/vLLM disclosed-but-not-provisioned fallback), and Slide 8
+  (Startup Potential/Roadmap, with an explicit no-market-validation
+  caveat) all written with grounded citations, no fabricated claims.
+- [x] **W-03 — demo rehearsal tooling added**: `demo/demo_prompts.json`
+  (single source of truth for the 3 confirmed demo prompts) and
+  `demo/run_demo_sequence.py` (CLI-only, no-browser rehearsal launcher
+  that runs all 3 prompts through the pipeline and writes a timestamped
+  `manifest.json`) — both lint/type clean, manually verified working.
+- [x] **W-04 — e2e evidence doc added at `docs/E2E_EVIDENCE.md`**
+  (relocated from the WISHLIST's literal `reports/e2e/README.md` path,
+  since `reports/` is fully gitignored per `.gitignore`'s
+  `[Rr][Ee][Pp][Oo][Rr][Tt][Ss]/` pattern — deviation disclosed inline in
+  the new doc itself). States what the e2e suite proves and does NOT
+  prove (Mode B only, no live Fireworks call), with exact last-verified
+  counts (111 unit tests / 100% coverage; 17 e2e tests, 0 failures/errors).
+- [x] **W-05 — Starlette/httpx2 deprecation warning resolved**: added a
+  narrow `[tool.pytest.ini_options] filterwarnings` entry in
+  `pyproject.toml` scoped to the exact
+  `starlette.exceptions.StarletteDeprecationWarning` category and message
+  prefix (not a blanket `DeprecationWarning` silence — verified that class
+  actually subclasses `UserWarning`, not `DeprecationWarning`). Decision:
+  do NOT migrate to `httpx2` this hackathon round — confirmed real
+  (Pydantic's httpx continuation, released 2026-06-25) but migrating the
+  whole test suite mid-hackathon is out of scope; documented as a
+  disclosed, narrow suppression with rationale inline in `pyproject.toml`.
+- [x] **W-06 — pre-demo regression script added**: `scripts/pre_demo_check.py`
+  runs ruff, mypy --strict, bandit, pip-audit, the unit suite, and the
+  e2e suite (same order as `.github/workflows/ci.yml`), then prints a
+  PASS/FAIL summary table and a GO/NO-GO verdict with a non-zero exit
+  code on any failure. Lint/type clean; individually verified each
+  underlying check green (all-in-one combined run was flaky in this
+  environment's terminal tool for very long chained commands — see
+  session memory `testing-conventions.md` for the workaround).
+- [x] **`presentation/slides.html` built**: self-contained, dependency-free
+  9-slide HTML deck styled to match `promotions/X_STUDIO_X.png` /
+  `X_STUDIO_X_ALT.png` (Variant A pink-bg/black-text, Variant B
+  black-bg/pink-text, rose-gold `#B76E79` borders), sourced directly from
+  `presentation/slides-outline.md`'s content, plain-JS keyboard/click
+  navigation, no external dependencies.
+- [x] **Final regression confirmed green**: 111 unit/integration tests
+  passed (100.00% coverage, 640/640 statements, 0 warnings), 17 e2e tests
+  passed (0 failures, 0 errors, 25.25s), ruff/mypy --strict/bandit/
+  pip-audit all clean.
+- [ ] **Meta-project security propagation check** (outside this submodule)
+  remains open — carried forward, unchanged, from the prior pass.
 
 
 
@@ -672,5 +730,6 @@ Caption: Table 2 — Document Revision History
 
 | Version    | Date       | Author     | Description                                                                                              |
 |:-----------|:-----------|:-----------|:----------------------------------------------------------------------------------------------------------|
+| 2026.1.1.0 | 2026-07-09 | Hadrian Hu | Completed WISHLIST_2026-07-09_demo-one-more-round (W-01 through W-06): filled demo-script.md fallback plan and slides-outline.md placeholders; added demo rehearsal tooling, e2e evidence doc, a disclosed deprecation-warning filter, and a pre-demo regression script; built presentation/slides.html; confirmed full green regression (111 unit tests/100% coverage, 17 e2e tests/0 failures). |
 | 2026.1.0.0 | 2026-07-05 | Hadrian Hu | Restructured document to conform to markdown documentation standards (front matter, TOC, Abstract, Keywords, Executive Summary, Changelog); fixed malformed Role Assignments table row. |
 | 1.0.0      | 2026-07-04 | Hadrian Hu | Initial draft of team roles and responsibilities.                                                        |

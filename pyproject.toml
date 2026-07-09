@@ -44,6 +44,19 @@ strict = true
 
 [tool.pytest.ini_options]
 addopts = "--cov=engineering_studio --cov-report=term-missing --cov-fail-under=100 --ignore=tests/e2e"
+# Narrow, disclosed warning filter (WISHLIST_2026-07-09 W-05): FastAPI's own
+# `fastapi.testclient` module (vendored/re-exported from Starlette, not our
+# code) emits `StarletteDeprecationWarning` recommending the very new
+# `httpx2` package as an httpx replacement. Migrating this project's entire
+# test suite (test_api.py, test_webapp.py, test_downloads.py, test_runs.py)
+# off `fastapi.testclient`/`httpx` to `httpx2` mid-hackathon is a bigger,
+# riskier change than this round's scope justifies, and the warning
+# originates inside third-party library internals we do not control (no
+# "safe upgrade path" exists yet without that migration) — so it is
+# filtered narrowly by exact category, never blanket-silenced.
+filterwarnings = [
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated.*:starlette.exceptions.StarletteDeprecationWarning",
+]
 
 [tool.coverage.run]
 source = ["engineering_studio"]

@@ -13,7 +13,7 @@ __pycache__/
 venv/
 env/
 
-# Environment files
+# Environment files (never include secrets)
 .env
 .env.*
 
@@ -44,3 +44,6 @@ Thumbs.db
 
 # Local runtime artifacts
 runs/
+
+# Logs
+*.log

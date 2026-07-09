@@ -5,7 +5,7 @@
 # Build:  docker build -t engineering-studio-ai -f deployment/Dockerfile .
 # Run:    docker run --env-file .env engineering-studio-ai "Design a warehouse robot"
 
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 

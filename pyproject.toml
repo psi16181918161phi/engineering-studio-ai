@@ -24,6 +24,9 @@ dev = [
 gui = [
     "textual>=0.58",
 ]
+e2e = [
+    "playwright>=1.45",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -40,7 +43,7 @@ python_version = "3.14"
 strict = true
 
 [tool.pytest.ini_options]
-addopts = "--cov=engineering_studio --cov-report=term-missing --cov-fail-under=100"
+addopts = "--cov=engineering_studio --cov-report=term-missing --cov-fail-under=100 --ignore=tests/e2e"
 
 [tool.coverage.run]
 source = ["engineering_studio"]

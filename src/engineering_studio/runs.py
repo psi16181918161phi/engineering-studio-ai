@@ -12,6 +12,7 @@ FastAPI event loop is never blocked by a live model call.
 
 from __future__ import annotations
 
+import os
 import threading
 import time
 import uuid
@@ -20,8 +21,23 @@ from pathlib import Path
 from queue import SimpleQueue
 from typing import Any
 
-from engineering_studio.agents.orchestrator import STAGE_ORDER, run_pipeline
+from engineering_studio.agents.orchestrator import STAGE_ORDER
 from engineering_studio.fireworks_client import ModelUnavailableError
+
+# WHAT: Swap in the deterministic, no-network fake pipeline when explicitly
+# opted into via ENGINEERING_STUDIO_FAKE_PIPELINE=1.
+# WHY: Lets Playwright end-to-end tests (tests/e2e/) drive a real, live
+# `uvicorn` subprocess without a Fireworks API key or network access,
+# without any test needing to monkeypatch across the process boundary.
+# Never enabled implicitly — a real deploy or the unit-test suite (which
+# monkeypatches this same module attribute directly) is unaffected.
+if os.environ.get("ENGINEERING_STUDIO_FAKE_PIPELINE") == "1":  # pragma: no cover
+    # Only ever exercised via a subprocess launched by tests/e2e/ (see
+    # conftest.py's live_server fixture) — never by the unit-test suite,
+    # which monkeypatches this module's `run_pipeline` attribute directly.
+    from engineering_studio.testing.fake_pipeline import fake_run_pipeline as run_pipeline
+else:
+    from engineering_studio.agents.orchestrator import run_pipeline
 
 # WHAT: Root directory under which every web-triggered run writes its
 # artifacts, one subfolder per run id.

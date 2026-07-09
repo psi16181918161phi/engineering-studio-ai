@@ -30,3 +30,18 @@ jobs:
         run: pip-audit
       - name: Unit tests (no live network calls)
         run: pytest tests -v --tb=short
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14.4"
+      - name: Install dependencies
+        run: pip install -e ".[e2e]"
+      - name: Install Playwright browser
+        run: playwright install --with-deps chromium
+      - name: End-to-end tests (Mode B, mocked pipeline, no API key)
+        run: pytest tests/e2e -v --tb=short --no-cov

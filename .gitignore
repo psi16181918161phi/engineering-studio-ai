@@ -37,6 +37,10 @@
 [Rr][Uu][Nn][Ss]/
 *.[Ll][Oo][Gg]
 
+# --- Playwright screen recordings (regenerate via demo/playwright_demo_script.py) ---
+[Dd][Ee][Mm][Oo]/[Rr][Ee][Cc][Oo][Rr][Dd][Ii][Nn][Gg][Ss]/
+[Tt][Ee][Ss][Tt]-[Rr][Ee][Ss][Uu][Ll][Tt][Ss]/
+
 # --- run_scripts pipeline outputs (regenerate via run_pipeline.py) ---
 [Rr][Ee][Pp][Oo][Rr][Tt][Ss]/
 [Dd][Ii][Ss][Tt]_[Bb][Ii][Nn]/

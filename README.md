@@ -73,8 +73,22 @@ uvicorn engineering_studio.webapp:app --reload --app-dir src
 Open <http://127.0.0.1:8000/>, type a product brief, and watch each agent
 (Research, Mechanical, Electrical, Firmware, Simulation, Cost/Business/Legal,
 Challenge Division, Quality Gate) move through pending → running → done in
-real time, with each stage's artifact viewable inline. See
-[frontend/README.md](frontend/README.md) for details.
+real time, with each stage's artifact viewable inline, and downloadable
+individually ("Download output") or all together ("Download all (.zip)")
+once the run completes. See [frontend/README.md](frontend/README.md) for
+details.
+
+### End-to-end (Playwright) tests and demo recordings
+
+```powershell
+pip install -e ".[e2e]"
+playwright install chromium
+pytest tests/e2e -v --tb=short --no-cov          # Mode B: mocked pipeline, no API key needed
+python demo/playwright_demo_script.py            # captures screenshots + video under demo/recordings/
+```
+
+See [docs/PLAYWRIGHT_INTEGRATION_PLAN.md](docs/PLAYWRIGHT_INTEGRATION_PLAN.md)
+for the full design (Mode A live-demo vs. Mode B CI-safe-mocked distinction).
 
 ## Repository layout
 
@@ -83,8 +97,8 @@ real time, with each stage's artifact viewable inline. See
 | `src/engineering_studio/agents/` | One module per specialist (orchestrator, research, mechanical, electrical, firmware, simulation, business, challenge, quality_gate). |
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
-| `src/engineering_studio/api/` | HTTP/SSE route definitions for the command-and-control dashboard (`runs.py`, `health.py`) — see folder `README.md`. |
-| `src/engineering_studio/runs.py` | In-memory run registry + pub/sub that tracks live per-stage status for the web API; dispatches `agents.orchestrator.run_pipeline` on a background thread per run. |
+| `src/engineering_studio/api/` | HTTP/SSE route definitions for the command-and-control dashboard (`runs.py`, `health.py`, `downloads.py` — per-stage and zip-all artifact downloads) — see folder `README.md`. |
+| `src/engineering_studio/runs.py` | In-memory run registry + pub/sub that tracks live per-stage status for the web API; dispatches `agents.orchestrator.run_pipeline` (or, only when `ENGINEERING_STUDIO_FAKE_PIPELINE=1`, `testing.fake_pipeline`) on a background thread per run. |
 | `src/engineering_studio/cli/` | CLI entry point package — `main()` (`__init__.py`) invoked via `__main__.py`. Subcommands: `run "<brief>" [--artifacts-root PATH]` (default when no subcommand is given, for backward compatibility), `status [--artifacts-root PATH]` (lists discipline folders present), `artifacts [--artifacts-root PATH]` (lists artifact files) — implementations in `commands.py`. |
 | `src/engineering_studio/decorators/` | `log_call`, `validate_args`, `requires_env` cross-cutting decorators — 100% test coverage. |
 | `src/engineering_studio/exceptions/` | `EngineeringStudioError` base + `ConfigurationError`/`ModelUnavailableError`/`ValidationError`/`PipelineExecutionError`/`ArtifactWriteError` — 100% test coverage. |
@@ -93,6 +107,8 @@ real time, with each stage's artifact viewable inline. See
 | `src/engineering_studio/utils/` | `palette.py` — shared Variant A/B color-token constants for every visual surface (`gui/`, and historically `webapp/`'s retired Jinja2 templates). |
 | `src/engineering_studio/gui/` | `textual` terminal UI (`EngineeringStudioApp`) — an alternate, SDK-backed demo surface to the browser dashboard, for terminal-only environments. |
 | `src/engineering_studio/webapp/` | The FastAPI app instance (`app.py`) mounting `api/` routes and serving `frontend/` as static files. |
+| `src/engineering_studio/testing/` | `fake_pipeline.py` — deterministic, no-network pipeline stand-in used only by Playwright e2e tests (`ENGINEERING_STUDIO_FAKE_PIPELINE=1`), never in production. |
+| `tests/e2e/` | Playwright end-to-end tests (theme toggle, dashboard render, full pipeline stream) against a real, live `uvicorn` subprocess — excluded from the 100% unit-coverage gate; run separately (see above). |
 | `docs/task-specs.md` | The filled Task Specification blocks each agent call uses. |
 | `docs/RESPONSIBILITIES.md` | Team roles, responsibilities, and Definition of Done. |
 | `docs/TEAM_QA.md` | Per-role Q&A, mandatory color palette, testing bar, SecDevOps hygiene, phased timeline. |

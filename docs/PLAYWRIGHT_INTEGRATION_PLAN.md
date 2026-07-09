@@ -2,8 +2,8 @@
 title: "PLAN — Playwright Integration for Engineering Studio AI Webapp Demonstration"
 author: "Hadrian Hu"
 date: "2026-07-07"
-version: "2026.1.3.0"
-status: "PLANNING_ONLY — not yet implemented"
+version: "2026.1.4.0"
+status: "IMPLEMENTED — Mode B (tests/e2e/) live; Mode A available via --live flag"
 keywords:
   - engineering-studio-ai
   - playwright
@@ -374,3 +374,4 @@ should consider splitting into:
 | 2026.1.1.0 | 2026-07-07 | Hadrian Hu | Updated all architecture references from the retired synchronous Jinja2 webapp to the adopted async SSE + JS-frontend implementation following the same-day reconciliation merge; cleaned up malformed tables from a WIP edit; flagged the CI Python-version and demo-prompt confirmations as still open; added Section 10 on coordinating with in-flight teammate agent work. |
 | 2026.1.2.0 | 2026-07-08 | Hadrian Hu | User confirmed the software-first demo-prompt set as final; resolved the CI Python-version question by confirming project-wide upgrade to 3.14.4 (verified installed locally; user's originally-requested 3.14.6 is not available on this machine). |
 | 2026.1.3.0 | 2026-07-08 | Hadrian Hu | Added Section 11 (theme-aware screen-recording/screen-capture execution plan, both Light/Dark modes) and Section 12 (modularized test-file table + frontend modularization guidance) per explicit user request; updated Section 8 to flag the new webapp Light/Dark toggle and disclose its naming collision with `utils/palette.py`'s unrelated Variant A/B (Plot vs Interface Surface) terminology. |
+| 2026.1.4.0 | 2026-07-09 | Hadrian Hu | **Implemented.** Added `engineering_studio.testing.fake_pipeline` (Mode B, deterministic, opt-in via `ENGINEERING_STUDIO_FAKE_PIPELINE=1`) and wired it into `runs.py`; added `tests/e2e/` (conftest with `live_server`/`browser`/`theme` fixtures, `test_theme_toggle.py`, `test_dashboard_render.py`, `test_pipeline_stream.py` — 17 tests, both themes, all 3 confirmed demo prompts, all green); added `demo/playwright_demo_script.py` (Mode B by default, `--live` for Mode A) which was run this session and produced real screenshots + `.webm` videos under `demo/recordings/{screenshots,video}/{light,dark}/` (gitignored, regenerable); added the `e2e` optional-dependency group and a `needs: test` gated `e2e` CI job. Also added, as a related but separate feature, artifact download endpoints (`api/downloads.py`: per-stage file download + run-level zip) and matching dashboard UI (`frontend/downloads.js`/`downloads.css`, additive only, no edits to `app.js`). |

@@ -1,0 +1,32 @@
+/**
+ * WHAT: Styling for the additive artifact-download links (per-stage
+ * "Download output", run-level "Download all (.zip)").
+ * WHY: Kept in its own file (not appended to app.css) for the same
+ * additive/merge-safety reason as downloads.js — see that file's header.
+ * HOW: Reuses the same 2 locked hex values + rose-gold accent already
+ * defined as CSS custom properties in theme.css (--brand-pink, --brand-
+ * black, --brand-accent) — no new literal hex colors introduced here.
+ */
+
+.run-meta__download,
+.stage-card__download {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--brand-accent);
+  border-radius: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  color: var(--brand-accent);
+  background: transparent;
+}
+
+.run-meta__download:hover,
+.stage-card__download:hover {
+  background: var(--brand-accent);
+  color: var(--brand-ink);
+}
+
+.stage-card__download {
+  margin-top: 0.4rem;
+}

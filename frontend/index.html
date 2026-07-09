@@ -6,6 +6,7 @@
   <title>Engineering Studio AI — Command &amp; Control</title>
   <link rel="stylesheet" href="styles/theme.css" />
   <link rel="stylesheet" href="styles/app.css" />
+  <link rel="stylesheet" href="styles/downloads.css" />
 </head>
 <body>
   <header class="topbar">
@@ -57,6 +58,7 @@
         <div id="run-meta" class="run-meta" hidden>
           <span class="run-meta__id" id="run-meta-id"></span>
           <span class="run-meta__badge" id="run-meta-status" data-state="pending">Idle</span>
+          <a id="download-all-link" class="run-meta__download" href="#" download hidden>Download all (.zip)</a>
         </div>
       </div>
 
@@ -81,10 +83,12 @@
         <span class="stage-card__status-text">Idle</span>
       </div>
       <button type="button" class="stage-card__toggle" hidden>View output</button>
+      <a class="stage-card__download" href="#" download hidden>Download output</a>
       <pre class="stage-card__output" hidden></pre>
     </article>
   </template>
 
   <script src="app.js"></script>
+  <script src="downloads.js"></script>
 </body>
 </html>

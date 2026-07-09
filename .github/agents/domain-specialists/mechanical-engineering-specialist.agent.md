@@ -39,3 +39,4 @@ estimate itself).
 | Version | Date       | Author     | Description                                                             |
 | :------ | :--------- | :--------- | :------------------------------------------------------------------------|
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation, condensed from the MDAP catalog's Mechanical Engineering Specialist. |
+| 0.1.1   | 2026-07-08 | Hadrian Hu | Cross-checked against `research/prompt-drafts/domain/mechanical/mechanical_specialist.md` (PR #5) \u2014 no scope changes required, content already equivalent. |

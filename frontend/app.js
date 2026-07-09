@@ -51,6 +51,8 @@
   const els = {
     serverStatus: document.getElementById("server-status"),
     serverStatusText: document.getElementById("server-status-text"),
+    themeToggle: document.getElementById("theme-toggle"),
+    themeToggleText: document.getElementById("theme-toggle-text"),
     launchForm: document.getElementById("launch-form"),
     briefInput: document.getElementById("brief-input"),
     launchButton: document.getElementById("launch-button"),
@@ -76,6 +78,48 @@
   function apiUrl(path) {
     return path; // same-origin: served by the FastAPI app under "/"
   }
+
+  /** WHAT: Light Mode / Dark Mode theme toggle (promotional poster pair:
+   * `promotions/X_STUDIO_X.png` = light, `promotions/X_STUDIO_X_ALT.png`
+   * = dark).
+   * WHY: `docs/TEAM_QA.md` §4 defines exactly these 2 supported themes;
+   * `theme.css` implements both purely via a `data-theme` attribute on
+   * `<html>`, so this function only needs to flip that attribute and
+   * remember the choice — no other visual code changes between themes.
+   * NOTE: unrelated to `engineering_studio.utils.palette`'s Python-side
+   * "Variant A/B" (Plot Surface vs Interface Surface, both black-bg) —
+   * different axis, intentionally different name (Light/Dark here).
+   * HOW: Defaults to Dark Mode to match the pre-existing behavior for
+   * anyone with no stored preference; persists the choice in
+   * localStorage so a reload keeps the operator's last selection. */
+  const THEME_STORAGE_KEY = "engineering-studio-theme";
+
+  function applyTheme(theme) {
+    const isLight = theme === "light";
+    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+    els.themeToggle.setAttribute("aria-pressed", String(isLight));
+    els.themeToggleText.textContent = isLight ? "Light mode" : "Dark mode";
+  }
+
+  function initTheme() {
+    let stored = null;
+    try {
+      stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    } catch (err) {
+      stored = null; // localStorage unavailable (e.g. private browsing) — fall back to default.
+    }
+    applyTheme(stored === "light" ? "light" : "dark");
+  }
+
+  els.themeToggle.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    applyTheme(next);
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch (err) {
+      /* localStorage unavailable — theme still applies for this page view. */
+    }
+  });
 
   async function checkHealth() {
     try {
@@ -342,6 +386,7 @@
     launchRun(brief);
   });
 
+  initTheme();
   checkHealth();
   refreshHistory();
 })();

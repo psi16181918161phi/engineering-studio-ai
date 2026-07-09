@@ -26,6 +26,12 @@ Mechanical mounting/structural design, firmware logic implementation
 (hands the interface contract to `systems-engineering-specialist.agent.md`),
 cost totals.
 
+## Reconciled Detail (from `research/prompt-drafts/domain/electrical/electrical_specialist.md`, PR #5)
+
+Also documents power-budget estimates (voltage/current/protection) and a
+text/Mermaid wiring-topology description as part of the standard artifact —
+all estimates explicitly labeled assumptions unless evidence-backed.
+
 ## Assumption (explicitly flagged)
 
 "Hardware" in this repo means simulation/emulation only (SPICE-level
@@ -36,8 +42,15 @@ Executive Summary assumption #2.
 ## Output Format
 
 ```json
-{"specialist": "Electrical & Electronics Engineering", "artifact_paths": ["..."], "std_ids_applied": ["..."], "confidence": 0.0-1.0, "requires_human_review": true|false}
+{"specialist": "Electrical & Electronics Engineering", "artifact_paths": ["..."], "std_ids_applied": ["..."], "power_budget": ["..."], "wiring_topology": "", "confidence": 0.0-1.0, "requires_human_review": true|false}
 ```
+
+## Changelog
+
+| Version | Date       | Author     | Description                                                             |
+| :------ | :--------- | :--------- | :------------------------------------------------------------------------|
+| 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation. |
+| 0.2.0   | 2026-07-08 | Hadrian Hu | Reconciled with `research/prompt-drafts/domain/electrical/electrical_specialist.md` (PR #5) — added power-budget/wiring-topology fields. |
 
 ## Changelog
 

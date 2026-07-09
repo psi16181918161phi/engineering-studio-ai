@@ -1,8 +1,8 @@
 ---
 title: "Orchestrator Agent"
 author: "Hadrian Hu"
-date: "2026-07-06"
-version: "0.1.0"
+date: "2026-07-08"
+version: "0.2.0"
 keywords: ["orchestrator", "task-graph", "dispatch", "hackathon"]
 status: "Active"
 ---
@@ -55,10 +55,19 @@ Exactly one root instance per run; never delegate the orchestrator role.
 - On rejection, route rework to the *originating* specialist, never silently
   patch it here.
 
+## Current Dispatch Roster (reconciled with `research/prompt-drafts/orchestration/orchestrator.md`)
+
+Eight stages, matching `agents.orchestrator.STAGE_ORDER` in code exactly:
+`research` -> `{mechanical, electrical, firmware, simulation}` (parallel) ->
+`business` -> `challenge` -> `quality_gate`. Firmware and Simulation are
+dispatched to the `systems-engineering-specialist.agent.md` role; Business
+covers both cost/BOM rollup (`cost-business-specialist.agent.md`) and
+product-strategy framing (`business/product-strategy-specialist.agent.md`).
+
 ## Output Format
 
 ```json
-{"role": "Orchestrator", "task_graph": ["..."], "dispatched_to": ["..."], "gate_verdict": "Approved|Rejected|Pending", "confidence": 0.0-1.0, "requires_human_review": true|false}
+{"role": "Orchestrator", "pipeline_state": "Pending|Running|Completed|Blocked", "task_graph": ["..."], "dispatched_to": ["..."], "gate_verdict": "Approved|Rejected|Pending", "confidence": 0.0-1.0, "requires_human_review": true|false}
 ```
 
 ## Changelog
@@ -66,3 +75,4 @@ Exactly one root instance per run; never delegate the orchestrator role.
 | Version | Date       | Author     | Description                                            |
 | :------ | :--------- | :--------- | :------------------------------------------------------ |
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation, condensed from `mdap-01-orchestrator.agent.md`. |
+| 0.2.0   | 2026-07-08 | Hadrian Hu | Reconciled with `research/prompt-drafts/orchestration/orchestrator.md` (Umaima-Mughal PR #4) — added current dispatch roster, `pipeline_state` field. |

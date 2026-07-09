@@ -35,3 +35,4 @@ confident fabricated answer (`AGENTS.md` §5 live-data honesty).
 | Version | Date       | Author     | Description        |
 | :------ | :--------- | :--------- | :-------------------|
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation, condensed from the MDAP Research Division. |
+| 0.1.1   | 2026-07-08 | Hadrian Hu | Cross-checked against `research/prompt-drafts/research-agents/research_agent.md` (PR #6) — equivalent scope confirmed; see `benchmarking-specialist.agent.md` and `technology-scout-specialist.agent.md` for the 2 genuinely new sub-roles that draft's PR also introduced. |

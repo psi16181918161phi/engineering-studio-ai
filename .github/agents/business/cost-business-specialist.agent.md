@@ -24,14 +24,22 @@ price feed isn't available.
 
 Engineering design decisions themselves; only consumes their BOM output.
 
+## Reconciled Detail (from `research/prompt-drafts/business/business_analysis.md`, PR #6)
+
+Also documents implementation-effort/resource/infrastructure feasibility
+notes alongside the cost rollup, each explicitly labeled estimate vs.
+verified. See `business/product-strategy-specialist.agent.md` for the
+separate product-viability/compliance angle (not cost).
+
 ## Output Format
 
 ```json
-{"specialist": "Cost/Business", "total_estimate_usd": 0.0, "line_items": ["..."], "viability_notes": ["..."], "confidence": 0.0-1.0, "requires_human_review": true|false}
+{"specialist": "Cost/Business", "total_estimate_usd": 0.0, "line_items": ["..."], "feasibility_notes": ["..."], "viability_notes": ["..."], "confidence": 0.0-1.0, "requires_human_review": true|false}
 ```
 
 ## Changelog
 
 | Version    | Date       | Author     | Description                                                    |
-| :--------- | :--------- | :--------- | :------------------------------------------------------------- |
+| :--------- | :--------- | :--------- | :--------------------------------------------------------------- |
 | 2026.0.1.0 | 2026-07-06 | Hadrian Hu | Initial creation, condensed from the MDAP disciplines catalog. |
+| 2026.0.2.0 | 2026-07-08 | Hadrian Hu | Reconciled with `research/prompt-drafts/business/business_analysis.md` (PR #6) \u2014 added feasibility_notes field. |

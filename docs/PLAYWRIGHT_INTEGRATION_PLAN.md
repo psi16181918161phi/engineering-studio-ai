@@ -2,7 +2,7 @@
 title: "PLAN — Playwright Integration for Engineering Studio AI Webapp Demonstration"
 author: "Hadrian Hu"
 date: "2026-07-07"
-version: "2026.1.1.0"
+version: "2026.1.3.0"
 status: "PLANNING_ONLY — not yet implemented"
 keywords:
   - engineering-studio-ai
@@ -181,12 +181,34 @@ executed.
 
 ## 8. Aesthetic Compliance for the Recording
 
-The webapp already renders exclusively from `utils.palette.PALETTE_B`
-(background `#000000`, foreground `#FFAEC9`, accent `#B76E79` — see the
-2026-07-07 deviation note in
-[`utils/palette.py`](../src/engineering_studio/utils/palette.py)), so no
-additional palette work is needed for the Playwright recording itself —
-it captures whatever the webapp already renders.
+**Superseded 2026-07-08:** the statement below ("no additional palette
+work is needed") is now stale. `frontend/styles/theme.css` and
+`frontend/app.js` were updated this session to add a **Light Mode /
+Dark Mode toggle** (`#theme-toggle` button in the topbar), matching the
+promotional poster pair `promotions/X_STUDIO_X.png` (light: pink bg,
+black fg) and `promotions/X_STUDIO_X_ALT.png` (dark: black bg, pink
+fg) — both reuse the exact same 3 locked hex values
+(`--brand-pink #FFAEC9`, `--brand-black #000000`, `--brand-accent
+#B76E79`), only the fg/bg role assignment swaps. Any future Playwright
+recording (Mode A or Mode B) must now capture **both** themes, not just
+one — see the new Section 11 below for the concrete steps.
+
+**Naming collision, disclosed (do not conflate):**
+`src/engineering_studio/utils/palette.py` independently defines its own
+"Variant A"/"Variant B" terminology, but on a *different axis entirely*
+— Variant A = Plot/Data Surface, Variant B = Interface Surface, and
+**both of those are black-background** (`aesthetic_standards.txt` §1.2
+surface-*kind* split, not a light/dark split). The webapp's new toggle
+deliberately uses "Light Mode"/"Dark Mode" instead of "Variant A/B" to
+avoid overloading that already-taken name. Any future contributor
+reading both files side-by-side needs this disclosed distinction, not a
+silent rename of one or the other — flagged for the user's awareness
+rather than resolved unilaterally.
+
+(Original 2026-07-07 note, now superseded, kept for history: "The
+webapp already renders exclusively from `utils.palette.PALETTE_B`... so
+no additional palette work is needed for the Playwright recording
+itself — it captures whatever the webapp already renders.")
 
 Additional recording and UI constraints carried forward from a prior
 WIP note on this file, restated here cleanly:
@@ -213,11 +235,12 @@ WIP note on this file, restated here cleanly:
 
 This plan is intentionally NOT executed this session. A future session
 should: (1) get user confirmation on the demo-prompt set (Section 7),
-(2) add the `e2e` optional-dependency group and `tests/e2e/` package,
-(3) implement Mode B first (CI-safe, mocked) and get it green, (4) only
-then implement Mode A (real model calls) as a manually-triggered
-recording script, never as an automatic CI job (it would make live
-model calls on every push, which is costly and non-deterministic).
+(2) add the `e2e` optional-dependency group and `tests/e2e/` package
+per the Section 12.1 modularized file layout, (3) implement Mode B
+first (CI-safe, mocked) and get it green, (4) only then implement Mode
+A (real model calls) as a manually-triggered recording script per
+Section 11, never as an automatic CI job (it would make live model
+calls on every push, which is costly and non-deterministic).
 
 ## 10. Coordination With In-Flight Teammate Work
 
@@ -239,6 +262,110 @@ plan:
   agent can add further `tests/e2e/test_*.py` files without touching
   these.
 
+## 11. Screen-Recording / Screen-Capture Execution Plan (both themes)
+
+Added 2026-07-08 per explicit user request: "prepare for integration of
+Playwright for useful screen recordings and screen captures of the
+various examples we want to demo (software cases)." Still planning
+only — no `playwright` package installed, no script executed yet.
+
+### 11.1. Directory layout (future EXECUTE session)
+
+```
+demo/
+  recordings/
+    screenshots/
+      light/   # one PNG per pipeline stage transition, Light Mode
+      dark/    # one PNG per pipeline stage transition, Dark Mode
+    video/
+      light/   # one .webm per demo prompt, Light Mode
+      dark/    # one .webm per demo prompt, Dark Mode
+```
+
+Kept separate by theme subfolder (not by filename suffix) so a future
+`demo/playwright_demo_script.py` run can be pointed at one theme at a
+time (`--theme light|dark`) without overwriting the other's output.
+
+### 11.2. Per-theme capture sequence (for each of the 3 confirmed demo prompts, Section 7)
+
+1. Launch the real `uvicorn` server (Mode A, Section 3.1).
+2. Playwright navigates to `/`, and — **before** submitting any brief —
+   clicks `#theme-toggle` if the desired theme does not match the
+   toggle's default (Dark Mode is the default per `initTheme()`), then
+   waits for `document.documentElement.dataset.theme` to reflect the
+   target value.
+3. Take a "before" screenshot of the empty dashboard
+   (`pipeline-empty` state) — confirms the chosen theme rendered
+   correctly before any pipeline activity starts.
+4. Fill `#brief-input` with the demo prompt, submit, and start video
+   recording (Playwright's built-in per-page video capture, enabled via
+   `browser.new_context(record_video_dir=...)`).
+5. For each of the 8 `STAGE_ORDER` stages, `page.wait_for_selector` on
+   that stage card's `[data-state="done"]` (or `"error"`) transition,
+   taking one incremental screenshot per transition — this directly
+   satisfies Section 8's "every pipeline stage transition must be
+   visibly explicit" recording requirement, now doubled for both
+   themes.
+6. On `quality_gate` reaching a terminal state, take a final
+   full-dashboard screenshot, stop the video recording, and save both
+   under the theme-specific subfolder from Section 11.1.
+7. Repeat steps 2-6 for the other theme, then the next demo prompt.
+
+### 11.3. Naming convention for captured files
+
+`demo/recordings/screenshots/<light|dark>/<prompt-slug>_<stage-id>.png`
+and `demo/recordings/video/<light|dark>/<prompt-slug>.webm` — e.g.
+`demo/recordings/screenshots/light/backup-automation-script_electrical.png`.
+`<prompt-slug>` is a short kebab-case derivation of each Section 7 demo
+prompt, fixed once (in the future implementation) so file names stay
+stable across re-recordings.
+
+### 11.4. Validation criteria before a capture is considered "good"
+
+- Every stage's status icon/text/border-style is legible against the
+  active theme's background (WCAG "use of color" — already enforced by
+  `app.css`'s icon+text+border triple-encoding, Section 8).
+- No literal hex color appears anywhere except `theme.css`'s `:root`
+  block (grep the rendered page's computed styles, or simply grep
+  `frontend/**/*.css`/`frontend/**/*.js` for `#` followed by 3/6 hex
+  digits outside `theme.css`).
+- The captured window contains only the dashboard — no OS chrome,
+  browser tab bar bleed, or other application content (Section 8, 3rd
+  bullet), consistent across both themes.
+
+## 12. Modularized Test & Page Structure (both themes, complete coverage)
+
+Added 2026-07-08 per explicit user request for "complete tests, and
+modularized tests and equally modularized html and css and other pages
+as needed." Still planning only.
+
+### 12.1. Test modularization (future `tests/e2e/`)
+
+| File | Scope |
+| :--- | :--- |
+| `tests/e2e/conftest.py` | Shared `live_server` fixture (Mode B, Section 4) + a `theme` pytest fixture parametrized `["light", "dark"]` so every test below runs once per theme automatically. |
+| `tests/e2e/test_theme_toggle.py` | Toggle button behavior only: default state, click-to-switch, `localStorage` persistence across a reload — independent of any pipeline run. |
+| `tests/e2e/test_dashboard_render.py` | Static-render assertions per theme: topbar, launch panel, empty-state message — no run submitted. |
+| `tests/e2e/test_pipeline_stream.py` | Full run-submission + SSE stage-transition assertions (the Section 11.2 sequence), parametrized by theme and by each Section 7 demo prompt. |
+| `tests/e2e/test_webapp_playwright.py` | Superseded by the 3 files above once they exist — kept in the table from Section 4 only as the original single-file placeholder; the future EXECUTE session should split it into the 3 files above rather than grow one large file (Section 8's SOLID/Power-of-Ten guidance applied to tests as well as app code). |
+
+### 12.2. Frontend modularization (future `frontend/`)
+
+The current `frontend/` is already reasonably separated
+(`index.html` / `app.js` / `styles/theme.css` / `styles/app.css`); the
+only structural gap this plan identifies is the theme-toggle logic
+added this session living inline in `app.js` alongside pipeline/SSE
+logic. A future EXECUTE session, **only if/when the file grows further**
+(YAGNI — not a change to make preemptively for a ~20-line toggle),
+should consider splitting into:
+
+- `frontend/theme-toggle.js` — the `initTheme()`/`applyTheme()` pair,
+  imported as a `<script>` before `app.js`.
+- Leave `index.html`, `styles/theme.css`, `styles/app.css` as single
+  files — none of them currently exhibit the size/SRP pressure that
+  would justify a split, per the implementation-discipline rule against
+  over-engineering ahead of actual need.
+
 ## Changelog
 
 | Version | Date | Author | Description |
@@ -246,3 +373,4 @@ plan:
 | 2026.1.0.0 | 2026-07-07 | Hadrian Hu | Initial Playwright integration plan (planning only, per explicit user request). |
 | 2026.1.1.0 | 2026-07-07 | Hadrian Hu | Updated all architecture references from the retired synchronous Jinja2 webapp to the adopted async SSE + JS-frontend implementation following the same-day reconciliation merge; cleaned up malformed tables from a WIP edit; flagged the CI Python-version and demo-prompt confirmations as still open; added Section 10 on coordinating with in-flight teammate agent work. |
 | 2026.1.2.0 | 2026-07-08 | Hadrian Hu | User confirmed the software-first demo-prompt set as final; resolved the CI Python-version question by confirming project-wide upgrade to 3.14.4 (verified installed locally; user's originally-requested 3.14.6 is not available on this machine). |
+| 2026.1.3.0 | 2026-07-08 | Hadrian Hu | Added Section 11 (theme-aware screen-recording/screen-capture execution plan, both Light/Dark modes) and Section 12 (modularized test-file table + frontend modularization guidance) per explicit user request; updated Section 8 to flag the new webapp Light/Dark toggle and disclose its naming collision with `utils/palette.py`'s unrelated Variant A/B (Plot vs Interface Surface) terminology. |

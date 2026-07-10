@@ -2,7 +2,7 @@
 title: "VISION: AMD LabLabAI Hackathon — Engineering Studio AI (Full Engineering + Corporate Team, Hardware & Software)"
 author: "Hadrian Hu"
 date: "2026-07-04"
-version: "2026.1.0.0"
+version: "2026.1.1.0"
 keywords: ["amd", "lablab", "hackathon", "multi-agent", "engineering-studio", "mdap", "hardware-emulation"]
 status: "Draft"
 confidentiality: "DRAFT — NOT FOR DISTRIBUTION"
@@ -11,6 +11,10 @@ changelog:
     date: "2026-07-04"
     author: "Hadrian Hu"
     description: "Initial hackathon plan, derived from VISION_MULTIMODAL_AGENT_ENGINEERING.md's brainstormed track list and mapped onto the existing MDAP agent catalog (prompts/agents/mdap/)."
+  - version: "2026.1.1.0"
+    date: "2026-07-10"
+    author: "Hadrian Hu"
+    description: "Themed the §5 Demo Flow Mermaid sequenceDiagram with the Variant B (interface-surface) palette per coding_stds/visualization/aesthetic_standards.txt §1.2.3."
 ---
 
 # VISION: AMD LabLabAI Hackathon — Engineering Studio AI
@@ -48,6 +52,7 @@ AMD, LabLabAI, hackathon, multi-agent orchestration, MDAP, Engineering Studio AI
 **Recommendations:** Treat the "hardware" side as **emulation/simulation only** for the hackathon timebox (e.g. Gazebo/ROS2, SPICE-level circuit simulation, or a CAD-adjacent BOM/wiring description) rather than physical fabrication, since no physical hardware access is verified in this workspace.
 
 **Assumptions (explicitly stated, not verified):**
+
 1. AMD ROCm/GPU compute and Fireworks AI access are provisioned by the hackathon organizers, not this repository.
 2. "Hardware emulation" means software simulation (Gazebo, SPICE, CAD/BOM generation), not physical fabrication.
 3. The judging rubric described in `VISION_MULTIMODAL_AGENT_ENGINEERING.md` (Creativity/Originality/Completeness/AMD-usage/Startup-potential) is taken as given from that prior conversation, not independently re-fetched from lablab.ai in this session.
@@ -99,6 +104,25 @@ Per the user's instruction ("moreso for final ultimate idea of agents to produce
 ## 5. Demo Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {
+  'background': '#000000',
+  'actorBkg': '#5A4A4C',
+  'actorBorder': '#B76E79',
+  'actorTextColor': '#FFAEC9',
+  'actorLineColor': '#B76E79',
+  'signalColor': '#FFAEC9',
+  'signalTextColor': '#FFAEC9',
+  'labelBoxBkgColor': '#5A4A4C',
+  'labelBoxBorderColor': '#B76E79',
+  'labelTextColor': '#FFC7DA',
+  'loopTextColor': '#FFAEC9',
+  'noteBkgColor': '#5A4A4C',
+  'noteTextColor': '#FFC7DA',
+  'noteBorderColor': '#B76E79',
+  'activationBorderColor': '#B76E79',
+  'activationBkgColor': '#5A4A4C',
+  'sequenceNumberColor': '#000000'
+}}}%%
 sequenceDiagram
     participant U as User (one prompt)
     participant O as Orchestrator
@@ -141,3 +165,4 @@ See `prompts/agents/mdap/mdap-14-amd-lablab-hackathon-task-specs.md` for the cop
 | Version | Date | Author | Description |
 | :--- | :--- | :--- | :--- |
 | 2026.1.0.0 | 2026-07-04 | Hadrian Hu | Initial creation. |
+| 2026.1.1.0 | 2026-07-10 | Hadrian Hu | Themed the §5 Demo Flow Mermaid `sequenceDiagram` with the Variant B (interface-surface) palette per `coding_stds/visualization/aesthetic_standards.txt` §1.2.3 and `src/engineering_studio/utils/palette.py`. |

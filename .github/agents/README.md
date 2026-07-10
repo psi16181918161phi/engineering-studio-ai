@@ -65,6 +65,25 @@ standards content.
 ## Pipeline order
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {
+  'background': '#000000',
+  'actorBkg': '#5A4A4C',
+  'actorBorder': '#B76E79',
+  'actorTextColor': '#FFAEC9',
+  'actorLineColor': '#B76E79',
+  'signalColor': '#FFAEC9',
+  'signalTextColor': '#FFAEC9',
+  'labelBoxBkgColor': '#5A4A4C',
+  'labelBoxBorderColor': '#B76E79',
+  'labelTextColor': '#FFC7DA',
+  'loopTextColor': '#FFAEC9',
+  'noteBkgColor': '#5A4A4C',
+  'noteTextColor': '#FFC7DA',
+  'noteBorderColor': '#B76E79',
+  'activationBorderColor': '#B76E79',
+  'activationBkgColor': '#5A4A4C',
+  'sequenceNumberColor': '#000000'
+}}}%%
 sequenceDiagram
     participant U as User (one prompt)
     participant O as orchestrator.agent.md
@@ -99,3 +118,4 @@ sequenceDiagram
 | Version | Date       | Author     | Description                                                                 |
 | :------ | :--------- | :--------- | :------------------------------------------------------------------------------|
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial deployment: curated ~30-file roster matching `VISION_AMD_LABLAB_HACKATHON_ENGINEERING_STUDIO.md` §4, plus `STANDARDS_SUMMARY.md`. |
+| 0.2.0   | 2026-07-10 | Hadrian Hu | Themed the Pipeline order Mermaid `sequenceDiagram` with the Variant B (interface-surface) palette per `coding_stds/visualization/aesthetic_standards.txt` §1.2.3 and `src/engineering_studio/utils/palette.py`. |

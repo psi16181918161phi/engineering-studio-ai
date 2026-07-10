@@ -27,23 +27,36 @@ corpus, ask for private repo access separately.
 
 ## Architecture
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {
+  'background': '#000000',
+  'primaryColor': '#5A4A4C',
+  'primaryTextColor': '#FFAEC9',
+  'primaryBorderColor': '#B76E79',
+  'lineColor': '#B76E79',
+  'secondaryColor': '#5A4A4C',
+  'tertiaryColor': '#000000',
+  'fontFamily': 'inherit'
+}}}%%
+flowchart TD
+    O["Orchestrator"] --> R["Research (problem framing)"]
+    R --> M["Mechanical"]
+    R --> E["Electrical"]
+    R --> F["Firmware"]
+    R --> S["Simulation"]
+    M --> CB["Cost/Business + Legal"]
+    E --> CB
+    F --> CB
+    S --> CB
+    CB --> CD["Challenge Division (critique)"]
+    CD --> QG["Quality Gate (verdict)"]
 ```
-Orchestrator ──► Research (problem framing)
-                     │
-       ┌─────────────┼─────────────┬──────────────┐
-       ▼             ▼             ▼              ▼
-  Mechanical    Electrical     Firmware      Simulation
-       │             │             │              │
-       └─────────────┴──────┬──────┴──────────────┘
-                             ▼
-                    Cost/Business + Legal
-                             │
-                             ▼
-                    Challenge Division (critique)
-                             │
-                             ▼
-                    Quality Gate (verdict)
-```
+
+<!-- Mermaid Variant B (interface-surface) theming per
+coding_stds/visualization/aesthetic_standards.txt §1.2.3, palette values
+sourced from src/engineering_studio/utils/palette.py PALETTE_B_*
+(background/muted/foreground-primary/accent) — do not hardcode different
+hex literals in future edits to this diagram; update palette.py first. -->
 
 Each stage is a Task Specification (`docs/task-specs.md`) dispatched as a
 Fireworks AI chat completion call. Every specialist writes ONLY to its own

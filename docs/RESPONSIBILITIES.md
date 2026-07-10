@@ -563,6 +563,52 @@ The following became relevant to Role 4 once `exceptions/`, `decorators/`,
   evidence, and linked it from the root `README.md`.
 - [x] Closed the meta-project security propagation checkbox (see above).
 
+#### Current Todos (as of the full-suite + diagram-aesthetics recheck pass, 2026-07-10)
+
+- [x] **Full regression re-verified fresh** (all local, matching
+  `.github/workflows/ci.yml` step order): `ruff check .` clean;
+  `mypy src` clean (26 files); `bandit -r src -ll` clean (1673 LOC,
+  0 issues); `pip-audit` clean (own unpublished package skip only);
+  `pytest tests --ignore=tests/e2e` — 111 passed, 100.00% coverage
+  (640/640 statements); `pytest tests/e2e --no-cov` — 17 passed, 0
+  failed, 0 errors (25.72s).
+- [x] **Playwright demo recordings regenerated today** via
+  `python demo/playwright_demo_script.py` (Mode B, deterministic): 72
+  files (36 screenshots + 3 videos × 2 themes) freshly written under
+  `demo/recordings/` (previously dated 2026-07-09), confirming the
+  recorded evidence `docs/JUDGES_GUIDE.md` §4 links to is current.
+- [x] **Presentation assets spot-checked, not rewritten**: confirmed
+  `presentation/slides-outline.md` (9 filled slides) and
+  `presentation/slides.html` (309 lines, Variant A/B palette hex codes
+  present) are complete — no placeholder/`[SECTION INCOMPLETE]` markers
+  found.
+- [x] **Diagram aesthetics audit**: found 2 conceptual architecture
+  diagrams still rendered as ASCII box-drawing art (`README.md` §Architecture,
+  `docs/JUDGES_GUIDE.md` §6, identical content) and 2 existing Mermaid
+  `sequenceDiagram`s with no palette theming
+  (`docs/VISION_AMD_LABLAB_HACKATHON_ENGINEERING_STUDIO.md` §5,
+  `.github/agents/README.md` "Pipeline order"). Directory-tree listings
+  in `docs/RESPONSIBILITIES.md` and `run_scripts/README.md` were left as
+  plain text (literal file trees, not conceptual diagrams — Mermaid does
+  not apply).
+- [x] **All 4 diagrams converted/themed to Variant B** (interface-surface
+  palette per `coding_stds/visualization/aesthetic_standards.txt` §1.2.3,
+  values sourced from `src/engineering_studio/utils/palette.py`
+  `PALETTE_B_*` constants: background `#000000`, node fill `#5A4A4C`,
+  text `#FFAEC9`, borders/lines `#B76E79`): the two ASCII diagrams became
+  Mermaid `flowchart TD`; the two existing `sequenceDiagram`s got a
+  `%%{init: {'theme': 'base', 'themeVariables': {...}}}%%` block. Version/
+  changelog bumped in each file that had one (`JUDGES_GUIDE.md` 1.0.0 ->
+  1.1.0, `VISION_AMD_LABLAB_...md` 2026.1.0.0 -> 2026.1.1.0,
+  `.github/agents/README.md` 0.1.0 -> 0.2.0; `README.md` has no changelog
+  table, none added).
+- [ ] **Not done this pass (explicit user instruction: no push without
+  permission)**: these 4 file edits are staged locally, uncommitted, and
+  unpushed — awaiting explicit go-ahead before `git commit`/`git push`.
+  Teammates are notified of this pass via this section plus the session
+  chat archive (`markdowns/chats/CHAT_2026-07-10_...md` in the parent
+  `CodingStandardsRef` repo) — neither is pushed yet either.
+
 ### Role 5 — Frontend, Visualization & Demonstration
 
 #### Responsibilities

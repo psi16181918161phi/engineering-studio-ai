@@ -9,22 +9,24 @@ status: "Draft"
 project_lead: "Hadrian [psi16181918161phi]"
 repository: "engineering-studio-ai"
 changelog:
-  - version: "2026.1.2.0"
+
+- version: "2026.1.2.0"
     date: "2026-07-10"
     author: "Hadrian Hu"
     description: "Final-sprint-freeze pass: merged teammate PRs #9/#10, Docker rework (build+run verified), fresh regression re-verified, docs/JUDGES_GUIDE.md added, meta-project security propagation checkbox closed."
-  - version: "2026.1.1.0"
+- version: "2026.1.1.0"
     date: "2026-07-09"
     author: "Hadrian Hu"
     description: "Completed WISHLIST_2026-07-09_demo-one-more-round (W-01 through W-06); added presentation/slides.html; confirmed full green regression."
-  - version: "2026.1.0.0"
+- version: "2026.1.0.0"
     date: "2026-07-05"
     author: "Hadrian Hu"
     description: "Restructured document to conform to markdown documentation standards (front matter, TOC, Abstract, Keywords, Executive Summary, Changelog)."
-  - version: "1.0.0"
+- version: "1.0.0"
     date: "2026-07-04"
     author: "Hadrian Hu"
     description: "Initial draft of team roles and responsibilities."
+
 ---
 
 # AI Engineering Studio — AMD Hackathon Team Roles & Responsibilities
@@ -37,23 +39,23 @@ changelog:
 - [Keywords](#keywords)
 - [Executive Summary](#executive-summary)
 - [Project Overview](#project-overview)
-    - [Project Vision](#project-vision)
-    - [Team Organization](#team-organization)
+  - [Project Vision](#project-vision)
+  - [Team Organization](#team-organization)
 - [Team Roles](#team-roles)
-    - [Role 1 — Project Architect & Technical Lead](#role-1--project-architect--technical-lead)
-    - [Role 2 — AI Research & Prompt Engineering](#role-2--ai-research--prompt-engineering)
-    - [Role 3 — AI Pipeline & Backend Engineering](#role-3--ai-pipeline--backend-engineering)
-    - [Role 4 — Software Quality, Security & DevOps](#role-4--software-quality-security--devops)
-    - [Role 5 — Frontend, Visualization & Demonstration](#role-5--frontend-visualization--demonstration)
-    - [Role 6 — Documentation, Paper & Presentation](#role-6--documentation-paper--presentation)
+  - [Role 1 — Project Architect & Technical Lead](#role-1--project-architect--technical-lead)
+  - [Role 2 — AI Research & Prompt Engineering](#role-2--ai-research--prompt-engineering)
+  - [Role 3 — AI Pipeline & Backend Engineering](#role-3--ai-pipeline--backend-engineering)
+  - [Role 4 — Software Quality, Security & DevOps](#role-4--software-quality-security--devops)
+  - [Role 5 — Frontend, Visualization & Demonstration](#role-5--frontend-visualization--demonstration)
+  - [Role 6 — Documentation, Paper & Presentation](#role-6--documentation-paper--presentation)
 - [Workflow and Collaboration](#workflow-and-collaboration)
-    - [GitHub Workflow](#github-workflow)
-    - [Repository Structure](#repository-structure)
-    - [Communication](#communication)
-    - [Daily Coordination](#daily-coordination)
+  - [GitHub Workflow](#github-workflow)
+  - [Repository Structure](#repository-structure)
+  - [Communication](#communication)
+  - [Daily Coordination](#daily-coordination)
 - [Standards and Deliverables](#standards-and-deliverables)
-    - [Coding Standards](#coding-standards)
-    - [Definition of Done](#definition-of-done)
+  - [Coding Standards](#coding-standards)
+  - [Definition of Done](#definition-of-done)
 - [Role Assignments](#role-assignments)
 - [Collaboration Principles](#collaboration-principles)
 - [Final Goal](#final-goal)
@@ -561,8 +563,6 @@ The following became relevant to Role 4 once `exceptions/`, `decorators/`,
   evidence, and linked it from the root `README.md`.
 - [x] Closed the meta-project security propagation checkbox (see above).
 
-
-
 ### Role 5 — Frontend, Visualization & Demonstration
 
 #### Responsibilities
@@ -668,7 +668,6 @@ Recommended communication channels:
 - GitHub Issues
 - GitHub Discussions
 - Discord
-
 
 Use Issues for:
 

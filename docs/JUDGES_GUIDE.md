@@ -32,7 +32,7 @@ HOW: Kept in sync manually whenever a new demo asset lands; see
 Type one product brief (e.g. *"Design a warehouse robot"*) and a team of
 AI specialist agents — Research, Mechanical, Electrical, Firmware,
 Simulation, Cost/Business, Legal, a Challenge Division, and a Quality
-Gate — collaborate over Fireworks AI-hosted open models to produce a
+Gate — collaborate over Fireworks AI-hosted open models (or via other cloud models) to produce a
 complete engineering package (BOM, wiring/power notes, firmware
 skeleton, emulation-only simulation config, cost estimate, documentation
 export) in one run, visible live in a browser dashboard.
@@ -47,12 +47,14 @@ export) in one run, visible live in a browser dashboard.
 
 ## 3. Formal write-ups
 
-| Artifact                   | Link                                                                                                                          | Contents                                                                                                                                 |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Public whitepaper (short)  | [../paper/engineering_studio_ai_whitepaper_for_team_public.pdf](../paper/engineering_studio_ai_whitepaper_for_team_public.pdf) | Distilled, judge-friendly summary of the architecture and results.                                                                       |
-| Full paper (formal proofs) | [../paper/engineering_studio_ai_paper.pdf](../paper/engineering_studio_ai_paper.pdf)                                           | Full mathematical model: acyclicity, bounded rework termination, minimum agent multiplicity, trust-tier safety, cost convergence sketch. |
-| Slide deck                 | [../presentation/slides.html](../presentation/slides.html)                                                                     | Self-contained HTML deck — open directly in any browser, arrow keys to navigate.                                                        |
-| Slide outline              | [../presentation/slides-outline.md](../presentation/slides-outline.md)                                                         | Slide-by-slide content plan behind the deck above.                                                                                       |
+| Artifact                   | Link                                                                                                                          | Contents                                                                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public whitepaper (short)  | [../paper/engineering_studio_ai_whitepaper_for_team_public.pdf](../paper/engineering_studio_ai_whitepaper_for_team_public.pdf) | Distilled, judge-friendly summary of the architecture and results.                                                                         |
+| Full paper (formal proofs) | [../paper/engineering_studio_ai_paper.pdf](../paper/engineering_studio_ai_paper.pdf)                                           | Full mathematical model: acyclicity, bounded rework termination, minimum agent multiplicity, trust-tier safety, cost convergence sketch.   |
+| Slide deck                 | [../presentation/slides.html](../presentation/slides.html)                                                                     | Self-contained HTML deck — open directly in any browser, arrow keys to navigate.                                                          |
+| Slide deck (PNG stills)    | [../presentation/slides_png/](../presentation/slides_png/)                                                                     | All 9 slides pre-rendered to PNG (regenerate via`../presentation/export_slides_to_png.py`) — view inline without opening the HTML deck. |
+| ↳ Architecture slide      | [../presentation/slides_png/04-architecture.png](../presentation/slides_png/04-architecture.png)                               | The Orchestrator → Parallel Specialists → Quality Gate Mermaid diagram, single slide of interest for judges short on time.               |
+| Slide outline              | [../presentation/slides-outline.md](../presentation/slides-outline.md)                                                         | Slide-by-slide content plan behind the deck above.                                                                                         |
 
 > Note: both PDFs are tracked via Git LFS (see [../paper/README.md](../paper/README.md)). If you cloned without LFS support you may see a small pointer file instead of the PDF — use `git lfs pull` or download via the GitHub web UI.
 
@@ -98,17 +100,14 @@ See [E2E_EVIDENCE.md](E2E_EVIDENCE.md) for the full table. Summary:
   'fontFamily': 'inherit'
 }}}%%
 flowchart TD
-    O["Orchestrator"] --> R["Research (problem framing)"]
+    O["Orchestrator"] --> R["Research<br/>problem framing"]
     R --> M["Mechanical"]
     R --> E["Electrical"]
     R --> F["Firmware"]
     R --> S["Simulation"]
-    M --> CB["Cost/Business + Legal"]
-    E --> CB
-    F --> CB
-    S --> CB
-    CB --> CD["Challenge Division (critique)"]
-    CD --> QG["Quality Gate (verdict)"]
+    M & E & F & S --> CB["Cost / Business<br/>+ Legal"]
+    CB --> CD["Challenge Division<br/>critique"]
+    CD --> QG["Quality Gate<br/>verdict"]
 ```
 
 <!-- Mermaid Variant B (interface-surface) theming per
@@ -137,7 +136,7 @@ for the full scope-control contract each agent operates under.
 
 ## Changelog
 
-| Version | Date       | Author     | Description                                                                                                                                                                                                                                     |
-| :------ | :--------- | :--------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2026-07-10 | Hadrian Hu | Initial judges' guide, created as a standalone entry point per final-sprint-readiness PLAN step S4.                                                                                                                                             |
-| 1.1.0   | 2026-07-10 | Hadrian Hu | Converted §6 architecture ASCII diagram to a Mermaid`flowchart TD`, themed with the Variant B (interface-surface) palette per `coding_stds/visualization/aesthetic_standards.txt` §1.2.3 and `src/engineering_studio/utils/palette.py`. |
+| Version    | Date       | Author     | Description                                                                                                                                                                                                                                     |
+| :--------- | :--------- | :--------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026.1.0.0 | 2026-07-10 | Hadrian Hu | Initial judges' guide, created as a standalone entry point per final-sprint-readiness PLAN step S4.                                                                                                                                             |
+| 2026.1.1.0 | 2026-07-10 | Hadrian Hu | Converted §6 architecture ASCII diagram to a Mermaid`flowchart TD`, themed with the Variant B (interface-surface) palette per `coding_stds/visualization/aesthetic_standards.txt` §1.2.3 and `src/engineering_studio/utils/palette.py`. |

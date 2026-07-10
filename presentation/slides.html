@@ -4,6 +4,16 @@
 <meta charset="UTF-8" />
 <title>Engineering Studio AI — Pitch Deck</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  // startOnLoad is intentionally NOT used: this is a module script fetched
+  // from a CDN, so by the time it executes the DOMContentLoaded event that
+  // startOnLoad waits for may have already fired, leaving the diagram
+  // un-rendered (raw mermaid source text shown instead of an SVG). Calling
+  // mermaid.run() explicitly avoids that race regardless of load timing.
+  mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+  mermaid.run({ querySelector: '.mermaid' });
+</script>
 <!--
   WHAT: A self-contained, dependency-free HTML slide deck for the AMD
   LabLabAI Hackathon (Unicorn Track) live pitch, built from
@@ -39,19 +49,32 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative;
   }
   .slide {
-    display: none;
+    /* Inactive slides stay display:flex (not display:none) so Mermaid can
+       still measure/lay out the .mermaid diagram inside them; display:none
+       subtrees report zero size, which breaks Mermaid's SVG sizing. They
+       are instead pulled out of the flex flow and hidden visually. */
+    display: flex;
     width: min(90vw, 1280px);
     aspect-ratio: 16 / 9;
     border: 6px solid var(--rose-gold);
     border-radius: 4px;
     padding: 3.5rem 4rem;
-    position: relative;
+    position: absolute;
     flex-direction: column;
     justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
-  .slide.active { display: flex; }
+  .slide.active {
+    position: relative;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
   .variant-a { background: var(--pink); color: var(--black); }
   .variant-b { background: var(--black); color: var(--pink); }
   .slide h1 {
@@ -127,6 +150,65 @@
     opacity: 0.85;
     margin-top: 1rem;
   }
+  code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.9em;
+    background: rgba(183, 110, 121, 0.18);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+  .variant-b code {
+    background: rgba(255, 174, 201, 0.15);
+  }
+  /* Pure-CSS architecture diagram */
+  .arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0.6rem 0;
+    font-size: 0.78rem;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .arch-node {
+    background: #1C1517;
+    border: 2px solid #B76E79;
+    border-radius: 20px;
+    padding: 0.25rem 0.7rem;
+    color: #F5E6E8;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .arch-node.gate {
+    border-color: #C9858F;
+    border-width: 3px;
+    color: #F2B5BC;
+  }
+  .arch-arrow {
+    color: #B76E79;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .arch-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .arch-vline {
+    width: 2px;
+    height: 0.4rem;
+    background: #B76E79;
+  }
+  .arch-hline-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 </style>
 </head>
 <body>
@@ -178,21 +260,21 @@
   <section class="slide variant-b">
     <p class="eyebrow">Architecture</p>
     <h1>Orchestrator &rarr; Parallel Specialists &rarr; Quality Gate</h1>
-    <pre>Orchestrator ──► Research (problem framing)
-                     │
-       ┌─────────────┼─────────────┬──────────────┐
-       ▼             ▼             ▼              ▼
-  Mechanical    Electrical     Firmware      Simulation
-       │             │             │              │
-       └─────────────┴──────┬──────┴──────────────┘
-                             ▼
-                    Cost/Business + Legal
-                             │
-                             ▼
-                    Challenge Division (critique)
-                             │
-                             ▼
-                    Quality Gate (verdict)</pre>
+    <div class="mermaid">
+flowchart TD
+    O([Orchestrator]) --> R([Research<br/>problem framing])
+    R --> M([Mechanical])
+    R --> E([Electrical])
+    R --> F([Firmware])
+    R --> S([Simulation])
+    M & E & F & S --> CB([Cost / Business + Legal])
+    CB --> CD([Challenge Division<br/>critique])
+    CD --> QG([Quality Gate<br/>verdict])
+
+    classDef default fill:#1C1517,stroke:#B76E79,stroke-width:2px,color:#F5E6E8
+    classDef gate fill:#1C1517,stroke:#C9858F,stroke-width:3px,color:#F2B5BC
+    class QG gate
+    </div>
     <p>Every specialist writes ONLY to its own artifacts folder &mdash; strict
     scope control per <code>AGENTS.md</code>.</p>
   </section>

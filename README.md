@@ -13,6 +13,10 @@ documentation export.
 See [VISION_AMD_LABLAB_HACKATHON_ENGINEERING_STUDIO.md](https://github.com/psi16181918161phi/CodingStandardsRef/blob/main/markdowns/visions/VISION_AMD_LABLAB_HACKATHON_ENGINEERING_STUDIO.md)
 for the full track rationale (private repo — team members only).
 
+**Judges: start at [docs/JUDGES_GUIDE.md](docs/JUDGES_GUIDE.md)** for the
+paper, slides, recorded demo screenshots/video, and test/security evidence
+in one place.
+
 ## Why this repo is separate from our standards corpus
 
 This is a **public** hackathon submission. Our team's full internal coding

@@ -61,12 +61,19 @@ Fireworks call) per `docs/PLAYWRIGHT_INTEGRATION_PLAN.md` §3.2. It verifies:
 
 | Suite | Command | Result | Source |
 |---|---|---|---|
-| Unit + integration (100% coverage gate) | `pytest tests -v --tb=short` | **111 passed**, 0 failed, coverage 100.00% (640/640 statements), 0 warnings | local run, 2026-07-09 |
-| End-to-end (Playwright, Mode B) | `pytest tests/e2e -v --tb=short --no-cov --junitxml=reports/e2e-junit.xml` | **17 passed**, 0 failed, 0 errors, 25.25s | local run, 2026-07-09T15:12:35-04:00, `reports/e2e-junit.xml` (gitignored, regenerate locally) |
-| Lint (ruff) | `ruff check .` | Clean, 0 issues | local run, 2026-07-09 |
-| Type check (mypy --strict) | `mypy src` | Clean, 0 issues | local run, 2026-07-09 |
-| Security static analysis (bandit) | `bandit -r src -ll` | Clean, 0 issues | local run, 2026-07-09 |
-| Dependency CVE audit (pip-audit) | `pip-audit` | Clean, 0 known vulnerabilities (own unpublished package skipped, expected) | local run, 2026-07-09 |
+| Unit + integration (100% coverage gate) | `pytest tests -v --tb=short` | **111 passed**, 0 failed, coverage 100.00% (640/640 statements), 0 warnings | local run, 2026-07-10 |
+| End-to-end (Playwright, Mode B) | `pytest tests/e2e -v --tb=short --no-cov --junitxml=reports/e2e-junit.xml` | **17 passed**, 0 failed, 0 errors, 25.93s | local run, 2026-07-10T08:50:36-04:00, `reports/e2e-junit.xml` (gitignored, regenerate locally) |
+| Lint (ruff) | `ruff check .` | Clean, 0 issues | local run, 2026-07-10 |
+| Type check (mypy --strict) | `mypy src` | Clean, 0 issues (26 source files) | local run, 2026-07-10 |
+| Security static analysis (bandit) | `bandit -r src -ll` | Clean, 0 issues (1673 LOC scanned) | local run, 2026-07-10 |
+| Dependency CVE audit (pip-audit) | `pip-audit` | Clean, 0 known vulnerabilities (own unpublished package skipped, expected) | local run, 2026-07-10 |
+| Container build + smoke test | `docker compose -f deployment/docker-compose.yml build dashboard` then `docker run -p 8000:8000 ...` + `GET /api/health` | Image built (`deployment-dashboard:latest`, 192MB); container started; health check returned `{"status":"ok"}` | local run, 2026-07-10, Docker Desktop 29.6.1 |
+
+**Previous verified run:** 2026-07-09 — same counts (111/17 passed, 100%
+coverage) — re-verified today after merging teammate PR #9
+(`paper/README.md`) and PR #10 (Variant B presentation CSS fix), both
+documentation/presentation-only changes with zero impact on the
+Python package under test.
 
 **Reproduce locally:** run `python scripts/pre_demo_check.py` (see
 [../scripts/pre_demo_check.py](../scripts/pre_demo_check.py)) for a single

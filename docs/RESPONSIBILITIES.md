@@ -3,12 +3,16 @@
 title: "AI Engineering Studio — AMD Hackathon Team Roles & Responsibilities"
 author: "Hadrian Hu"
 date: "2026-07-09"
-version: "2026.1.1.0"
+version: "2026.1.2.0"
 keywords: ["agent-collaboration", "engineering-studio", "hackathon", "responsibilities", "roles", "team-organization", "workflow"]
 status: "Draft"
 project_lead: "Hadrian [psi16181918161phi]"
 repository: "engineering-studio-ai"
 changelog:
+  - version: "2026.1.2.0"
+    date: "2026-07-10"
+    author: "Hadrian Hu"
+    description: "Final-sprint-freeze pass: merged teammate PRs #9/#10, Docker rework (build+run verified), fresh regression re-verified, docs/JUDGES_GUIDE.md added, meta-project security propagation checkbox closed."
   - version: "2026.1.1.0"
     date: "2026-07-09"
     author: "Hadrian Hu"
@@ -525,8 +529,37 @@ The following became relevant to Role 4 once `exceptions/`, `decorators/`,
   passed (100.00% coverage, 640/640 statements, 0 warnings), 17 e2e tests
   passed (0 failures, 0 errors, 25.25s), ruff/mypy --strict/bandit/
   pip-audit all clean.
-- [ ] **Meta-project security propagation check** (outside this submodule)
-  remains open — carried forward, unchanged, from the prior pass.
+- [x] **Meta-project security propagation check** — CLOSED 2026-07-10.
+  Investigated the parent `CodingStandardsRef` repo's own
+  `.github/workflows/ci-security.yml`/`ci-cve-check.yml`: both are
+  intentionally scoped to the parent repo's own `scripts/` tree (its
+  internal CVE-tracking system, per `coding_stds/artifacts_cve_security_protection/`)
+  and are unrelated to this submodule's Python package — no change
+  needed there. This submodule already has its own complete,
+  independently-triggered `.github/workflows/ci.yml` (ruff, mypy
+  --strict, bandit, pip-audit, 111 unit tests, 17 e2e tests) that runs
+  on every push/PR to `psi16181918161phi/engineering-studio-ai` — verified
+  via `gh run list` to be genuinely green on GitHub (not just locally) as
+  of the PR #9/#10 merges today. Security propagation is real and
+  already fully wired; no further action required.
+
+#### Current Todos (as of the final-sprint-freeze pass, 2026-07-10)
+
+- [x] Merged teammate PR #9 (`paper/README.md`, Git LFS pointer-file
+  documentation) and PR #10 (Variant B presentation CSS selector fix).
+- [x] Rewrote `deployment/Dockerfile`/`docker-compose.yml`/`README.md` to
+  cover all three runnable surfaces (dashboard/webapp+API, CLI, GUI),
+  cross-platform (Windows/macOS/Linux via Docker Desktop/Engine).
+- [x] **Docker build + run genuinely verified** (not just config-reviewed):
+  `docker compose build dashboard` succeeded, container started, and
+  `GET /api/health` returned `{"status":"ok"}`.
+- [x] Re-verified full regression fresh today: 111 unit tests / 100%
+  coverage, 17 e2e tests, ruff/mypy/bandit/pip-audit all clean — see
+  updated `docs/E2E_EVIDENCE.md`.
+- [x] Created `docs/JUDGES_GUIDE.md` — a standalone entry point linking
+  the paper, whitepaper, slides, recorded screenshots/video, and test
+  evidence, and linked it from the root `README.md`.
+- [x] Closed the meta-project security propagation checkbox (see above).
 
 
 

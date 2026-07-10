@@ -1,15 +1,47 @@
-# WHAT: Local multi-service compose for the demo environment.
-# WHY:  One command to bring up the pipeline (and, later, any web
-#       frontend/backend service Role 5/Role 3 add).
-# HOW:  `docker compose -f deployment/docker-compose.yml up`
+# WHAT: Local multi-service compose covering every Engineering Studio AI
+#       surface: dashboard (webapp + API, default service), CLI, and GUI.
+# WHY:  `docker compose up` alone should bring up the SAME surface the
+#       recorded demo evidence (demo/recordings/**) and
+#       docs/E2E_EVIDENCE.md are built against — the dashboard — not just
+#       the CLI (see INVESTIGATE_2026-07-10 gap G2). `cli`/`gui` are kept
+#       as opt-in profiles so `docker compose up` never blocks waiting on
+#       an interactive terminal.
+# HOW:  `docker compose -f deployment/docker-compose.yml up`             (dashboard only, http://localhost:8000/)
+#       `docker compose -f deployment/docker-compose.yml run --rm cli`   (one-shot CLI run)
+#       `docker compose -f deployment/docker-compose.yml run --rm gui`   (interactive TUI)
 #       FIREWORKS_API_KEY is read from a local .env (never committed).
+#       Runs on Windows/macOS via Docker Desktop and natively on Linux —
+#       the image itself (python:3.14-slim) is a standard multi-arch base.
 
 services:
-  studio:
+  dashboard:
     build:
       context: ..
       dockerfile: deployment/Dockerfile
     env_file:
       - ../.env
-    # Override the default entrypoint arg with your product brief, e.g.:
-    # command: ["Design a warehouse robot"]
+    ports:
+      - "8000:8000"
+    command: ["uvicorn", "engineering_studio.webapp:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  cli:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    env_file:
+      - ../.env
+    profiles: ["cli"]
+    # Override the product brief as needed, e.g.:
+    # command: ["python", "-m", "engineering_studio.cli", "run", "Design a warehouse robot"]
+    command: ["python", "-m", "engineering_studio.cli", "run", "Design a warehouse robot"]
+
+  gui:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    env_file:
+      - ../.env
+    profiles: ["gui"]
+    stdin_open: true
+    tty: true
+    command: ["python", "-m", "engineering_studio.gui"]

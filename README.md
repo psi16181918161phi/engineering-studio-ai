@@ -150,4 +150,4 @@ pipeline stage definitions.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE.md).

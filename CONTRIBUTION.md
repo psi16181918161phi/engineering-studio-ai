@@ -114,7 +114,7 @@ Two teammates have, in practice, independently built entire overlapping
 subsystems (two different web architectures, same repo, same week)
 without either knowing about the other's work until merge time. It
 happens even with an ownership-zone table. When it does:
-**[COMMUNITY.md § Merge Conflict Resolution Playbook](COMMUNITY.md#merge-conflict-resolution-playbook)**
+**[COMMUNITY.md § Merge Conflict Resolution Playbook](COMMUNITY.md#4-merge-conflict-resolution-playbook)**
 is the step-by-step recovery process — read it before you start resolving
 conflicts by hand.
 

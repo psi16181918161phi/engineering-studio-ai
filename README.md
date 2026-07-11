@@ -78,6 +78,28 @@ python -m engineering_studio.cli status --artifacts-root runs/demo/artifacts
 python -m engineering_studio.cli artifacts --artifacts-root runs/demo/artifacts
 ```
 
+## Troubleshooting
+
+- **Every model call returns HTTP 404 "Model not found, inaccessible, and/or
+  not deployed"** (even for well-known models like
+  `accounts/fireworks/models/llama-v3p1-70b-instruct`): this almost always
+  means `FIREWORKS_API_KEY` is missing, invalid, or revoked, **not** a bad
+  model ID — Fireworks' API returns the same generic 404 for both an
+  auth failure and an unrecognized model, so a 404 doesn't by itself tell
+  you which one it is. Verify the key first (regenerate it in the Fireworks
+  dashboard at <https://app.fireworks.ai/account/api-keys> if unsure) before
+  changing any `FIREWORKS_MODEL_*` value in `.env`.
+- **`FIREWORKS_MODEL_RESEARCH` / deepseek model 404s specifically**: the
+  base `accounts/fireworks/models/deepseek-v3` model ID is **not served
+  serverless** (fine-tuning/on-demand only) — use
+  `accounts/fireworks/models/deepseek-v3p1`, which is the serverless,
+  chat-completions-ready variant and the one used throughout Fireworks'
+  own docs examples. `.env.example` already reflects this.
+- **Never paste a real API key into chat, an issue, or a commit.** If a key
+  is ever exposed (chat log, screenshot, committed file), treat it as
+  compromised and rotate it immediately in the Fireworks dashboard, even if
+  `.gitignore` prevented it from being committed.
+
 ### Command & Control web dashboard
 
 The same pipeline is also reachable through a browser-based command-and-control

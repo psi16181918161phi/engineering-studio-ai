@@ -47,6 +47,8 @@ class ModelClient:
         base_url: str | None = None,
         api_key: str | None = None,
         timeout_s: float = 60.0,
+        max_tokens: int = 1024,
+        reasoning_effort: str | None = "low",
     ) -> None:
         resolved_base_url = (
             base_url if base_url is not None else os.environ.get("FIREWORKS_BASE_URL", "")
@@ -55,6 +57,16 @@ class ModelClient:
         self.api_key = api_key or os.environ.get("FIREWORKS_API_KEY", "")
         self.model = model
         self.timeout_s = timeout_s
+        # WHAT: Caps visible+hidden-reasoning output and reasoning depth.
+        # WHY: Fireworks reasoning models (GLM-5.x, Kimi-K2.x, DeepSeek-V4,
+        # GPT-OSS Harmony) emit hidden reasoning tokens before the visible
+        # answer, ON by default on most of them. A non-streaming request
+        # with neither cap blocks until that full hidden trace finishes —
+        # the observed "hangs / times out on a random stage" symptom.
+        # Fireworks also rejects non-streaming requests with max_tokens
+        # over 4096, so keep this at or below that.
+        self.max_tokens = max_tokens
+        self.reasoning_effort = reasoning_effort
         if not self.base_url:
             raise ValueError("FIREWORKS_BASE_URL is not set (see .env.example).")
 
@@ -77,17 +89,24 @@ class ModelClient:
                 "FIREWORKS_API_KEY is not set — refusing to call a paid API "
                 "without credentials (see .env.example)."
             )
+        payload: dict[str, object] = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "max_tokens": self.max_tokens,
+        }
+        # WHAT: Only sent when set — the local llama.cpp fallback endpoint
+        # does not understand this Fireworks-specific parameter, and some
+        # models (Harmony/GPT-OSS) error on unsupported values like "none".
+        if self.reasoning_effort is not None:
+            payload["reasoning_effort"] = self.reasoning_effort
         try:
             response = requests.post(
                 f"{self.base_url}/chat/completions",
                 headers={"Authorization": f"Bearer {self.api_key}"},
-                json={
-                    "model": self.model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                },
+                json=payload,
                 timeout=self.timeout_s,
             )
         except requests.RequestException as exc:
@@ -98,10 +117,10 @@ class ModelClient:
                 f"{self.model} returned HTTP {response.status_code}: {response.text[:300]}"
             )
 
-        payload = response.json()
+        response_payload = response.json()
         try:
-            return str(payload["choices"][0]["message"]["content"])
+            return str(response_payload["choices"][0]["message"]["content"])
         except (KeyError, IndexError, TypeError) as exc:
             raise ModelUnavailableError(
-                f"unexpected response shape from {self.model}: {payload!r}"
+                f"unexpected response shape from {self.model}: {response_payload!r}"
             ) from exc

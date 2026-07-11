@@ -28,6 +28,7 @@
 \usepackage{lastpage}
 \pagestyle{fancy}
 \fancyhf{}
+\setlength{\headheight}{15pt} % WHY: fancyhdr's own minimum for this font size; avoids "headheight too small" warning on every page
 \rhead{\thepage\ of \pageref{LastPage}}
 \lhead{Engineering Studio AI — Formal Model \& Proofs}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -943,7 +944,7 @@ No assumption is left implicit.
         explicitly forbids multi-function assignments for all pairs in
         $E_C$; that constraint is formalized in
         Definition~\ref{def:conflict-graph} and enforced in
-        Theorem~\ref{thm:non-overlap} (Section~\ref{sec:proofs}).
+        Theorem~\ref{thm:multiplicity} (Section~\ref{sec:proofs}).
 
   \item \textbf{Statelessness of agent instances (boundary: session
         boundary).}
@@ -982,7 +983,7 @@ No assumption is left implicit.
         \VisionFlow{}.
         \emph{Edge case:} omitting even one phase (e.g., \textit{Gate})
         would make the acceptance criterion unreachable, violating the
-        liveness argument in Theorem~\ref{thm:termination}.
+        liveness argument in Theorem~\ref{thm:rework}.
         \emph{Validation:} The 11 elements of $V$ are listed verbatim
         from Tables~3.1--3.2; the count matches the governing source.
 
@@ -1001,7 +1002,7 @@ No assumption is left implicit.
         $|V| = 11$ and $|E| \leq |V|^2 = 121$; both are finite.
         \emph{Edge case:} dynamic phase insertion during a run is
         \emph{not} permitted because the vertex set is fixed at session
-        start (\VisionFlow{} \S4.1).  Theorem~\ref{thm:acyclicity}
+        start (\VisionFlow{} \S4.1).  Theorem~\ref{thm:acyclic}
         relies on finiteness for its topological-sort argument.
 
   \item \textbf{Determinism of phase ordering (boundary: concurrent
@@ -1225,7 +1226,7 @@ No assumption is left implicit.
         pairs, they remain valid even if $E_C$ is strictly larger,
         because adding edges can only \emph{strengthen} the
         non-overlap guarantees.
-        \emph{Validation:} Theorem~\ref{thm:non-overlap} in
+        \emph{Validation:} Theorem~\ref{thm:multiplicity} in
         Section~\ref{sec:proofs} is stated with respect to
         $E_C$ in full generality, not merely its lower bound.
 
@@ -2363,7 +2364,7 @@ final conclusion.
 
   \item \emph{Derived bound on $k_i$.}  Because $G$ has exactly $P$
         vertices (H2) and each forward transition moves to a
-        strictly later phase (Theorem~\ref{thm:dag}, which establishes
+        strictly later phase (Theorem~\ref{thm:acyclic}, which establishes
         that $G$ is a DAG), the number of forward transitions is
         bounded: $k_i \leq P$ for all $i$.
 
@@ -3585,7 +3586,7 @@ analysis.
     \item[A5] \emph{No new agent roles.}  This instantiation introduces
               no agent roles beyond those already present in the abstract
               model.  Every agent appearing in the workflow below has a
-              pre-assigned role from Definition~\ref{def:roles} and a
+              pre-assigned role from Definition~\ref{def:agent} and a
               pre-assigned tier from Definition~\ref{def:trust}.
 \end{enumerate}
 
@@ -3595,7 +3596,7 @@ analysis.
 
 \noindent\textbf{Claim~I.} The AMD LabLabAI workflow defines a directed
 graph $G^{*} = (V^{*}, E^{*})$ that is a concrete instance of the abstract
-graph $G = (V, E)$ of Definition~\ref{def:graph}, satisfying all axioms
+graph $G = (V, E)$ of Definition~\ref{def:workflow-graph}, satisfying all axioms
 of Theorem~\ref{thm:acyclic}.
 
 \medskip

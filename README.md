@@ -82,15 +82,27 @@ python -m engineering_studio.cli artifacts --artifacts-root runs/demo/artifacts
 
 - **Every model call returns HTTP 404 "Model not found, inaccessible, and/or
   not deployed"** (even for well-known models like
-  `accounts/fireworks/models/llama-v3p1-70b-instruct`): this almost always
-  means `FIREWORKS_API_KEY` is missing, invalid, or revoked, **not** a bad
-  model ID — Fireworks' API returns the same generic 404 for both an
-  auth failure and an unrecognized model, so a 404 doesn't by itself tell
-  you which one it is. Verify the key first (regenerate it in the Fireworks
-  dashboard at <https://app.fireworks.ai/account/api-keys> if unsure) before
-  changing any `FIREWORKS_MODEL_*` value in `.env`.
-- **`FIREWORKS_MODEL_RESEARCH` / deepseek model 404s specifically**: the
-  base `accounts/fireworks/models/deepseek-v3` model ID is **not served
+  `accounts/fireworks/models/llama-v3p1-70b-instruct`), **including after
+  rotating to a brand-new `FIREWORKS_API_KEY`**: this is very likely an
+  **account-level billing suspension**, not a key or model-ID problem.
+  Fireworks' chat-completions endpoint masks a suspended account as a
+  generic 404 ("model not found / inaccessible"), but the account-scoped
+  endpoint surfaces the real cause. Diagnose with:
+
+  ```powershell
+  curl -H "Authorization: Bearer $env:FIREWORKS_API_KEY" https://api.fireworks.ai/inference/v1/models
+  ```
+
+  If that returns `412 PRECONDITION_FAILED` with a message like *"Account
+  ... is suspended, possibly due to reaching the monthly spending limit or
+  failure to pay past invoices"*, the fix is exclusively at
+  <https://fireworks.ai/account/billing> (add/update a payment method or
+  pay the outstanding invoice) — **no code, key rotation, or model-ID
+  change will resolve this.** Confirm the fix by re-running the same
+  `curl`/`models` check until it returns `200`.
+- **`FIREWORKS_MODEL_RESEARCH` / deepseek model 404s specifically** (once
+  the account itself is confirmed active/not suspended): the base
+  `accounts/fireworks/models/deepseek-v3` model ID is **not served
   serverless** (fine-tuning/on-demand only) — use
   `accounts/fireworks/models/deepseek-v3p1`, which is the serverless,
   chat-completions-ready variant and the one used throughout Fireworks'
@@ -98,7 +110,8 @@ python -m engineering_studio.cli artifacts --artifacts-root runs/demo/artifacts
 - **Never paste a real API key into chat, an issue, or a commit.** If a key
   is ever exposed (chat log, screenshot, committed file), treat it as
   compromised and rotate it immediately in the Fireworks dashboard, even if
-  `.gitignore` prevented it from being committed.
+  `.gitignore` prevented it from being committed. Note rotating the key
+  alone will **not** fix a billing-suspended account (see above).
 
 ### Command & Control web dashboard
 

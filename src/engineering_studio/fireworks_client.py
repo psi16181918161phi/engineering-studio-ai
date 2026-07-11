@@ -13,7 +13,7 @@ fabricating a response (live-data honesty rule, AGENTS.md §5).
 from __future__ import annotations
 
 import os
-
+from typing import Any
 import requests
 
 from engineering_studio.exceptions import ModelUnavailableError
@@ -89,7 +89,7 @@ class ModelClient:
                 "FIREWORKS_API_KEY is not set — refusing to call a paid API "
                 "without credentials (see .env.example)."
             )
-        payload: dict[str, object] = {
+        payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": system_prompt},

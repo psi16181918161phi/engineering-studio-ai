@@ -2,7 +2,7 @@
 title: "PREPLAN — OpenAI Hackathon Narrow-Scope Bridge"
 author: "Hadrian Hu"
 date: "2026-07-17"
-version: "0.1.0"
+version: "2026.0.1.0"
 keywords: ["preplan", "openai-hackathon", "scope", "engineering-studio-ai"]
 status: "Draft"
 ---

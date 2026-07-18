@@ -1,12 +1,15 @@
 """WHAT: Unit/behavioral tests for engineering_studio.gui (W6b textual TUI).
-WHY: Must prove the pure formatting helper is correct in isolation and
+WHY: Must prove the pure formatting helpers are correct in isolation and
 that the full `EngineeringStudioApp` widget wiring (input -> button ->
-log) behaves correctly, headlessly, via `textual`'s `Pilot` API.
-HOW: `format_pipeline_outcome()` is tested as a plain function (no event
-loop). `EngineeringStudioApp` is driven via `app.run_test()` (a
-`textual.pilot.Pilot`), run under `pytest-anyio` (the `anyio` package's
-built-in pytest plugin — no extra `pytest-asyncio` dependency needed).
-`sdk.run_pipeline` is monkeypatched throughout; no real network/model call.
+log, plus the read-only model-routing panel added in
+OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md Phase 4.4) behaves correctly,
+headlessly, via `textual`'s `Pilot` API.
+HOW: `format_pipeline_outcome()` and `format_model_routing_panel()` are
+tested as plain functions (no event loop). `EngineeringStudioApp` is
+driven via `app.run_test()` (a `textual.pilot.Pilot`), run under
+`pytest-anyio` (the `anyio` package's built-in pytest plugin — no extra
+`pytest-asyncio` dependency needed). `sdk.run_pipeline` is monkeypatched
+throughout; no real network/model call.
 """
 
 from __future__ import annotations
@@ -17,7 +20,11 @@ import pytest
 
 from engineering_studio import sdk
 from engineering_studio.exceptions import ModelUnavailableError
-from engineering_studio.gui import EngineeringStudioApp, format_pipeline_outcome
+from engineering_studio.gui import (
+    EngineeringStudioApp,
+    format_model_routing_panel,
+    format_pipeline_outcome,
+)
 from engineering_studio.models import PipelineResult
 
 pytestmark = pytest.mark.anyio
@@ -38,6 +45,43 @@ def test_format_pipeline_outcome_renders_brief_and_artifacts(tmp_path: Path) -> 
     assert "build a drone" in text
     assert "research" in text
     assert str(tmp_path / "research" / "output.md") in text
+
+
+def test_format_model_routing_panel_reports_configured_and_unconfigured_roles(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("FIREWORKS_MODEL_ORCHESTRATOR", "accounts/fireworks/models/gpt-oss-120b")
+    monkeypatch.delenv("OPENAI_MODEL_RESEARCH", raising=False)
+
+    text = format_model_routing_panel()
+
+    assert "fireworks" in text
+    assert "accounts/fireworks/models/gpt-oss-120b" in text
+    assert "openai" in text
+    assert "(not configured)" in text
+
+
+def test_format_model_routing_panel_never_includes_an_api_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-should-never-appear")
+
+    text = format_model_routing_panel()
+
+    assert "sk-should-never-appear" not in text
+
+
+async def test_app_mounts_model_routing_panel_with_expected_content(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/gpt-oss-120b")
+    app = EngineeringStudioApp(artifacts_root=tmp_path)
+
+    async with app.run_test():
+        panel = app.query_one("#model_routing_panel")
+        rendered = str(panel.content)
+        assert "fireworks" in rendered
+        assert "accounts/fireworks/models/gpt-oss-120b" in rendered
 
 
 async def test_app_runs_pipeline_successfully_on_button_press(

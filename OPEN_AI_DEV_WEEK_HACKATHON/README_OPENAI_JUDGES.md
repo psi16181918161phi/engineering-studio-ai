@@ -1,9 +1,9 @@
 ---
 title: "README (OpenAI Hackathon Judges) — Engineering Studio AI"
 author: "Hadrian Hu"
-date: "2026-07-17"
-version: "0.1.0"
-status: "Draft"
+date: "2026-07-18"
+version: "2026.0.2.0"
+status: "In Progress"
 keywords:
   - engineering-studio-ai
   - openai-hackathon
@@ -59,15 +59,25 @@ narrow, additive contribution is:
 
 ## 2a. Implementation status (updated as PLAN.md phases land)
 
-As of 2026-07-18: `PLAN.md` Phases 1, 3, 5, 6, and 7 are complete — all
-12 previously-empty `.github/agents/` subdirectories now contain one or
-more fine-grained specialist agent files (21 new files total), each
-cross-linked from its umbrella parent flat file rather than duplicating
-it, plus the `OPENAI_*` env-var block in `.env.example` (Phase 2). Phase
-4 (SDK/API/CLI/TUI provider-swap code + tests) and Phase 8/9 (Playwright
-evidence, deployment re-verification) remain pending — gated on
-confirming real OpenAI model IDs (§3) before any code references a
-literal model string.
+As of 2026-07-18: `PLAN.md` Phases 1, 2, 3, 4, 5, 6, and 7 are complete.
+Phases 1/3/5-7 landed all 12 previously-empty `.github/agents/`
+subdirectories, now containing one or more fine-grained specialist agent
+files (21 new files total), each cross-linked from its umbrella parent
+flat file rather than duplicating it, plus the `OPENAI_*` env-var block
+in `.env.example` (Phase 2). Phase 4 (SDK/API/CLI/TUI provider-swap code
+- tests) is now also complete: `sdk/providers.py` (provider-agnostic
+`build_model_client`/`get_model_info` factory, reading `FIREWORKS_*` or
+`OPENAI_*` env vars by provider name), a `GET /api/models` route, a CLI
+`models [fireworks|openai]` subcommand, and a read-only TUI model-routing
+panel all consume the exact same factory (no duplicated logic across the
+four surfaces) and reach 100% test coverage; `ruff`, `mypy src`,
+`bandit -r src -ll`, and `pytest --cov=engineering_studio
+--cov-fail-under=100` all pass. Per the grounding rule, no OpenAI model
+ID value was fabricated — `OPENAI_MODEL_*` env vars remain unset/blank
+until the real "Sol/Terra/Luna" identifiers are confirmed; every new
+surface reports `(not configured)` for an unset role rather than a
+placeholder string. Only Phase 8/9-remaining (Playwright E2E evidence,
+deployment re-verification) remains pending.
 
 ## 3. Model naming disclosure (read this before judging model usage)
 
@@ -82,10 +92,11 @@ confirmed, rather than a placeholder or fabricated model string being
 presented as if it were live. See `INVESTIGATE.md` §4 for the full
 disclosure.
 
-## 4. See it run *(pending — filled in once PLAN.md Phase 4/8 complete)*
+## 4. See it run
 
 | Path                           | Command       | Notes                                                                                              |
 | :----------------------------- | :------------ | :------------------------------------------------------------------------------------------------- |
+| Model routing introspection (either provider) | `python -m engineering_studio.cli models` or `GET /api/models` | Complete — reports configured/not-configured per role, never an API key. |
 | Live, native (OpenAI provider) | *(pending)* | Requires`OPENAI_API_KEY` + confirmed model IDs in `.env`.                                      |
 | Recorded evidence              | *(pending)* | Playwright screenshots/video, see`docs/E2E_EVIDENCE.md` once Task 4/5 of `PROMPT.md` complete. |
 
@@ -118,19 +129,20 @@ materials before treating it as final.)*
 
 ## 6. Evidence index
 
-| Artifact                     | Link                                                                                                          | Status                             |
-| :---------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
-| Investigation report         | [../INVESTIGATE.md](INVESTIGATE.md)                                                                            | Complete                           |
-| Preplan                      | [../PREPLAN.md](PREPLAN.md)                                                                                    | Complete                           |
-| Implementation plan          | [../PLAN.md](PLAN.md)                                                                                          | Complete                           |
-| Execution task specs         | [../PROMPT.md](PROMPT.md)                                                                                      | Complete                           |
-| New agent roster additions   | `.github/agents/{domain-specialists,artifacts_management,config_management,software_supply_chain,testing}/` | Complete (PLAN.md Phases 1, 3, 5-7 — 21 new agent files + `.env.example` OpenAI block, 2026-07-18) |
-| SDK/API/CLI/TUI provider-swap additions | `src/engineering_studio/{sdk,api,cli,gui}/` | Pending (PLAN.md Phase 4 — gated on real OpenAI model IDs, see §3) |
-| Playwright screenshots/video | `docs/E2E_EVIDENCE.md` (new row)                                                                            | Pending (PROMPT.md Task 4-5)       |
-| Deployment re-verification   | `docs/E2E_EVIDENCE.md` (new row)                                                                            | Pending (PROMPT.md Task 6)         |
+| Artifact                                | Link                                                                                                          | Status                                                                                               |
+| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------- |
+| Investigation report                    | [../INVESTIGATE.md](INVESTIGATE.md)                                                                            | Complete                                                                                             |
+| Preplan                                 | [../PREPLAN.md](PREPLAN.md)                                                                                    | Complete                                                                                             |
+| Implementation plan                     | [../PLAN.md](PLAN.md)                                                                                          | Complete                                                                                             |
+| Execution task specs                    | [../PROMPT.md](PROMPT.md)                                                                                      | Complete                                                                                             |
+| New agent roster additions              | `.github/agents/{domain-specialists,artifacts_management,config_management,software_supply_chain,testing}/` | Complete (PLAN.md Phases 1, 3, 5-7 — 21 new agent files +`.env.example` OpenAI block, 2026-07-18) |
+| SDK/API/CLI/TUI provider-swap additions | `src/engineering_studio/{sdk,api,cli,gui}/`                                                                 | Complete (PLAN.md Phase 4, 2026-07-18 — 100% test coverage, ruff/mypy/bandit clean; see `tests/test_providers.py`, `tests/test_api_models.py`) |
+| Playwright screenshots/video            | `docs/E2E_EVIDENCE.md` (new row)                                                                            | Pending (PROMPT.md Task 4-5)                                                                         |
+| Deployment re-verification              | `docs/E2E_EVIDENCE.md` (new row)                                                                            | Pending (PROMPT.md Task 6)                                                                           |
 
 ## Changelog
 
 | Version    | Date       | Author     | Description                                                                                                                                  |
 | :--------- | :--------- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026.0.2.0 | 2026-07-18 | Hadrian Hu | PLAN.md Phase 4 (SDK/API/CLI/TUI provider-swap code + 100%-coverage tests) marked complete; §2a, §4, §6 updated accordingly. Phase 8/9-remaining still pending. |
 | 2026.0.1.0 | 2026-07-17 | Hadrian Hu | Initial narrow-scope OpenAI judges' entry point, authored alongside INVESTIGATE/PREPLAN/PLAN/PROMPT; implementation sections marked pending. |

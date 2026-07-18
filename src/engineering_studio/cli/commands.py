@@ -23,7 +23,7 @@ from engineering_studio.exceptions import (
     PipelineExecutionError,
     ValidationError,
 )
-from engineering_studio.sdk import EngineeringStudioClient
+from engineering_studio.sdk import PROVIDERS, ROLES, EngineeringStudioClient, get_model_info
 
 
 def cmd_run(product_brief: str, artifacts_root: Path) -> tuple[int, str]:
@@ -101,4 +101,36 @@ def cmd_artifacts(artifacts_root: Path) -> tuple[int, str]:
     return 0, "\n".join(lines)
 
 
-__all__ = ["cmd_run", "cmd_status", "cmd_artifacts"]
+def cmd_models(provider: str | None = None) -> tuple[int, str]:
+    """WHAT: Reports the currently-configured model id for every pipeline
+    role, across one or all provider profiles (OPEN_AI_DEV_WEEK_HACKATHON/
+    PLAN.md Phase 4.3).
+
+    ARGS:
+        provider (str | None): Restrict output to one `sdk.PROVIDERS`
+            entry (e.g. "fireworks", "openai"), or None to list every
+            provider.
+
+    RETURNS:
+        tuple[int, str]: `(0, message)` listing every matching
+        (provider, role) row, or `(1, message)` if `provider` names an
+        unrecognized provider.
+
+    WHY: Read-only environment-variable introspection only (live-data
+    honesty) — never prints an API key value, never fabricates a model id
+    for a role whose environment variable is unset.
+    """
+    if provider is not None and provider not in PROVIDERS:
+        return 1, f"Unknown provider {provider!r} — expected one of {PROVIDERS}."
+
+    providers = (provider,) if provider is not None else PROVIDERS
+    lines = ["Model routing (provider -> role -> model):"]
+    for one_provider in providers:
+        for role in ROLES:
+            info = get_model_info(one_provider, role)
+            model_display = info.model if info.configured else "(not configured)"
+            lines.append(f"  {one_provider:10s} {role:12s} -> {model_display}")
+    return 0, "\n".join(lines)
+
+
+__all__ = ["cmd_artifacts", "cmd_models", "cmd_run", "cmd_status"]

@@ -1,10 +1,12 @@
 """WHAT: Unit tests for engineering_studio.cli (the `main()` entry point)
-and engineering_studio.cli.commands (the `run`/`status`/`artifacts`
-subcommand implementations).
+and engineering_studio.cli.commands (the `run`/`status`/`artifacts`/
+`models` subcommand implementations).
 WHY: W4 migrated the CLI onto `sdk.EngineeringStudioClient` instead of
 calling `agents.orchestrator.run_pipeline` directly, and added the
 `status`/`artifacts` read-only introspection subcommands — all three
 paths, plus the legacy bare-brief invocation form, need coverage.
+OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md Phase 4.3 added a fourth, `models`,
+reporting model-routing state (never an API key).
 HOW: Monkeypatches `engineering_studio.sdk.run_pipeline` (the seam the
 SDK itself is tested against, see `test_sdk.py`) rather than mocking
 HTTP/network calls, and `chdir`s into `tmp_path` so any default
@@ -194,3 +196,54 @@ def test_main_artifacts_lists_files(capsys: pytest.CaptureFixture[str], tmp_path
     assert exit_code == 0
     assert "mechanical" in captured.out
     assert "output.md" in captured.out
+
+
+def test_main_models_lists_all_providers_by_default(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("FIREWORKS_MODEL_ORCHESTRATOR", "accounts/fireworks/models/gpt-oss-120b")
+    monkeypatch.delenv("OPENAI_MODEL_ORCHESTRATOR", raising=False)
+
+    exit_code = cli.main(["models"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "fireworks" in captured.out
+    assert "openai" in captured.out
+    assert "accounts/fireworks/models/gpt-oss-120b" in captured.out
+    assert "(not configured)" in captured.out
+
+
+def test_main_models_filters_to_one_provider(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OPENAI_MODEL_SPECIALIST", "gpt-5.6-terra")
+
+    exit_code = cli.main(["models", "openai"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "gpt-5.6-terra" in captured.out
+    assert "fireworks" not in captured.out
+
+
+def test_main_models_rejects_unknown_provider(capsys: pytest.CaptureFixture[str]) -> None:
+    exit_code = cli.main(["models", "anthropic"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "Unknown provider" in captured.out
+
+
+def test_main_models_never_prints_an_api_key(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-should-never-appear")
+    monkeypatch.setenv("FIREWORKS_API_KEY", "fw-should-never-appear")
+
+    exit_code = cli.main(["models"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "sk-should-never-appear" not in captured.out
+    assert "fw-should-never-appear" not in captured.out

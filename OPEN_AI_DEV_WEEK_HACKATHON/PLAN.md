@@ -1,10 +1,10 @@
 ---
 title: "PLAN — OpenAI Hackathon Narrow-Scope Implementation Plan"
 author: "Hadrian Hu"
-date: "2026-07-17"
-version: "0.1.0"
+date: "2026-07-18"
+version: "2026.0.2.0"
 keywords: ["plan", "openai-hackathon", "tasks", "engineering-studio-ai"]
-status: "Draft"
+status: "In Progress"
 ---
 <!--
 WHAT: Concrete, ordered task breakdown implementing INVESTIGATE.md /
@@ -76,7 +76,7 @@ Phase 4/Q2 resolves to "yes, SDK required") is proposed; explicitly
 Never-Touches existing `challenge-division/security-specialist`'s
 adversarial review role (cross-link, don't duplicate).
 
-## Phase 4 — SDK / API / CLI / TUI narrow additions
+## Phase 4 — SDK / API / CLI / TUI narrow additions — **Complete (2026-07-18)**
 
 Only proceed with the sub-items whose Phase 0 question resolved
 favorably; each is independently gated.
@@ -168,5 +168,4 @@ config), `bandit -r src -ll`, `pip-audit`, and `pytest --cov=engineering_studio 
 ## Changelog
 
 | Version    | Date       | Author     | Description                                         |
-| :--------- | :--------- | :--------- | :-------------------------------------------------- |
-| 2026.0.1.0 | 2026-07-17 | Hadrian Hu | Initial phased plan from INVESTIGATE.md/PREPLAN.md. |
+| :--------- | :--------- | :--------- | :-------------------------------------------------- || 2026.0.2.0 | 2026-07-18 | Hadrian Hu | Phase 4 (SDK/API/CLI/TUI provider-swap code + 100%-coverage tests) marked complete; all four sub-items (4.1-4.4) landed and gate-verified (ruff/mypy/bandit clean, pytest 130/130 at 100% coverage). || 2026.0.1.0 | 2026-07-17 | Hadrian Hu | Initial phased plan from INVESTIGATE.md/PREPLAN.md. |

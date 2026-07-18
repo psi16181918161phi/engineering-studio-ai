@@ -2,7 +2,7 @@
 title: "PROMPT — Execution Task Specifications for a Lower-Intelligence Executor Model"
 author: "Hadrian Hu"
 date: "2026-07-17"
-version: "0.1.0"
+version: "2026.0.2.0"
 keywords: ["prompt", "task-spec", "playwright", "e2e", "deployment", "openai-hackathon"]
 status: "Draft"
 ---
@@ -29,7 +29,7 @@ for this repo's PLAN.md phases.
 > if any of them fail, stop and report the failure; do not proceed to the
 > next task and do not "fix" the gate by lowering a threshold.
 
-## Task 1 — `config_management/` agent file (PLAN.md Phase 1)
+## Task 1 — `config_management/` agent file (PLAN.md Phase 1) — **Complete**
 
 - **Allowed files:** create exactly one new file:
   `.github/agents/config_management/openai-config-specialist.agent.md`.
@@ -52,7 +52,7 @@ for this repo's PLAN.md phases.
   `.github/agents/testing.agent.md`, and does not duplicate content from
   `AGENTS.md` (cross-link instead of repeating).
 
-## Task 2 — `.env.example` update (PLAN.md Phase 2)
+## Task 2 — `.env.example` update (PLAN.md Phase 2) — **Complete**
 
 - **Allowed files:** `.env.example` only.
 - **Forbidden files:** every other file in the repository.
@@ -79,11 +79,15 @@ for this repo's PLAN.md phases.
   pre-existing `FIREWORKS_*` line is still present, unchanged, in its
   original relative order.
 
-## Task 3 — Unit/integration tests for any new Python code (PLAN.md Phase 4)
+## Task 3 — Unit/integration tests for any new Python code (PLAN.md Phase 4) — **Complete (2026-07-18)**
 
-Only run this task if Task 4 (SDK/API/CLI additions) was actually
-performed in this session — if PLAN.md Phase 4 was skipped (Phase 0
-questions unresolved), skip this task too and say so.
+Only run this task if PLAN.md Phase 4 (SDK/API/CLI/TUI additions) was
+actually performed in this session — if Phase 4 was skipped (Phase 0
+questions unresolved), skip this task too and say so. (2026-07-18: Phase
+4 was performed; this task's steps below were run against it — new test
+files `tests/test_providers.py`, `tests/test_api_models.py`, plus
+additions to `tests/test_cli.py`, `tests/test_gui.py`, `tests/test_webapp.py`,
+reaching 100% coverage on every new line.)
 
 - **Allowed files:** the same modules touched in Phase 4, plus new test
   files under `tests/unit/` or `tests/integration/` (mirror the existing
@@ -185,4 +189,5 @@ failing gate pass.
 
 | Version    | Date       | Author     | Description                                           |
 | :--------- | :--------- | :--------- | :---------------------------------------------------- |
+| 2026.0.2.0 | 2026-07-18 | Hadrian Hu | Tasks 1-3 (config_management file, .env.example block, unit/integration tests for Phase 4) marked complete; fixed a stale self-reference in Task 3 ("Task 4" → "PLAN.md Phase 4"). Only Task 4-6 (Phase 8: Playwright evidence, deployment re-verification) remain. |
 | 2026.0.1.0 | 2026-07-17 | Hadrian Hu | Initial task specifications for downstream execution. |

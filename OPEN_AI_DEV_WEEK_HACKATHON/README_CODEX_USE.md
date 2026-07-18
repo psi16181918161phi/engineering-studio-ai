@@ -2,8 +2,8 @@
 title: "README (Codex Execution Handoff) — Engineering Studio AI OpenAI Hackathon"
 author: "Hadrian Hu"
 date: "2026-07-18"
-version: "0.1.0"
-status: "Draft"
+version: "2026.0.2.0"
+status: "In Progress"
 keywords:
   - engineering-studio-ai
   - openai-hackathon
@@ -49,22 +49,26 @@ assumes you have.
 | Phase 1 | `config_management/` agent file | Complete (21-file roster landed) | — |
 | Phase 2 | `.env.example` `OPENAI_*` block + stray `=======` fix | Complete | — |
 | Phase 3 | `software_supply_chain/` agent file | Complete | — |
-| Phase 4 | SDK/API/CLI/TUI provider-swap code + 100%-coverage tests | **Pending** | Codex (this handoff) |
+| Phase 4 | SDK/API/CLI/TUI provider-swap code + 100%-coverage tests | Complete (2026-07-18 — `sdk/providers.py`, `GET /api/models`, CLI `models` subcommand, TUI model-routing panel; ruff/mypy/bandit clean; `pytest --cov=engineering_studio --cov-fail-under=100` passes at 130/130) | — |
 | Phase 5 | `testing/` split (4 specialist files) | Complete | — |
 | Phase 6 | `artifacts_management/` agent file | Complete | — |
 | Phase 7 | `domain-specialists/*` narrow splits | Complete | — |
 | Phase 8 | Playwright E2E evidence + deployment re-verification | **Pending** | Codex (this handoff) |
 | Phase 9 | Judges' doc + session archive | Complete (`README_OPENAI_JUDGES.md`, `CHATS/`) | — |
 
-Only **Phase 4** and **Phase 8** remain. In `PROMPT.md` terms, that means
-**Task 3 through Task 7** are what Codex should run this session (Task 1
-and Task 2 are already done — do not re-run them; Codex should verify
-this via git status / file existence first, not take this table on
-faith, per the grounding rule in Section 4 below).
+Only **Phase 8** remains. In `PROMPT.md` terms, that means **Task 4
+through Task 6** are what Codex should run this session (Tasks 1-3 are
+already done — do not re-run them; Codex should verify this via git
+status / file existence first, not take this table on faith, per the
+grounding rule in Section 4 below).
 
-Phase 4 is explicitly **gated**: `PREPLAN.md` §4 Q1 (real OpenAI model
-IDs for "Sol/Terra/Luna") is still unconfirmed as of this writing. Codex
-must not fabricate model ID strings to unblock itself — see Section 5.
+Phase 8's Task 4 (live OpenAI provider run) is still explicitly
+**gated**: `PREPLAN.md` §4 Q1 (real OpenAI model IDs for
+"Sol/Terra/Luna") is still unconfirmed as of this writing. Codex must
+not fabricate model ID strings to unblock itself — see Section 5. Task 5
+(Playwright evidence in the deterministic fake-pipeline mode) and Task 6
+(deployment re-verification) do not depend on that confirmation and can
+proceed regardless.
 
 ## 3. How to invoke Codex for this handoff
 
@@ -83,11 +87,11 @@ must not fabricate model ID strings to unblock itself — see Section 5.
    them. Execute Task 3 through Task 7 in order. Run the Section 8
    cross-task acceptance gate after each task. Stop and report if any
    gate command fails — do not lower a threshold to make it pass."*
-4. If Task 3's prerequisite (Phase 4 SDK/API/CLI/TUI code) has not yet
-   been written, tell Codex to write the narrow Phase 4 additions first
-   (per `PLAN.md` §Phase 4.1-4.4), using env-var **names** only (never
-   fabricated model ID values — Section 5), and only then run Task 3's
-   test-coverage step against that new code.
+4. Phase 4's SDK/API/CLI/TUI code (`sdk/providers.py`, `GET /api/models`,
+   CLI `models` subcommand, TUI model-routing panel) already exists and
+   is fully tested — do not re-write it. Point Codex directly at Phase
+   8 / Task 4-6 of `PROMPT.md`, using env-var **names** only (never
+   fabricated model ID values — Section 5) for the live-provider task.
 5. After Codex reports back (Task 7 in `PROMPT.md`), review its final
    report against the Section 8 gate commands yourself before treating
    the phase as closed — do not close Phase 4/8 on Codex's self-report
@@ -136,7 +140,7 @@ must not fabricate model ID strings to unblock itself — see Section 5.
 
 ## 6. When this handoff is complete
 
-Phase 4 and Phase 8 in the Section 2 table both show "Complete", and
+Phase 8 in the Section 2 table shows "Complete", and
 `README_OPENAI_JUDGES.md` §2a/§6 have been updated to match (that update
 itself is a small follow-up task — not part of `PROMPT.md`'s numbered
 tasks — and should be done by whichever model closes out this handoff,
@@ -146,4 +150,5 @@ citing the exact commands/results Codex reported in Task 7).
 
 | Version    | Date       | Author     | Description                                                                 |
 | :--------- | :--------- | :--------- | :---------------------------------------------------------------------------- |
+| 2026.0.2.0 | 2026-07-18 | Hadrian Hu | PLAN.md Phase 4 (SDK/API/CLI/TUI code + 100%-coverage tests) marked complete; status table, §3, §6 updated so only Phase 8 remains. |
 | 2026.0.1.0 | 2026-07-18 | Hadrian Hu | Initial Codex execution handoff guide, cross-checked against PLAN.md/PROMPT.md status and README_OPENAI_JUDGES.md §2a/§6. |

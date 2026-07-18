@@ -2,15 +2,20 @@
 
 WHAT: `EngineeringStudioApp` in [`__init__.py`](__init__.py) — a
 `textual` terminal (TUI) app with a product-brief input, a "Run
-pipeline" button, and an output log, run via
-`python -m engineering_studio.gui` ([`__main__.py`](__main__.py)).
+pipeline" button, a read-only model-routing panel, and an output log,
+run via `python -m engineering_studio.gui` ([`__main__.py`](__main__.py)).
 Consumes `sdk.EngineeringStudioClient` directly (not the HTTP API in
 [`../api/`](../api/README.md)) since a local terminal app has no need
-for a transport hop.
+for a transport hop. The model-routing panel
+(OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md Phase 4.4) reuses `sdk.get_model_info`
+— the same provider-agnostic (Fireworks/OpenAI) factory the `/api/models`
+route and the CLI `models` subcommand consume — to show which model
+answers which pipeline role, never an API key.
 WHY: A distinct Python-native interface from the browser webapp
 (PREPLAN Q3) — no separate build toolchain, cross-platform in any
 terminal, matching the CLI's existing runtime assumptions.
-HOW: Business logic (`format_pipeline_outcome()`) is a pure function,
+HOW: Business logic (`format_pipeline_outcome()`,
+`format_model_routing_panel()`) is a pair of pure functions,
 unit-tested without booting the TUI event loop; `EngineeringStudioApp`
 itself is covered via `textual`'s headless `Pilot` API
 (`app.run_test()`), run under `anyio`'s built-in pytest plugin (no

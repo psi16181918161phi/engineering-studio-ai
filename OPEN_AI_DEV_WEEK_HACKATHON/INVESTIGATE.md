@@ -2,7 +2,7 @@
 title: "INVESTIGATE — OpenAI Hackathon Scope for New .github/agents Subdirectories"
 author: "Hadrian Hu"
 date: "2026-07-17"
-version: "0.1.0"
+version: "2026.0.1.0"
 keywords: ["investigate", "openai-hackathon", "gpt-5.6", "sol", "terra", "luna", "agents", "scope", "engineering-studio-ai"]
 status: "Draft"
 ---

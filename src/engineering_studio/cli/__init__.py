@@ -5,9 +5,13 @@ this package onto `sdk.EngineeringStudioClient` (rather than calling
 `agents.orchestrator.run_pipeline` directly) and adds two read-only
 introspection subcommands, `status` and `artifacts`, on top of the
 existing `run` behavior — see `commands.py` for each subcommand's
-implementation.
+implementation. A fourth subcommand, `models [fireworks|openai]`
+(OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md Phase 4.3), reports the currently
+configured model id per pipeline role/provider, reusing the same
+`sdk.get_model_info` factory as the `/api/models` route and the TUI's
+model-info panel — never an API key.
 HOW: Loads `.env`, parses an optional leading subcommand name (`run`,
-`status`, `artifacts`) plus an optional `--artifacts-root PATH` pair,
+`status`, `artifacts`, `models`) plus an optional `--artifacts-root PATH` pair,
 dispatches to the matching function in `commands.py`, then prints its
 returned message and returns its exit code. Bare positional text with no
 recognized subcommand name (the pre-W4 invocation form,
@@ -34,10 +38,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from engineering_studio.cli.commands import cmd_artifacts, cmd_run, cmd_status
+from engineering_studio.cli.commands import cmd_artifacts, cmd_models, cmd_run, cmd_status
 
 _DEFAULT_ARTIFACTS_ROOT = Path("runs") / "latest" / "artifacts"
-_SUBCOMMANDS = ("run", "status", "artifacts")
+_SUBCOMMANDS = ("run", "status", "artifacts", "models")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -71,6 +75,8 @@ def main(argv: list[str] | None = None) -> int:
         exit_code, message = cmd_run(" ".join(rest), artifacts_root)
     elif subcommand == "status":
         exit_code, message = cmd_status(artifacts_root)
+    elif subcommand == "models":
+        exit_code, message = cmd_models(rest[0] if rest else None)
     else:
         exit_code, message = cmd_artifacts(artifacts_root)
 
@@ -108,7 +114,8 @@ def _usage() -> str:
         'Usage: python -m engineering_studio.cli "<product brief>"\n'
         '   or: python -m engineering_studio.cli run "<product brief>" [--artifacts-root PATH]\n'
         "   or: python -m engineering_studio.cli status [--artifacts-root PATH]\n"
-        "   or: python -m engineering_studio.cli artifacts [--artifacts-root PATH]"
+        "   or: python -m engineering_studio.cli artifacts [--artifacts-root PATH]\n"
+        "   or: python -m engineering_studio.cli models [fireworks|openai]"
     )
 
 

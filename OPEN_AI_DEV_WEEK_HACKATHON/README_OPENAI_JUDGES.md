@@ -57,6 +57,18 @@ narrow, additive contribution is:
   "hardware" work remains simulation/emulation-only, same disclosed
   assumption as the AMD submission.
 
+## 2a. Implementation status (updated as PLAN.md phases land)
+
+As of 2026-07-18: `PLAN.md` Phases 1, 3, 5, 6, and 7 are complete — all
+12 previously-empty `.github/agents/` subdirectories now contain one or
+more fine-grained specialist agent files (21 new files total), each
+cross-linked from its umbrella parent flat file rather than duplicating
+it, plus the `OPENAI_*` env-var block in `.env.example` (Phase 2). Phase
+4 (SDK/API/CLI/TUI provider-swap code + tests) and Phase 8/9 (Playwright
+evidence, deployment re-verification) remain pending — gated on
+confirming real OpenAI model IDs (§3) before any code references a
+literal model string.
+
 ## 3. Model naming disclosure (read this before judging model usage)
 
 At the time this document was authored, the exact OpenAI API model
@@ -104,15 +116,16 @@ flowchart TD
 `PREPLAN.md` Q1/Q3 — confirm against the hackathon's actual kickoff
 materials before treating it as final.)*
 
-## 6. Evidence index *(pending)*
+## 6. Evidence index
 
 | Artifact                     | Link                                                                                                          | Status                             |
-| :--------------------------- | :------------------------------------------------------------------------------------------------------------ | :--------------------------------- |
+| :---------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
 | Investigation report         | [../INVESTIGATE.md](INVESTIGATE.md)                                                                            | Complete                           |
 | Preplan                      | [../PREPLAN.md](PREPLAN.md)                                                                                    | Complete                           |
 | Implementation plan          | [../PLAN.md](PLAN.md)                                                                                          | Complete                           |
 | Execution task specs         | [../PROMPT.md](PROMPT.md)                                                                                      | Complete                           |
-| New agent roster additions   | `.github/agents/{domain-specialists,artifacts_management,config_management,software_supply_chain,testing}/` | Pending (PLAN.md Phases 1, 3, 5-7) |
+| New agent roster additions   | `.github/agents/{domain-specialists,artifacts_management,config_management,software_supply_chain,testing}/` | Complete (PLAN.md Phases 1, 3, 5-7 — 21 new agent files + `.env.example` OpenAI block, 2026-07-18) |
+| SDK/API/CLI/TUI provider-swap additions | `src/engineering_studio/{sdk,api,cli,gui}/` | Pending (PLAN.md Phase 4 — gated on real OpenAI model IDs, see §3) |
 | Playwright screenshots/video | `docs/E2E_EVIDENCE.md` (new row)                                                                            | Pending (PROMPT.md Task 4-5)       |
 | Deployment re-verification   | `docs/E2E_EVIDENCE.md` (new row)                                                                            | Pending (PROMPT.md Task 6)         |
 

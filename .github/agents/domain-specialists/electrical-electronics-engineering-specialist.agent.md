@@ -45,12 +45,18 @@ Executive Summary assumption #2.
 {"specialist": "Electrical & Electronics Engineering", "artifact_paths": ["..."], "std_ids_applied": ["..."], "power_budget": ["..."], "wiring_topology": "", "confidence": 0.0-1.0, "requires_human_review": true|false}
 ```
 
+See `electrical/` and `electronics/` for narrower per-topic successors
+(power budget, wiring harness, component-selection/BOM, PCB footprint)
+added for the OpenAI Hackathon pivot — this file remains the umbrella
+overview.
+
 ## Changelog
 
 | Version | Date       | Author     | Description                                                             |
 | :------ | :--------- | :--------- | :------------------------------------------------------------------------|
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation. |
 | 0.2.0   | 2026-07-08 | Hadrian Hu | Reconciled with `research/prompt-drafts/domain/electrical/electrical_specialist.md` (PR #5) — added power-budget/wiring-topology fields. |
+| 0.2.1   | 2026-07-18 | Hadrian Hu | Added cross-link to new `electrical/`/`electronics/` per-topic splits (`OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md` Phase 7). |
 
 ## Changelog
 

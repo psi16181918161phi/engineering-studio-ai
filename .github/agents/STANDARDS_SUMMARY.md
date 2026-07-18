@@ -130,6 +130,11 @@ the parent corpus's Year-Prefixed SemVer). Do not re-derive here.
    re-resolve deliberately, not by ad hoc `pip install` inside an
    already-provisioned environment without updating the lock/requirements
    file.
+5. Purpose-scoped, non-`.venv`-named environments (e.g. a one-off
+   `venv_<task>/`) are a valid, workspace-observed pattern — see
+   `../virtual_env/` for the roster owning their discovery, naming, and
+   `.gitignore`-coverage verification, plus `pyproject.toml`/legacy
+   `setup.py`/optional `uv` adoption guidance.
 
 ## 9. UI / UX standards (demo-facing surfaces)
 
@@ -172,4 +177,4 @@ Every `.md` document in this repo (specs, this file, README updates) uses:
 
 | Version    | Date       | Author     | Description                                                                                                            |
 | :--------- | :--------- | :--------- | :--------------------------------------------------------------------------------------------------------------------- |
-| 2026.0.1.0 | 2026-07-06 | Hadrian Hu | Initial condensed standards summary companion to`AGENTS.md`, authored for the `.github/agents/` roster deployment. |
+| 2026.0.1.0 | 2026-07-06 | Hadrian Hu | Initial condensed standards summary companion to`AGENTS.md`, authored for the `.github/agents/` roster deployment. || 2026.0.2.0 | 2026-07-18 | Hadrian Hu | §8 cross-links the new `../virtual_env/` roster folder (custom-named venv discovery, `pyproject.toml`/`uv`/`setup.py` specialists). |

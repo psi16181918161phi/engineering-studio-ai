@@ -41,8 +41,13 @@ change pass; never disables a failing test instead of fixing the cause.
 {"role": "Testing", "tiers_run": ["unit","integration","contract"], "pass": true, "coverage_pct": 0.0, "confidence": 0.0-1.0, "requires_human_review": true|false}
 ```
 
+See `testing/` for narrower per-tier successors (unit/integration/contract/
+e2e) added for the OpenAI Hackathon pivot — this file remains the umbrella
+overview.
+
 ## Changelog
 
 | Version | Date       | Author     | Description                                          |
 | :------ | :--------- | :--------- | :----------------------------------------------------- |
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation, condensed from `mdap-07-testing.agent.md`. |
+| 0.1.1   | 2026-07-18 | Hadrian Hu | Added cross-link to new `testing/` per-tier split (`OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md` Phase 5). |

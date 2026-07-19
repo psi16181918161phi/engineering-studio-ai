@@ -1,0 +1,24 @@
+schema_version: "1.0.0"
+updated: "2026-07-19"
+defaults:
+  contract: AGENT_CONTRACT.md
+  standards_router: STANDARDS_ROUTER.yaml
+  lifecycle_state: defined
+new_agents:
+  - {id: standards-router-conflict-resolver, path: governance/standards-router-conflict-resolver.agent.md, routes: [all]}
+  - {id: citation-claim-verification, path: governance/citation-claim-verification.agent.md, routes: [ROUTE-CLAIM, ROUTE-ENGINEERING]}
+  - {id: schema-contract-registry, path: governance/schema-contract-registry.agent.md, routes: [ROUTE-CODE]}
+  - {id: guardrail-prompt-compiler, path: governance/guardrail-prompt-compiler.agent.md, routes: [all]}
+  - {id: evaluation-drift, path: assurance/evaluation-drift.agent.md, routes: [ROUTE-MODEL, ROUTE-RELEASE]}
+  - {id: reliability-sre, path: operations/reliability-sre.agent.md, routes: [ROUTE-RELEASE]}
+  - {id: data-privacy-governance, path: governance/data-privacy-governance.agent.md, routes: [ROUTE-DATA]}
+  - {id: requirements-traceability, path: governance/requirements-traceability.agent.md, routes: [ROUTE-ENGINEERING, ROUTE-RELEASE]}
+  - {id: model-provider-reliability-cost, path: operations/model-provider-reliability-cost.agent.md, routes: [ROUTE-MODEL]}
+  - {id: release-cicd, path: operations/release-cicd.agent.md, routes: [ROUTE-RELEASE]}
+  - {id: accessibility-ux-assurance, path: assurance/accessibility-ux-assurance.agent.md, routes: [ROUTE-UX]}
+  - {id: incident-response-postmortem, path: operations/incident-response-postmortem.agent.md, routes: [ROUTE-INCIDENT]}
+lifecycle_states:
+  defined: role file exists and inherits the contract
+  registered: registry and schema references validate
+  enforced: runtime dispatch and guardrail middleware invoke the role
+  evaluated: mandatory fixtures meet thresholds

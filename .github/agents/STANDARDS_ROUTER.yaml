@@ -1,0 +1,21 @@
+schema_version: "1.0.0"
+status: Active
+updated: "2026-07-19"
+contract: AGENT_CONTRACT.md
+authority_order:
+  - {id: AUTH-01, source: repository/AGENTS.md, purpose: repository policy and SCOPE}
+  - {id: AUTH-02, source: agents/AGENT_CONTRACT.md, purpose: invocation and handoff contract}
+  - {id: AUTH-03, source: security_safety_privacy_legal, purpose: non-waivable harm controls}
+  - {id: AUTH-04, source: task_specification, purpose: task mission paths and acceptance}
+  - {id: AUTH-05, source: agents/STANDARDS_SUMMARY.md, purpose: public engineering standards}
+  - {id: AUTH-06, source: domain_guidance, purpose: role-specific recommendations}
+conflict_policy: {action: block_and_escalate, record_required: true, never_resolve_by_model_confidence: true}
+routes:
+  - {id: ROUTE-CLAIM, triggers: [factual_claim, benchmark, vendor_data, legal_claim], required_agents: [citation-claim-verification], controls: [claim_ledger, freshness, entailment, authority]}
+  - {id: ROUTE-CODE, triggers: [code_generation, code_change, scaffolding], required_agents: [schema-contract-registry, guardrail-prompt-compiler], controls: [scope, atomic_write, tests, dependency_hygiene]}
+  - {id: ROUTE-ENGINEERING, triggers: [engineering_calculation, bom, simulation, tolerance, power_budget], required_agents: [requirements-traceability, citation-claim-verification], controls: [units, assumptions, margins, reproducibility]}
+  - {id: ROUTE-RELEASE, triggers: [release, deployment, publication], required_agents: [release-cicd, reliability-sre], controls: [tests, sbom, provenance, signing, rollback]}
+  - {id: ROUTE-DATA, triggers: [pii, personal_data, customer_artifact, telemetry], required_agents: [data-privacy-governance], controls: [classification, minimization, retention, redaction, access]}
+  - {id: ROUTE-UX, triggers: [web_ui, cli_ui, report_ui, visualization], required_agents: [accessibility-ux-assurance], controls: [wcag, keyboard, screen_reader, contrast, usability]}
+  - {id: ROUTE-MODEL, triggers: [model_selection, provider_fallback, token_budget, live_model_call], required_agents: [model-provider-reliability-cost, evaluation-drift], controls: [capability, availability, latency, cost, calibration]}
+  - {id: ROUTE-INCIDENT, triggers: [guardrail_failure, data_leak, bad_output, production_failure], required_agents: [incident-response-postmortem], controls: [containment, evidence_preservation, root_cause, regression]}

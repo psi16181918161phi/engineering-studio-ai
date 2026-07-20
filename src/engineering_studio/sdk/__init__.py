@@ -14,6 +14,13 @@ brief is re-raised as `exceptions.ValidationError`; any other unexpected
 failure during the pipeline run is wrapped in `exceptions.PipelineExecutionError`
 (via `raise ... from exc`, preserving the original cause) so callers only
 ever need to catch this package's own exception types.
+
+This package also re-exports `providers.build_model_client` /
+`providers.get_model_info` (OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md Phase 4) —
+the provider-agnostic (Fireworks / OpenAI) model-routing factory consumed
+by the API `/api/models` route, the CLI `models list` subcommand, and the
+TUI's read-only model-info panel, so all three surfaces read the exact
+same env-var resolution logic rather than each re-implementing it.
 """
 
 from __future__ import annotations
@@ -29,6 +36,13 @@ from engineering_studio.exceptions import (
     ValidationError,
 )
 from engineering_studio.models import PipelineResult, ProductBrief
+from engineering_studio.sdk.providers import (
+    PROVIDERS,
+    ROLES,
+    ModelInfo,
+    build_model_client,
+    get_model_info,
+)
 
 _DEFAULT_ARTIFACTS_ROOT = Path("runs") / "latest" / "artifacts"
 
@@ -94,4 +108,11 @@ class EngineeringStudioClient:
         return PipelineResult.from_pipeline_outputs(brief.text, outputs)
 
 
-__all__ = ["EngineeringStudioClient"]
+__all__ = [
+    "EngineeringStudioClient",
+    "ModelInfo",
+    "PROVIDERS",
+    "ROLES",
+    "build_model_client",
+    "get_model_info",
+]

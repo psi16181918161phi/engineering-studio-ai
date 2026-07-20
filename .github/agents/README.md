@@ -56,11 +56,16 @@ standards content.
 | `reviewer.agent.md` | Read-only critique against acceptance criteria |
 | `challenge-division/` | Security / Failure-Analysis / Safety / Red-Team / Paranoid-Devil's-Advocate / Cost-Sustainability / Project-Prosecutor |
 | `validator.agent.md` | Cross-artifact consistency join point |
-| `testing.agent.md` | Unit/integration/contract test execution |
+| `testing.agent.md` | Unit/integration/contract test execution (umbrella; see `testing/` for per-tier splits) |
 | `documentation.agent.md` | Final package compilation |
 | `latex.agent.md` | Math-notation / LaTeX-compile correctness |
 | `quality-gate.agent.md` | Final Approved/Rejected verdict |
 | `guardrails/` | Grounding-Drift / Prompt-Injection / Token-Efficiency (always-on) |
+| `config_management/` | OpenAI-provider env-var contract (`OPENAI_*` schema, config-only) |
+| `software_supply_chain/` | Dependency hygiene — SBOM/pin/license/CVE intake for new packages |
+| `artifacts_management/` | Per-stage artifact provenance record shape |
+| `testing/` | Unit / Integration / Contract / E2E per-tier test specialists |
+| `virtual_env/` | Custom-named venv discovery, `pyproject.toml`/`uv`/`setup.py`, polyglot environment conventions |
 
 ## Pipeline order
 
@@ -119,3 +124,4 @@ sequenceDiagram
 | :------ | :--------- | :--------- | :------------------------------------------------------------------------------|
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial deployment: curated ~30-file roster matching `VISION_AMD_LABLAB_HACKATHON_ENGINEERING_STUDIO.md` §4, plus `STANDARDS_SUMMARY.md`. |
 | 0.2.0   | 2026-07-10 | Hadrian Hu | Themed the Pipeline order Mermaid `sequenceDiagram` with the Variant B (interface-surface) palette per `coding_stds/visualization/aesthetic_standards.txt` §1.2.3 and `src/engineering_studio/utils/palette.py`. |
+| 0.3.0   | 2026-07-18 | Hadrian Hu | Added roster rows for the OpenAI Hackathon pivot's new folders (`config_management/`, `software_supply_chain/`, `artifacts_management/`, `testing/`, `virtual_env/`) so the index stays a single-hop navigation aid for the next phase (`OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md`). |

@@ -13,8 +13,10 @@
 #       Runs on Windows/macOS via Docker Desktop and natively on Linux —
 #       the image itself (python:3.14-slim) is a standard multi-arch base.
 
+name: engineering-studio-ai-openai
 services:
   dashboard:
+    image: engineering-studio-ai-openai:latest
     build:
       context: ..
       dockerfile: deployment/Dockerfile
@@ -25,6 +27,7 @@ services:
     command: ["uvicorn", "engineering_studio.webapp:app", "--host", "0.0.0.0", "--port", "8000"]
 
   cli:
+    image: engineering-studio-ai-openai:latest
     build:
       context: ..
       dockerfile: deployment/Dockerfile
@@ -36,6 +39,7 @@ services:
     command: ["python", "-m", "engineering_studio.cli", "run", "Design a warehouse robot"]
 
   gui:
+    image: engineering-studio-ai-openai:latest
     build:
       context: ..
       dockerfile: deployment/Dockerfile

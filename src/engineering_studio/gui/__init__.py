@@ -7,12 +7,17 @@ a transport hop. Styled exclusively from `utils.palette.PALETTE_B` (the
 mandated Variant B interface-surface palette) via `textual` CSS
 variables — no widget hard-codes a color literal.
 HOW: One `textual.app.App` subclass, `EngineeringStudioApp`, with an
-`Input` for the product brief, a "Run pipeline" `Button`, and a
-`RichLog` for output. Business logic (turning an
-`EngineeringStudioClient` outcome into display lines) lives in the
-free function `format_pipeline_outcome()` so it can be unit-tested
+`Input` for the product brief, a "Run pipeline" `Button`, a read-only
+model-routing `Static` panel, and a `RichLog` for output. Business logic
+(turning an `EngineeringStudioClient` outcome into display lines) lives in
+the free function `format_pipeline_outcome()` so it can be unit-tested
 without booting the TUI event loop; `EngineeringStudioApp` itself is
-covered via `textual`'s headless `Pilot` API (`app.run_test()`).
+covered via `textual`'s headless `Pilot` API (`app.run_test()`). The
+model-routing panel (OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md Phase 4.4) reuses
+`sdk.get_model_info` — the exact same provider-agnostic (Fireworks/OpenAI)
+factory the `/api/models` route and the CLI `models` subcommand consume —
+so all three surfaces report identical model-routing state; it never
+displays an API key value.
 """
 
 from __future__ import annotations
@@ -21,7 +26,7 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, Footer, Header, Input, RichLog
+from textual.widgets import Button, Footer, Header, Input, RichLog, Static
 
 from engineering_studio.exceptions import (
     ModelUnavailableError,
@@ -29,7 +34,7 @@ from engineering_studio.exceptions import (
     ValidationError,
 )
 from engineering_studio.models import PipelineResult
-from engineering_studio.sdk import EngineeringStudioClient
+from engineering_studio.sdk import PROVIDERS, ROLES, EngineeringStudioClient, get_model_info
 from engineering_studio.utils.palette import get_palette_for_surface
 
 _DEFAULT_ARTIFACTS_ROOT = Path("runs") / "latest" / "artifacts"
@@ -55,6 +60,29 @@ def format_pipeline_outcome(result: PipelineResult) -> str:
     return "\n".join(lines)
 
 
+def format_model_routing_panel() -> str:
+    """WHAT: Renders the current model-routing state as multi-line text.
+
+    RETURNS:
+        str: One header line plus one line per (provider, role) pair from
+        `sdk.PROVIDERS` x `sdk.ROLES`, e.g.
+        "  fireworks specialist -> accounts/fireworks/models/gpt-oss-120b".
+        A role whose environment variable is unset renders as
+        "(not configured)" — never a fabricated model id.
+
+    WHY: Pure function, no widget/event-loop dependency, so this panel's
+    content is unit-testable in isolation from the TUI itself — mirrors
+    `format_pipeline_outcome()`'s existing pattern.
+    """
+    lines = ["Model routing (provider -> role -> model):"]
+    for provider in PROVIDERS:
+        for role in ROLES:
+            info = get_model_info(provider, role)
+            model_display = info.model if info.configured else "(not configured)"
+            lines.append(f"  {provider:10s} {role:12s} -> {model_display}")
+    return "\n".join(lines)
+
+
 class EngineeringStudioApp(App[None]):
     """WHAT: The Engineering Studio AI terminal (TUI) application.
 
@@ -76,6 +104,11 @@ class EngineeringStudioApp(App[None]):
     }}
     #brief_input {{
         border: solid {_PALETTE.accent};
+    }}
+    #model_routing_panel {{
+        color: {_PALETTE.muted};
+        border: solid {_PALETTE.accent};
+        padding: 0 1;
     }}
     """
 
@@ -100,6 +133,7 @@ class EngineeringStudioApp(App[None]):
         with Vertical():
             yield Input(placeholder="Product brief…", id="brief_input")
             yield Button("Run pipeline", id="run_button", variant="primary")
+            yield Static(format_model_routing_panel(), id="model_routing_panel")
             yield RichLog(id="output_log", wrap=True)
         yield Footer()
 
@@ -144,4 +178,4 @@ def main() -> None:
     EngineeringStudioApp().run()  # pragma: no cover
 
 
-__all__ = ["EngineeringStudioApp", "format_pipeline_outcome", "main"]
+__all__ = ["EngineeringStudioApp", "format_model_routing_panel", "format_pipeline_outcome", "main"]

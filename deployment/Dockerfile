@@ -14,18 +14,18 @@
 #       browser download judges don't need to run the app).
 #       `docker-compose.yml` picks which surface to run via `command:`.
 #
-# Build:  docker build -t engineering-studio-ai -f deployment/Dockerfile .
-# Multi-arch build (optional): docker buildx build --platform linux/amd64,linux/arm64 -t engineering-studio-ai -f deployment/Dockerfile .
+# Build:  docker build -t engineering-studio-ai-openai -f deployment/Dockerfile .
+# Multi-arch build (optional): docker buildx build --platform linux/amd64,linux/arm64 -t engineering-studio-ai-openai -f deployment/Dockerfile .
 #
 # Run examples (see docker-compose.yml for the packaged versions):
 #   Dashboard (webapp + API):
-#     docker run --env-file .env -p 8000:8000 engineering-studio-ai \
+#     docker run --env-file .env -p 8000:8000 engineering-studio-ai-openai \
 #       uvicorn engineering_studio.webapp:app --host 0.0.0.0 --port 8000
 #   CLI:
-#     docker run --env-file .env engineering-studio-ai \
+#     docker run --env-file .env engineering-studio-ai-openai \
 #       python -m engineering_studio.cli run "Design a warehouse robot"
 #   GUI (needs an interactive TTY):
-#     docker run -it --env-file .env engineering-studio-ai \
+#     docker run -it --env-file .env engineering-studio-ai-openai \
 #       python -m engineering_studio.gui
 
 FROM python:3.14-slim

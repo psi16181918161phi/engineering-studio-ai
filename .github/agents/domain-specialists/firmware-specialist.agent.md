@@ -41,8 +41,13 @@ assumption as `electrical-electronics-engineering-specialist.agent.md` and
 {"specialist": "Firmware Engineering", "artifact_paths": ["artifacts/firmware/"], "firmware_architecture": "", "interfaces": [], "dependencies": [], "risks": [], "confidence": 0.0, "requires_human_review": false}
 ```
 
+See `firmware/` for narrower per-topic successors (RTOS task skeleton,
+sensor driver stub) added for the OpenAI Hackathon pivot — this file
+remains the umbrella overview.
+
 ## Changelog
 
 | Version | Date       | Author     | Description                                                             |
 | :------ | :--------- | :--------- | :------------------------------------------------------------------------|
 | 0.1.0   | 2026-07-08 | Hadrian Hu | Initial creation, condensed & reconciled from `research/prompt-drafts/domain/firmware/firmware_specialist.md` — fills a previously-missing roster entry for an already-code-dispatched discipline. |
+| 0.1.1   | 2026-07-18 | Hadrian Hu | Added cross-link to new `firmware/` per-topic split (`OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md` Phase 7). |

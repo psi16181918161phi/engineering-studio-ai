@@ -38,9 +38,14 @@ above) implementing Firmware or Simulation artifacts directly.
 {"specialist": "Systems Engineering", "artifact_paths": ["..."], "interfaces_defined": ["..."], "confidence": 0.0-1.0, "requires_human_review": true|false}
 ```
 
+See `systems/` for the narrower concrete-artifact successor
+(integration/cross-domain interface-contract production) added for the
+OpenAI Hackathon pivot — this file remains the umbrella role definition.
+
 ## Changelog
 
 | Version | Date       | Author     | Description                                                              |
 | :------ | :--------- | :--------- | :---------------------------------------------------------------------------|
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial creation, condensed from the MDAP catalog's Systems Engineering Specialist. |
 | 0.2.0   | 2026-07-08 | Hadrian Hu | Reconciled with `research/prompt-drafts/domain/System Engineering/systems-engineering-specialist.md` (Umaima-Mughal PR #5) — narrowed scope to cross-domain integration only, now that Firmware/Simulation are separately roster'd. |
+| 0.2.1   | 2026-07-18 | Hadrian Hu | Added cross-link to new `systems/` per-topic split (`OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md` Phase 7). |

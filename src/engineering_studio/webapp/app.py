@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 
 from engineering_studio.api.downloads import router as downloads_router
 from engineering_studio.api.health import router as health_router
+from engineering_studio.api.models import router as models_router
 from engineering_studio.api.runs import router as runs_router
 
 load_dotenv()
@@ -45,6 +46,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(runs_router)
 app.include_router(downloads_router)
+app.include_router(models_router)
 
 if _FRONTEND_DIR.is_dir():
     app.mount("/", StaticFiles(directory=_FRONTEND_DIR, html=True), name="frontend")

@@ -32,6 +32,18 @@ def test_webapp_health_route_is_mounted() -> None:
     assert response.json() == {"status": "ok"}
 
 
+def test_webapp_models_route_is_mounted() -> None:
+    # WHAT: OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md Phase 4.2 — the model-routing
+    # route must be registered on the real app instance, not only testable
+    # in isolation (see tests/test_api_models.py for the full behavior).
+    client = TestClient(app)
+
+    response = client.get("/api/models")
+
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
 def test_webapp_serves_frontend_index_at_root() -> None:
     client = TestClient(app)
 

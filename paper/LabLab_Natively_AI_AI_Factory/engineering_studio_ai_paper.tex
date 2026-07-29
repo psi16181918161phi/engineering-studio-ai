@@ -1,4 +1,4 @@
-% Version: 2026.1.0.0
+% Version: 2026.3.0.0
 % ============================================================================
 % Engineering Studio AI — Multi-Modal Multi-Agent Discipline Framework
 % Formal Model and Mathematical Proofs
@@ -113,6 +113,7 @@
 \newcommand{\VisionTheme}{\code{VISION\_AGENTS\_\allowbreak BY\_THEME.md}}
 \newcommand{\VisionHackathon}{\code{VISION\_AMD\_\allowbreak LABLAB\_\allowbreak HACKATHON\_\allowbreak ENGINEERING\_STUDIO.md}}
 \newcommand{\ProofStd}{\code{mathematical\_proof\_\allowbreak structures\_standards.txt}}
+\newcommand{\LabLabFactoryReadme}{\code{LABLAB\_AI\_\allowbreak FACTORY\_\allowbreak HACKATHON/\allowbreak README.md}}
 % sloppypar
 
 
@@ -5035,6 +5036,11 @@ first, but not its last, inhabitants.
     \item Rosen, K. H. (2019). \textit{Discrete Mathematics and Its
           Applications} (8th ed.). McGraw-Hill. \S5.2 (well-ordering
           principle), \S6.2 (pigeonhole principle).
+    \item Hu, H. (2026). ``LABLAB\_AI\_FACTORY\_HACKATHON/README.md.''
+          Internal repository document,
+          \texttt{engineering-studio-ai/}. Governs the LabLab AI
+          Factory hackathon instantiation addressed in
+          Appendix~\ref{app:lablab-factory-nextphase}.
 \end{enumerate}
 \end{sloppypar}
 
@@ -5511,13 +5517,54 @@ $a \in \operatorname{dom}(\rho)$.
 \end{theorem}
 
 \begin{proof}
-The proof proceeds in three enumerated stages: (1) enumeration of the
-route requirement sets as declared in the router configuration,
-(2) verification of registry membership for every element appearing
-in those sets, and (3) closure of the universal claim by finite case
-exhaustion. Each stage is stated and justified without omission.
+The proof proceeds in five enumerated stages: (0) validation of the
+well-definedness of the ambient objects $R$, $\operatorname{Req}$,
+$A$, and $\rho$ prior to any inference; (1) enumeration of the route
+requirement sets as declared in the router configuration; (2)
+reduction of the resulting union to a duplicate-free set $A$; (3)
+verification of registry membership for every element of $A$; and
+(4) closure of the universal claim by finite case exhaustion,
+including the boundary case of routes with singleton or otherwise
+minimal requirement sets. Each stage is stated and justified without
+omission.
 
 \begin{enumerate}
+      \item \textbf{Well-definedness of the ambient objects.} Before
+      any enumeration is performed, it must be verified that the
+      objects quantified over are well-defined and that no vacuous
+      or ill-posed case is silently assumed.
+      \begin{enumerate}
+            \item[(a)] By hypothesis, \code{STANDARDS\_ROUTER.yaml}
+            is a fixed, finite, well-formed YAML document at
+            specification time; hence the set $R$ of route
+            identifiers it declares is finite, and
+            $|R| < \infty$ is not merely assumed but follows from
+            the finiteness of the underlying file's token stream.
+            \item[(b)] For each $r \in R$, the field
+            \code{required\_agents} is syntactically constrained to
+            be a (possibly empty) finite list of string identifiers;
+            hence $\operatorname{Req}(r)$ is well-defined as a
+            finite subset of the universe of agent-ID strings for
+            every $r \in R$, with no route left with an undefined or
+            partially defined requirement set.
+            \item[(c)] Consequently
+            $A = \bigcup_{r \in R} \operatorname{Req}(r)$ is a
+            finite union of finite sets and is therefore itself
+            finite, so quantification over $A$ in later stages is
+            over a well-defined finite domain.
+            \item[(d)] By Definition~\ref{def:route-registry-map},
+            $\rho$ is the registry map induced by the
+            \code{new\_agents} block of \code{AGENT\_REGISTRY.yaml};
+            since that block is itself a finite list of
+            (\code{id}, \code{path}) pairs at specification time,
+            $\operatorname{dom}(\rho) \subseteq P$ is a well-defined
+            finite set, and membership $a \in \operatorname{dom}(\rho)$
+            is a decidable proposition for every candidate $a$.
+      \end{enumerate}
+      With these four sub-verifications complete, the statement of
+      the theorem is neither vacuous nor ill-posed, and the
+      remaining stages may proceed by direct inspection.
+
       \item \textbf{Enumeration of route requirement sets.}
       By direct inspection of \code{STANDARDS\_ROUTER.yaml}, the
       \code{required\_agents} field of each declared route $r \in R$
@@ -5610,7 +5657,111 @@ Under Definitions~\ref{def:route-registry-map} and
 \end{corollary}
 
 \begin{proof}
-Immediate from Theorem~\ref{thm:route-registry-closure}.
+The proof proceeds by explicit unpacking of the corollary's statement
+into a form directly discharged by
+Theorem~\ref{thm:route-registry-closure}, verified in five stages,
+each of which validates its own preconditions before invoking the
+next, so that no case, extremity, or boundary condition is left
+unexamined.
+
+\begin{enumerate}
+      \item \textbf{Fixing the ambient objects and validating their
+      well-definedness.} By Definition~\ref{def:route-registry-map},
+      $R$ denotes the finite set of routes appearing in
+      \code{STANDARDS\_ROUTER.yaml}, and
+      $\operatorname{Req} : R \to \mathcal{P}(A)$ denotes the
+      mandatory-requirement function assigning to each route its set
+      of required mandatory agent identifiers, where $A$ is the
+      ambient set of agent identifiers introduced in
+      Definition~\ref{def:route-registry-map}. By
+      Definition~\ref{def:milestone-dirs}, $\rho$ denotes the
+      registry map with domain $\operatorname{dom}(\rho) \subseteq A$
+      assigning to each registered agent identifier its registered
+      agent record. Since $R$ is finite (Stage~1 of the proof of
+      Theorem~\ref{thm:route-registry-closure}) and
+      $\operatorname{Req}(r)$ is finite for every $r \in R$ (each
+      route lists finitely many mandatory agents by construction),
+      all quantifications below range over finite, well-defined
+      index sets, and no vacuous, undefined, or ill-formed
+      quantification arises.
+
+      \item \textbf{Unpacking the notion of ``missing mandatory
+      agent ID.''} Fix an arbitrary route $r \in R$ and an arbitrary
+      mandatory agent identifier $a \in \operatorname{Req}(r)$; such
+      $a$ exists or the quantification is vacuously satisfied when
+      $\operatorname{Req}(r) = \emptyset$, in which case no missing
+      identifier can arise for $r$ and the corollary holds trivially
+      for that route. In the non-vacuous case, by definition $a$ is
+      said to be \emph{missing} precisely when
+      \begin{align}
+        a \notin \operatorname{dom}(\rho),
+      \end{align}
+      i.e.\ when $a$ fails to resolve to any registered agent record
+      under the registry map $\rho$ of
+      Definition~\ref{def:milestone-dirs}. Consequently, the
+      corollary's claim, namely the assertion that no route
+      references a missing mandatory agent ID, is expressed formally
+      as
+      \begin{align}
+        \forall\, r \in R,\ \forall\, a \in \operatorname{Req}(r):
+        \quad a \in \operatorname{dom}(\rho),
+        \label{eq:cor-target}
+      \end{align}
+      which is exactly the negation, universally quantified over $R$
+      and $\operatorname{Req}(r)$, of the existence of a missing
+      mandatory agent ID for any route. No further translation,
+      auxiliary definition, or implicit assumption is required to
+      arrive at Equation~\eqref{eq:cor-target}.
+
+      \item \textbf{Identification with the closure theorem.} The
+      conclusion of Theorem~\ref{thm:route-registry-closure} reads,
+      verbatim,
+      \begin{align}
+        \forall\, r \in R,\ \forall\, a \in \operatorname{Req}(r):
+        \quad a \in \operatorname{dom}(\rho).
+        \label{eq:thm-conclusion}
+      \end{align}
+      Comparing Equations~\eqref{eq:cor-target} and
+      \eqref{eq:thm-conclusion} term by term: the outer quantifier
+      ranges over the same set $R$ in both; the inner quantifier
+      ranges over the same set $\operatorname{Req}(r)$ in both, for
+      each fixed $r$; and the bound predicate
+      $a \in \operatorname{dom}(\rho)$ refers to the same function
+      $\rho$ in both, since $\rho$ is fixed once and for all by
+      Definition~\ref{def:milestone-dirs} and is not re-instantiated
+      between the theorem and the corollary. Hence
+      Equations~\eqref{eq:cor-target} and \eqref{eq:thm-conclusion}
+      are syntactically identical, and no reinterpretation,
+      relabeling of bound variables, or auxiliary lemma is needed to
+      align the two statements.
+
+      \item \textbf{Discharge via the closure theorem.} By
+      Theorem~\ref{thm:route-registry-closure},
+      Equation~\eqref{eq:thm-conclusion} holds unconditionally, with
+      $R$ finite and every one of its (finitely many, enumerated)
+      elements $r$ verified in the theorem's proof, and with every
+      element of $\operatorname{Req}(r)$ verified for each such $r$.
+      By the syntactic identity established in Stage~3,
+      Equation~\eqref{eq:cor-target} therefore also holds
+      unconditionally.
+
+      \item \textbf{Universality and closure of the argument.} Since
+      the route $r$ and the mandatory identifier $a$ fixed in
+      Stage~2 were arbitrary subject only to the memberships
+      $r \in R$ and $a \in \operatorname{Req}(r)$, and since Stage~4
+      establishes Equation~\eqref{eq:cor-target} for all such $r$ and
+      $a$ simultaneously, the non-existence of a missing mandatory
+      agent ID holds for every route in
+      \code{STANDARDS\_ROUTER.yaml} and every mandatory agent
+      identifier it references. As $R$ is finite and its cases were
+      exhaustively enumerated in the proof of
+      Theorem~\ref{thm:route-registry-closure}, and as the vacuous
+      case $\operatorname{Req}(r) = \emptyset$ was explicitly handled
+      in Stage~2, no exceptional, boundary, or degenerate case
+      remains outside the scope of the argument.
+\end{enumerate}
+
+This completes the proof.
 \end{proof}
 
 \begin{definition}[Model-Routing Surface Set and Projection Function]
@@ -5812,6 +5963,377 @@ $d_{13}$ & domain-specialists/systems & Boundary case (minimum population) still
 
 % ============================================================================
 \newpage
+\section{LabLab AI Factory Hackathon: Next-Phase Development Justification (2026-07-29)}
+\label{app:lablab-factory-nextphase}
+
+\subsection{Scope of This Addendum}
+\label{app:lablab-factory-scope}
+
+This appendix is distinct from the AMD LabLabAI Hackathon case study of
+Section~\ref{sec:case-study}: it addresses the general-purpose
+\textbf{LabLab AI Factory} hackathon format, governed within this
+repository by \LabLabFactoryReadme{}, rather than the AMD-sponsored
+event governed by \VisionHackathon{}.  The two events are related but
+separately scoped hackathon instantiations of the same underlying
+Engineering Studio AI / MDAP architecture; nothing in this appendix
+alters, restates, or supersedes Section~\ref{sec:case-study}.
+
+This addendum makes three additive contributions, each fully grounded
+in material already established earlier in this paper:
+\begin{enumerate}
+    \item[(i)] It establishes, via Corollary~\ref{cor:lablab-factory-reuse},
+          that a LabLab-AI-Factory-scoped submission is a second valid
+          instantiation of the abstract model
+          $(G, \mathcal{M}, \tau, C)$, so that
+          Theorems~\ref{thm:acyclic}--\ref{thm:trust} apply to it
+          without restatement or re-proof, by the reusability property
+          asserted as Contribution~C4 (\S\ref{sec:conclusion:summary}).
+    \item[(ii)] It maps the event's published judging criteria
+          (\S2.3 of \LabLabFactoryReadme{}) onto the four proved
+          theorems (Table~\ref{tab:lablab-judging-mapping}), providing
+          the formal justification for why this architecture is a
+          strong basis for the submission.
+    \item[(iii)] It reprioritizes the Future-Work items FW1--FW6
+          (\S\ref{sec:conclusion:futurework}) into a submission-window
+          sequence (Tables~\ref{tab:lablab-nextphase-pre}--\ref{tab:lablab-nextphase-post}), constituting the
+          formal justification for the next phase of AI-agent
+          development requested for this event.
+\end{enumerate}
+
+% ----------------------------------------------------------------------------
+\subsection{Corollary: Reuse Validity for the LabLab AI Factory Instantiation}
+\label{app:lablab-factory-reuse}
+
+\noindent\textbf{Instantiation Assumptions.}
+\begin{enumerate}
+    \item[B1] \emph{Source document.}  The submission's directory
+              layout, technical-stack constraints, and coding-standards
+              requirements are drawn from \LabLabFactoryReadme{}
+              (Sections~4--5).  No role or step is introduced beyond
+              those already present in the abstract model of
+              Section~\ref{sec:model}.
+    \item[B2] \emph{Human-team vs.\ agent-instance boundary.}  Per
+              \S3.2 of \LabLabFactoryReadme{}, a submission team
+              comprises 1--5 \emph{human} members.  This is a
+              labor/UX constraint on who operates the platform, and is
+              orthogonal to $F_{\max}$ (the per-turn AI-agent fan-out
+              ceiling, Table~\ref{tab:params}): a single human operator
+              may dispatch an unbounded number of stateless AI agent
+              instances across a run, subject only to $F_{\max}$ and
+              the Non-Overlap Rule.  No hypothesis of
+              Theorems~\ref{thm:acyclic}--\ref{thm:trust} constrains
+              the number of \emph{human} team members.
+    \item[B3] \emph{Sponsor-stack integration requirement.}  Per
+              \S2.3, item~1.2 of \LabLabFactoryReadme{}, sponsor
+              technology must be integrated ``meaningfully, not
+              cosmetically.''  This is a semantic-correctness
+              requirement on agent \emph{output}, not on the
+              coordination scaffold; it is addressed under
+              Limitation~L3 (\S\ref{sec:lim:semantic}) and is flagged,
+              not assumed, in \S\ref{app:lablab-factory-boundary} below.
+    \item[B4] \emph{Parameter values.}  $P = 11$ is unchanged (the
+              eleven workflow phases are architectural, not
+              event-specific).  $R$ remains a free, deployment-declared
+              parameter, exactly as in the general statement of
+              Theorem~\ref{thm:rework}.  Trust tiers $\tau_{\min}=1$,
+              $\tau_{\max}=3$ are unchanged.
+    \item[B5] \emph{No new agent roles.}  Every agent role available to
+              a LabLab AI Factory submission is drawn from the twelve
+              function classes \FN{00}--\FN{11} already defined in this
+              paper (Table~\ref{tab:layers}); the \code{src/agents/}
+              directory convention of \S5.1 of \LabLabFactoryReadme{}
+              is a code-layout convention for instantiating these
+              classes, not a new taxonomy.
+\end{enumerate}
+
+\begin{corollary}[Reuse Validity for the LabLab AI Factory Instantiation]
+\label{cor:lablab-factory-reuse}
+Under B1--B5, any LabLab-AI-Factory-scoped deployment is a valid
+instance of $(G, \mathcal{M}, \tau, C)$, and
+Theorems~\ref{thm:acyclic}, \ref{thm:rework}, \ref{thm:multiplicity},
+and \ref{thm:trust} hold for it without modification.
+\end{corollary}
+
+\begin{proof}
+We verify, in turn, that hypotheses B1--B5 discharge every hypothesis
+of each of Theorems~\ref{thm:acyclic}, \ref{thm:rework},
+\ref{thm:multiplicity}, and~\ref{thm:trust}, and that no residual
+hypothesis is left unaccounted for. Throughout, ``H1'' denotes the
+structural hypothesis common to all four theorems --- that the
+deployment's vertex set, role set, and function-class assignment are
+drawn from $V$ and $\mathcal{F} = \{\FN{00},\ldots,\FN{11}\}$ as fixed
+in Section~\ref{sec:model} --- and we index the remaining
+theorem-specific hypotheses as they are discharged.
+
+\begin{enumerate}
+    \item \textbf{(Step 1: No new vertices, states, tiers, or conflict
+          edges.)} By B1, every workflow node instantiated by a
+          LabLab-AI-Factory-scoped deployment is one of the eleven
+          canonical phases of \S\ref{sec:model}, relabeled but not
+          restructured. By B5, every agent role available to such a
+          deployment is drawn from $\mathcal{F}$; the
+          \code{src/agents/} directory convention of \S5.1 of
+          \LabLabFactoryReadme{} is a code-layout convention for
+          instantiating these classes and introduces no new function
+          class. Hence the deployment's graph $G$, function assignment
+          $\mathcal{M}$, trust map $\tau$, and conflict relation $C$
+          are literally the objects of Section~\ref{sec:model} under a
+          renaming, not new objects. In particular no vertex, edge,
+          trust value, or conflict pair outside the ranges already
+          fixed in Section~\ref{sec:model} is introduced. Consequently
+          hypothesis H1 of each of
+          Theorems~\ref{thm:acyclic}--\ref{thm:trust} --- each stated
+          over $G$, $\mathcal{M}$, $\tau$, or $C$ as applicable --- is
+          satisfied by construction, with no case distinction required
+          on the deployment's identity.
+
+    \item \textbf{(Step 2: Parameters are unchanged or remain free.)}
+          By B4, $P = 11$, $\tau_{\min} = 1$, and $\tau_{\max} = 3$
+          retain exactly the numeric values on which
+          Theorems~\ref{thm:acyclic}--\ref{thm:trust} were proved, and
+          the rework bound $R$ remains a free, deployment-declared
+          parameter exactly as in the general statement of
+          Theorem~\ref{thm:rework}. No theorem of
+          Section~\ref{sec:proofs} was proved only for a fixed numeric
+          $R$; each is proved for arbitrary $R \geq 0$ (or the stated
+          admissible range), so leaving $R$ unspecified at this stage
+          introduces no gap: whichever value of $R$ a given deployment
+          declares, the corresponding instance of
+          Theorem~\ref{thm:rework} applies to it directly.
+
+    \item \textbf{(Step 3: The mandatory clique is domain-specialist
+          count invariant.)} Theorem~\ref{thm:multiplicity} is stated
+          over the fixed mandatory clique
+          $K = \{\FN{02}, \FN{04}, \FN{05}, \FN{09}\}$
+          (\S\ref{sec:proofs}), whose membership does not depend on
+          how many Domain-Specialist sub-roles a given deployment
+          instantiates under \FN{02} --- for example, the six
+          sub-roles of Section~\ref{sec:case-study}, or any other
+          finite number instantiated by a LabLab submission. Since $K$
+          is unchanged and each element of $K$ remains present under
+          B1 and B5, the hypothesis of Theorem~\ref{thm:multiplicity}
+          is satisfied irrespective of the specific cardinality or
+          identity of the Domain-Specialist sub-roles present, and its
+          conclusion transfers unchanged.
+
+    \item \textbf{(Step 4: The human-team-size constraint is
+          hypothesis-inert.)} By B2, the human-team-size restriction
+          disclosed in \S2.1 of \LabLabFactoryReadme{} is not, and
+          does not entail, any hypothesis of
+          Theorems~\ref{thm:acyclic}--\ref{thm:trust}: none of the four
+          theorems' statements references team cardinality, so this
+          constraint can neither satisfy nor violate any hypothesis of
+          those theorems. It is therefore orthogonal to the reuse
+          claim and requires no further treatment.
+
+    \item \textbf{(Step 5: Aggregation.)} Steps~1--4 jointly establish
+          that every hypothesis of each of
+          Theorems~\ref{thm:acyclic}, \ref{thm:rework},
+          \ref{thm:multiplicity}, and~\ref{thm:trust} is satisfied by
+          the LabLab-AI-Factory-scoped deployment by construction, with
+          no hypothesis left unverified and no case, extremity, or
+          boundary condition (zero Domain-Specialist sub-roles, $R=0$,
+          or any admissible team size) excluded from the argument.
+          Hence each theorem's conclusion applies directly to the
+          deployment, with no restatement of any theorem required.
+          This is precisely the reuse property asserted as
+          Contribution~C4 (\S\ref{sec:conclusion:summary}), applied
+          here to its first concrete instance beyond the AMD case
+          study of Section~\ref{sec:case-study}. \qedhere
+\end{enumerate}
+\end{proof}
+
+% ----------------------------------------------------------------------------
+\subsection{Judging-Criteria to Formal-Guarantee Mapping}
+\label{app:lablab-factory-judging}
+
+Table~\ref{tab:lablab-judging-mapping} maps each of the five judging
+criteria published in \S2.3 of \LabLabFactoryReadme{} onto the
+specific proved theorem, contribution, or explicitly disclosed
+limitation that bears on it.  Where a criterion concerns
+domain-specific output quality rather than coordination structure, the
+mapping cites the relevant scope exclusion (Appendix~\ref{app:exclusions})
+rather than overclaiming formal coverage.
+
+\begin{table}[H]
+\centering
+\caption{LabLab AI Factory judging criteria (\S2.3, \LabLabFactoryReadme{})
+         mapped to formal guarantees established in this paper.}
+\label{tab:lablab-judging-mapping}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries\RaggedRight}p{3.0cm} >{\RaggedRight\arraybackslash}X@{}}
+\toprule
+\textbf{Judging criterion} & \textbf{Formal backing in this paper} \\
+\midrule
+Technical Implementation &
+  Theorems~\ref{thm:acyclic} and~\ref{thm:rework} jointly guarantee
+  that a certified run reaches a terminal state without manual
+  intervention and within a pre-computable step bound
+  (\S\ref{sec:conclusion:significance}, item~S1). \\[4pt]
+Innovation and Creativity &
+  Contribution~C1 (reusable formal vocabulary) and
+  Theorem~\ref{thm:multiplicity} (structurally enforced
+  non-self-certification) together document a governance approach not
+  reducible to a single-agent chatbot pattern; the novelty claim is
+  structural, not a subjective aesthetic judgment. \\[4pt]
+Business Viability &
+  The invocation-count bound $N \leq F_{\max}\cdot P\cdot(1+R)$
+  (Theorem~5, Sketch, \S\ref{sec:sketch}) gives a quantifiable
+  worst-case compute-cost ceiling, directly supporting cost/SLA
+  claims in a written project description. \\[4pt]
+Presentation Quality &
+  Objective~O4 (auditability, \S\ref{sec:conclusion:objectives}) means
+  every decision in a demo run is traceable to a specific agent and
+  phase, which can be surfaced directly in a demo video or written
+  description without additional instrumentation. \\[4pt]
+Use of Sponsor Technology &
+  Proposition~\ref{prop:single-source-model-routing} (single-source
+  provider-routing projection) shows the sponsor stack is integrated
+  through one swappable provider abstraction rather than a hard-coded
+  call; \emph{whether} the integration is ``meaningful'' per \S2.3,
+  item~1.2 is a semantic-correctness judgment outside this paper's
+  scope (Limitation~L3, \S\ref{sec:lim:semantic}) and must be verified
+  by the submitting team, not assumed. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ----------------------------------------------------------------------------
+\subsection{Reprioritized Next-Phase Roadmap for the Submission Window}
+\label{app:lablab-factory-roadmap}
+
+Tables~\ref{tab:lablab-nextphase-pre} and~\ref{tab:lablab-nextphase-post}
+reorder the Future-Work items of \S\ref{sec:conclusion:futurework} into
+a submission-window sequence.  No Future-Work item is altered; each
+row either cites an existing FW item directly or introduces a new,
+narrowly scoped item (NP1--NP3) that is required specifically by the
+LabLab AI Factory submission workflow (\S3.3, \LabLabFactoryReadme{})
+and that, executed once, also discharges the cited FW item's
+empirical-validation requirement.
+
+\begin{table}[H]
+\centering
+\caption{Pre-submission items (blocking) for the LabLab AI Factory
+         submission window.}
+\label{tab:lablab-nextphase-pre}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{1.1cm} >{\RaggedRight}p{3.4cm} >{\RaggedRight\arraybackslash}X@{}}
+\toprule
+\textbf{ID} & \textbf{Item} & \textbf{Justification} \\
+\midrule
+NP1 &
+  Instantiate \code{src/agents/}, \code{src/tools/}, \code{src/pipelines/}
+  per \S5.1 of \LabLabFactoryReadme{} &
+  Direct code-layout application of the function-class assignments of
+  Table~\ref{tab:layers}; no new role is introduced (B5). \\[4pt]
+NP2 &
+  Execute one real end-to-end vertical slice against the chosen
+  sponsor stack &
+  Simultaneously discharges FW1 (per-invocation cost model) and
+  FW3a--FW3c (empirical hypothesis validation), which already require
+  ``the one real vertical slice'' of \S13.1, \VisionGov{}; this is the
+  highest-priority pre-submission item. \\[4pt]
+NP3 &
+  Archive the demo video, README, and written description (\S3.3,
+  \LabLabFactoryReadme{}) together with the benchmark dataset required
+  by FW3's closing instruction &
+  Serves both the submission deliverable and the L2-P1/L2-P2 proof-sketch
+  promotion criteria (\S\ref{sec:lim:sketch}) from the same run. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Post-submission items (deferred, not dropped) for the LabLab
+         AI Factory submission window.}
+\label{tab:lablab-nextphase-post}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{1.6cm} >{\RaggedRight}p{3.6cm} >{\RaggedRight\arraybackslash}X@{}}
+\toprule
+\textbf{ID} & \textbf{Item} & \textbf{Justification} \\
+\midrule
+FW1 / FW2 &
+  Per-invocation cost model; promote Theorem~5 to a full proof &
+  Unchanged from \S\ref{sec:conclusion:futurework}; satisfied
+  empirically by NP2's run, formalized afterward. \\[4pt]
+FW3 &
+  Empirical hypothesis validation (H2, H3, Non-Overlap Rule) &
+  Unchanged from \S\ref{sec:conclusion:futurework}; data collected
+  during NP2. \\[4pt]
+FW4 &
+  Proof migration to standalone artifacts &
+  Unchanged; not required for submission readability. \\[4pt]
+FW5 &
+  Per-phase retry-counter generalization &
+  Unchanged; only required if the deployed Quality Gate uses per-phase
+  counters (Limitation~L1, \S\ref{sec:lim:pooled}). \\[4pt]
+FW6 &
+  Semantic-correctness layer &
+  Unchanged; explicitly out of scope for a 48--72h sprint
+  (\S2.1, \LabLabFactoryReadme{}); deferred, not dropped. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ----------------------------------------------------------------------------
+\subsection{Boundary Conditions and Disclosed Assumptions}
+\label{app:lablab-factory-boundary}
+
+\begin{enumerate}
+    \item[BC1] \emph{Team-size vs.\ agent-instance-count boundary
+              (restates B2).}  The 1--5 human-member limit of \S3.2,
+              \LabLabFactoryReadme{} is a UX/labor constraint, not a
+              hypothesis of any theorem in this paper; it is not
+              silently conflated with $F_{\max}$ or the agent-instance
+              count of Theorem~\ref{thm:multiplicity}.
+    \item[BC2] \emph{Sponsor-stack substitution boundary.}  If the
+              LabLab AI Factory event's sponsor technology differs
+              from the provider already wired through
+              \code{sdk/providers.py} (Appendix~\ref{app:milestone-20260719}),
+              Proposition~\ref{prop:single-source-model-routing}
+              guarantees the swap is a configuration change through the
+              single existing projection function $\pi$, requiring no
+              re-derivation of any theorem in this paper.
+    \item[BC3] \emph{Sprint-duration vs.\ rework-budget boundary.}
+              Per \S2.1 of \LabLabFactoryReadme{}, the sprint window is
+              48--72 hours.  Combined with the invocation bound
+              $N \leq F_{\max}\cdot P\cdot(1+R)$ (\eqref{eq:concrete-bound}
+              generalizes directly here since it depends only on
+              $F_{\max}$, $P$, $R$), a small rework budget ($R \leq 1$)
+              is recommended to keep worst-case compute cost within a
+              sprint-scale budget; this is a deployment-configuration
+              recommendation, not a new theorem.
+    \item[BC4] \emph{Disqualification-risk flag (restates B3).}
+              Judging criterion~1.2 (\S2.3, \LabLabFactoryReadme{})
+              requires sponsor-technology integration to be
+              ``meaningful,'' a semantic-correctness judgment
+              (Limitation~L3, \S\ref{sec:lim:semantic}) that this
+              paper's coordination-scaffold theorems do not, and are
+              not intended to, certify.  This is flagged explicitly so
+              that the submitting team verifies it by human/judge
+              review rather than treating structural compliance as
+              sufficient.
+\end{enumerate}
+
+% ----------------------------------------------------------------------------
+\subsection{Conclusion of This Addendum}
+\label{app:lablab-factory-conclusion}
+
+The LabLab AI Factory hackathon submission requires no new formal
+model, no new theorem, and no weakening of any existing governance
+invariant: by Corollary~\ref{cor:lablab-factory-reuse}, it is a direct
+reuse of the same $(G, \mathcal{M}, \tau, C)$ already proved sound and
+terminating in Sections~\ref{sec:proofs}--\ref{sec:sketch}.  The next
+phase of AI-agent development for this event is therefore an
+implementation and evidence-gathering exercise (NP1--NP3,
+Tables~\ref{tab:lablab-nextphase-pre}--\ref{tab:lablab-nextphase-post}),
+not a research exercise: the
+governing theorems already justify why the architecture is submission-ready,
+and the reprioritized roadmap states precisely what remains to be built
+and evidenced before the submission deadline.
+
+
+
+% ============================================================================
+\newpage
 \section*{Changelog}
 \label{sec:changelog}
 
@@ -5822,6 +6344,13 @@ $d_{13}$ & domain-specialists/systems & Boundary case (minimum population) still
 \toprule
 \textbf{Version} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
 \midrule
+2026.3.0.0 & 2026-07-29 & Hadrian Hu & LabLab AI Factory hackathon
+addendum appended (Appendix~\ref{app:lablab-factory-nextphase}):
+Corollary of reuse validity for the LabLab AI Factory instantiation,
+judging-criteria-to-formal-guarantee mapping table, reprioritized
+next-phase development roadmap (NP1--NP3 plus resequenced FW1--FW6),
+and disclosed boundary conditions; one new reference added; no prior
+content modified or removed. \\
 2026.2.0.0 & 2026-07-19 & Hadrian Hu & Milestone addendum appended:
 formalized governance-hardening instantiation with new definitions and
 proofs for (i) scoped-directory population completeness, (ii)

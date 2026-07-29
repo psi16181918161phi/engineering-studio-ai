@@ -1,4 +1,4 @@
-% Version: 2026.1.0.0
+% Version: 2026.3.0.0
 % ============================================================================
 % Engineering Studio AI — Team & Public White Paper
 % Author: Hadrian Hu (hadrian.hu@gmail.com)
@@ -77,6 +77,7 @@
 \newcommand{\VisionFunc}{\code{VISION\_AGENTS\_\allowbreak BY\_FUNCTION.md}}
 \newcommand{\VisionFlow}{\code{VISION\_AGENT\_\allowbreak WORKFLOW\_\allowbreak INTERAGENT\_\allowbreak COORDINATION.md}}
 \newcommand{\VisionHackathon}{\code{VISION\_AMD\_\allowbreak LABLAB\_\allowbreak HACKATHON\_\allowbreak ENGINEERING\_STUDIO.md}}
+\newcommand{\LabLabFactoryReadme}{\code{LABLAB\_AI\_\allowbreak FACTORY\_\allowbreak HACKATHON/\allowbreak README.md}}
 
 % ============================================================================
 \begin{document}
@@ -1226,6 +1227,134 @@ milestone.
 
 % ============================================================================
 \newpage
+\section{The LabLab AI Factory Hackathon: Preparing for the Next Phase (2026-07-29)}
+\label{sec:lablab-factory}
+
+\subsection{What Is the LabLab AI Factory Hackathon?}
+
+This section is about a different event from the AMD LabLabAI
+Hackathon of Section~\ref{sec:hackathon}.  The \textbf{LabLab AI
+Factory} hackathon is a general-purpose hackathon format run on the
+LabLab.ai platform (100,000+ registered builders across 180+
+countries, 500+ hackathons hosted), governed within this repository
+by \LabLabFactoryReadme{}.  Its format is a 48--72 hour sprint
+(extendable to 7 days), requires meaningful (not cosmetic) use of a
+sponsor-provided technology stack, and judges submissions on five
+criteria: Technical Implementation, Innovation and Creativity,
+Business Viability, Presentation Quality, and Use of Sponsor
+Technology.
+
+The two events --- AMD LabLabAI and LabLab AI Factory --- are related
+only in that both are hackathon instantiations of the same underlying
+Engineering Studio AI architecture described throughout this paper.
+Nothing about the AMD instantiation (Section~\ref{sec:hackathon}) is
+changed by this section.
+
+\subsection{Why the Architecture Is Already a Strong Fit}
+
+Table~\ref{tab:lablab-factory-fit} maps the five published judging
+criteria onto the plain-English guarantees already explained in
+Section~\ref{sec:guarantees} and the hackathon instantiation of
+Section~\ref{sec:hackathon}.  Where a criterion is really a
+human/judge quality call rather than something the architecture can
+formally guarantee, this is said plainly rather than overclaimed.
+
+\begin{table}[H]
+\centering
+\caption{LabLab AI Factory judging criteria mapped to plain-English guarantees.}
+\label{tab:lablab-factory-fit}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries\RaggedRight}p{3.2cm} >{\RaggedRight\arraybackslash}X@{}}
+\toprule
+\textbf{Judging criterion} & \textbf{Why the architecture already supports it} \\
+\midrule
+Technical Implementation &
+  Guarantees~1 and~2 (\S\ref{sec:guarantees}) mean a demo run always
+  reaches a finished state without manual babysitting, within a
+  number of steps you can compute in advance. \\[4pt]
+Innovation and Creativity &
+  A governance approach where no agent reviews its own work, and
+  every role is structurally auditable, is a genuine architectural
+  novelty, not just a chatbot with a new prompt. \\[4pt]
+Business Viability &
+  The worst-case invocation-count formula ($N \leq 6 \times 11 \times
+  (1+R)$ for a six-specialist deployment, Section~\ref{sec:hackathon})
+  gives a concrete number to put in a cost/SLA slide. \\[4pt]
+Presentation Quality &
+  Because every decision is traceable to a specific agent and phase
+  (Section~\ref{sec:teams}), a demo video can show the audit trail
+  directly instead of describing it in the abstract. \\[4pt]
+Use of Sponsor Technology &
+  The platform already routes model/provider calls through one
+  shared, swappable layer (Section~\ref{sec:milestone-update-20260719}),
+  so wiring in a new sponsor stack is a configuration change, not a
+  rewrite.  \emph{Whether} that integration counts as ``meaningful''
+  is a judgment call for the judges, not something this architecture
+  can certify on its own. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{What Happens Next}
+
+The next phase of development for this event is building and
+evidence-gathering, not research.  Concretely:
+
+\begin{enumerate}
+    \item \textbf{Build the team.}  Instantiate the agent roles used
+          for the submission directly from the twelve function classes
+          already defined in Table~\ref{tab:functions}, following the
+          directory layout recommended in \S5.1 of
+          \LabLabFactoryReadme{}.  No new agent taxonomy is needed.
+    \item \textbf{Run one real vertical slice.}  Execute a complete,
+          real, end-to-end run against the chosen sponsor stack.  This
+          single run is also the ``Empirical validation'' item already
+          at the top of the Roadmap (Section~\ref{sec:roadmap}), so it
+          does double duty: it produces the demo evidence \emph{and}
+          the data this paper's roadmap has been asking for since the
+          initial release.
+    \item \textbf{Capture and archive the evidence.}  Save the demo
+          video, the GitHub README, and the written project
+          description required for submission, alongside the run's
+          benchmark data, so the same run supports both the hackathon
+          deliverable and future validation of the companion formal
+          paper's proof sketch.
+\end{enumerate}
+
+Everything else on the Roadmap (Section~\ref{sec:roadmap}) --- the
+semantic-correctness layer, tighter multiplicity bounds, the physical
+hardware extension --- remains valid future work, but is explicitly
+\emph{not} required to submit a strong entry to this event.
+
+\subsection{Boundary Conditions, in Plain English}
+
+\begin{enumerate}
+    \item A LabLab AI Factory team is 1--5 \emph{human} members.  That
+          is a team-size rule for people, not a limit on how many AI
+          agent instances those people can dispatch --- the two
+          numbers are unrelated.
+    \item Swapping in whichever sponsor technology the event requires
+          is a configuration change to the existing shared
+          provider-routing layer, not a redesign of the platform.
+    \item Whether the sponsor-technology use is judged ``meaningful''
+          is a human/judge call about the submission's content, the
+          same way it would be for any hackathon team; the platform's
+          formal guarantees are about workflow structure, not about
+          any specific deliverable's domain quality (see
+          \S\ref{sec:formal}, ``What This White Paper Does Not
+          Prove'').
+\end{enumerate}
+
+\subsection{Relationship to the Formal Paper}
+
+The companion formal paper's Appendix~I, ``LabLab AI Factory
+Hackathon: Next-Phase Development Justification,'' proves the
+counterpart of this section rigorously: a corollary showing that a
+LabLab AI Factory submission is a second valid instance of the same
+formal model already proved sound in that paper, with no new theorem
+required.  Readers who want that rigor are referred there.
+
+% ============================================================================
+\newpage
 \section*{References}
 \label{sec:references}
 
@@ -1248,6 +1377,11 @@ milestone.
           (2009). \textit{Introduction to Algorithms} (3rd ed.). MIT Press.
     \item Rosen, K. H. (2019). \textit{Discrete Mathematics and Its
           Applications} (8th ed.). McGraw-Hill.
+    \item Hu, H. (2026). ``LABLAB\_AI\_FACTORY\_HACKATHON/README.md.''
+          Internal repository document,
+          \texttt{engineering-studio-ai/}.  Governs the LabLab AI
+          Factory hackathon section of this paper
+          (Section~\ref{sec:lablab-factory}).
 \end{enumerate}
 \end{sloppypar}
 
@@ -1263,6 +1397,12 @@ milestone.
 \toprule
 \textbf{Version} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
 \midrule
+2026.3.0.0 & 2026-07-29 & Hadrian Hu & LabLab AI Factory hackathon
+section appended: plain-English explanation of the LabLab AI Factory
+event (distinct from the AMD LabLabAI hackathon), a judging-criteria
+fit table, a next-phase build-and-evidence roadmap, and disclosed
+boundary conditions; one new reference added; no prior content
+modified or removed. \\
 2026.2.0.0 & 2026-07-19 & Hadrian Hu & Milestone addendum appended:
 documents the governance-hardening update (universal contract,
 standards router, registry, scoped specialist refinements) and its

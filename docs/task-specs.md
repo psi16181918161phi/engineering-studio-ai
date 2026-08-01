@@ -181,7 +181,35 @@ SCOPE: artifacts/reviewer/ :: critique-only. Never modify the artifacts
 under review.
 ```
 
-## 9. Challenge Division Adversarial Pass
+## 9. Exploratory QA Scenario Pass
+
+```markdown
+# Task Specification
+
+## Mission
+Exercise every specialist artifact assembled so far for "{PRODUCT_BRIEF}" the
+way a real operator or end user would — walk through at least one realistic
+usage scenario end to end across the assembled set, not one specialist's
+output in isolation. Never edit the artifact itself.
+
+## Allowed Files
+artifacts/exploratory_qa/ only.
+
+## Forbidden Files
+Every specialist's own artifact folder, and the Reviewer's and Challenge
+Division's own artifact folders — Exploratory QA never redoes their work.
+
+## Expected Outputs
+A list of scenarios exercised and a list of findings, each naming the
+specific scenario that exposed it (not a general concern), a confidence
+score (0.0-1.0), and a requires_human_review flag.
+
+## SCOPE Declaration
+SCOPE: artifacts/exploratory_qa/ :: scenario-walkthrough-only. Never modify
+the artifacts under review.
+```
+
+## 10. Challenge Division Adversarial Pass
 
 ```markdown
 # Task Specification
@@ -201,23 +229,25 @@ SCOPE: artifacts/business/challenge-report.md :: critique-only. Never modify
 the artifacts under review.
 ```
 
-## 10. Validator Cross-Consistency Pass
+## 11. Validator Cross-Consistency Pass
 
 ```markdown
 # Task Specification
 
 ## Mission
-Join point after the Reviewer and Challenge Division have both reported on
-"{PRODUCT_BRIEF}". Check cross-artifact consistency (e.g. quantities, units,
-and interfaces agree across specialists) and reconcile or escalate any
-conflict between Review Findings and Challenge Findings.
+Join point after the Reviewer, Challenge Division, and Exploratory QA have
+all reported on "{PRODUCT_BRIEF}". Check cross-artifact consistency (e.g.
+quantities, units, and interfaces agree across specialists) and reconcile
+or escalate any conflict between Review Findings, Challenge Findings, and
+Exploratory QA Findings.
 
 ## Allowed Files
 artifacts/validator/ only.
 
 ## Forbidden Files
-Every specialist's, Reviewer's, and Challenge Division's own artifact
-folder — a Validator never redoes their work, only reconciles it.
+Every specialist's, Reviewer's, Challenge Division's, and Exploratory QA's
+own artifact folder — a Validator never redoes their work, only reconciles
+it.
 
 ## Expected Outputs
 List of artifacts checked, list of unresolved conflicts (empty if none), and
@@ -230,7 +260,7 @@ SCOPE: artifacts/validator/ :: reconciliation-only. Never redo Reviewer or
 Challenge Division work.
 ```
 
-## 11. Quality Gate Final Verdict
+## 12. Quality Gate Final Verdict
 
 ```markdown
 # Task Specification

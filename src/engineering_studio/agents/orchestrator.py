@@ -1,22 +1,22 @@
 """WHAT: Orchestrates the Engineering Studio AI pipeline: Research ->
-parallel specialist fan-out -> business/legal -> Reviewer || Challenge ->
-Validator -> quality gate.
+parallel specialist fan-out -> business/legal -> Reviewer || Challenge ||
+Exploratory QA -> Validator -> quality gate.
 WHY: Single place that knows the pipeline ORDER (Workflow-position axis);
 every stage's actual work stays inside its own SpecialistAgent (SRP). The
-Reviewer, Challenge Division, and Validator stages exist so no specialist's
-output is ever accepted without an independent critique — the Non-Overlap
-Rule (AGENTS.md SS2/SS3): the agent that builds a thing is never the agent
-that reviews, validates, or certifies it.
+Reviewer, Challenge Division, Exploratory QA, and Validator stages exist so
+no specialist's output is ever accepted without an independent critique —
+the Non-Overlap Rule (AGENTS.md SS2/SS3): the agent that builds a thing is
+never the agent that reviews, validates, or certifies it.
 HOW: Sequential Research pass, then a thread-pool fan-out of the parallel
 specialists (they don't depend on each other, only on Research), then the
-Business/Legal pass, then a second thread-pool fan-out where the Reviewer
-and Challenge Division independently critique the same assembled package,
-then the Validator reconciles both sets of findings, and finally the
-Quality Gate verdict — each stage depending on everything produced before
-it. An optional `on_event` callback reports per-stage lifecycle transitions
-(running/done/error) so a caller such as the web command-and-control API
-can track live status without the orchestrator knowing anything about HTTP
-or threading.
+Business/Legal pass, then a second thread-pool fan-out where the Reviewer,
+Challenge Division, and Exploratory QA independently critique the same
+assembled package, then the Validator reconciles all three sets of
+findings, and finally the Quality Gate verdict — each stage depending on
+everything produced before it. An optional `on_event` callback reports
+per-stage lifecycle transitions (running/done/error) so a caller such as
+the web command-and-control API can track live status without the
+orchestrator knowing anything about HTTP or threading.
 """
 
 from __future__ import annotations
@@ -32,12 +32,16 @@ from engineering_studio.task_specs import get_task_spec
 
 PARALLEL_DISCIPLINES = ("mechanical", "electrical", "firmware", "simulation")
 
-# WHAT: The Review and Challenge stages independently examine the same
-# assembled artifact set and run concurrently, joining at Validate.
+# WHAT: The Review, Challenge, and Exploratory QA stages independently
+# examine the same assembled artifact set and run concurrently, joining at
+# Validate.
 # WHY: Mirrors the whitepaper's Review || Challenge -> Validate phase
-# ordering — neither critic may see or depend on the other's findings, so
-# the Validator is the only agent that reconciles them (Non-Overlap Rule).
-REVIEW_STAGES = ("reviewer", "challenge")
+# ordering, extended with a third independent critic — Exploratory QA
+# walks realistic usage scenarios, distinct from Reviewer's checklist and
+# Challenge Division's adversarial stances. None may see or depend on each
+# other's findings; the Validator is the only agent that reconciles them
+# (Non-Overlap Rule).
+REVIEW_STAGES = ("reviewer", "challenge", "exploratory_qa")
 
 # WHAT: Canonical, ordered list of every stage this orchestrator dispatches.
 # WHY: A single source of truth for display order — shared with the web API
@@ -66,6 +70,7 @@ STAGE_SPECS: dict[str, str] = {
     "business": "cost-business-legal-pass",
     "reviewer": "reviewer-critique-pass",
     "challenge": "challenge-division-adversarial-pass",
+    "exploratory_qa": "exploratory-qa-scenario-pass",
     "validator": "validator-cross-consistency-pass",
     "quality_gate": "quality-gate-final-verdict",
 }
@@ -296,9 +301,10 @@ def run_pipeline(
 
     combined_with_business = combined_upstream + "\n\n" + business_path.read_text(encoding="utf-8")
 
-    # WHAT: Reviewer and Challenge Division both critique the same assembled
-    # package independently and concurrently — see REVIEW_STAGES's docstring
-    # comment for why neither may see the other's findings before Validate.
+    # WHAT: Reviewer, Challenge Division, and Exploratory QA all critique
+    # the same assembled package independently and concurrently — see
+    # REVIEW_STAGES's docstring comment for why none may see each other's
+    # findings before Validate.
     outputs.update(
         _run_parallel_stages(
             REVIEW_STAGES,

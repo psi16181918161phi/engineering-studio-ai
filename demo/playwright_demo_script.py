@@ -47,7 +47,9 @@ STAGE_ORDER = (
     "firmware",
     "simulation",
     "business",
+    "reviewer",
     "challenge",
+    "validator",
     "quality_gate",
 )
 

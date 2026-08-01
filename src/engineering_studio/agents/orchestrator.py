@@ -1,14 +1,22 @@
 """WHAT: Orchestrates the Engineering Studio AI pipeline: Research ->
-parallel specialist fan-out -> business/legal -> challenge -> quality gate.
+parallel specialist fan-out -> business/legal -> Reviewer || Challenge ->
+Validator -> quality gate.
 WHY: Single place that knows the pipeline ORDER (Workflow-position axis);
-every stage's actual work stays inside its own SpecialistAgent (SRP).
+every stage's actual work stays inside its own SpecialistAgent (SRP). The
+Reviewer, Challenge Division, and Validator stages exist so no specialist's
+output is ever accepted without an independent critique — the Non-Overlap
+Rule (AGENTS.md SS2/SS3): the agent that builds a thing is never the agent
+that reviews, validates, or certifies it.
 HOW: Sequential Research pass, then a thread-pool fan-out of the parallel
 specialists (they don't depend on each other, only on Research), then the
-Business/Legal pass, the Challenge Division critique, and the Quality Gate
-verdict, each depending on everything produced before it. An optional
-`on_event` callback reports per-stage lifecycle transitions (running/done/
-error) so a caller such as the web command-and-control API can track live
-status without the orchestrator knowing anything about HTTP or threading.
+Business/Legal pass, then a second thread-pool fan-out where the Reviewer
+and Challenge Division independently critique the same assembled package,
+then the Validator reconciles both sets of findings, and finally the
+Quality Gate verdict — each stage depending on everything produced before
+it. An optional `on_event` callback reports per-stage lifecycle transitions
+(running/done/error) so a caller such as the web command-and-control API
+can track live status without the orchestrator knowing anything about HTTP
+or threading.
 """
 
 from __future__ import annotations
@@ -24,6 +32,13 @@ from engineering_studio.task_specs import get_task_spec
 
 PARALLEL_DISCIPLINES = ("mechanical", "electrical", "firmware", "simulation")
 
+# WHAT: The Review and Challenge stages independently examine the same
+# assembled artifact set and run concurrently, joining at Validate.
+# WHY: Mirrors the whitepaper's Review || Challenge -> Validate phase
+# ordering — neither critic may see or depend on the other's findings, so
+# the Validator is the only agent that reconciles them (Non-Overlap Rule).
+REVIEW_STAGES = ("reviewer", "challenge")
+
 # WHAT: Canonical, ordered list of every stage this orchestrator dispatches.
 # WHY: A single source of truth for display order — shared with the web API
 # (engineering_studio.runs) so the command-and-control dashboard always
@@ -32,9 +47,28 @@ STAGE_ORDER: tuple[str, ...] = (
     "research",
     *PARALLEL_DISCIPLINES,
     "business",
-    "challenge",
+    *REVIEW_STAGES,
+    "validator",
     "quality_gate",
 )
+
+# WHAT: Task Specification slug (docs/task-specs.md heading, slugified) for
+# every dispatched stage.
+# WHY: Single source of truth for the stage-to-prompt mapping — previously
+# spread across per-call-site string literals/f-strings; adding a stage now
+# means adding one line here, not touching dispatch logic.
+STAGE_SPECS: dict[str, str] = {
+    "research": "research-problem-analysis-pass",
+    "mechanical": "mechanical-specialist-pass",
+    "electrical": "electrical-specialist-pass",
+    "firmware": "firmware-specialist-pass",
+    "simulation": "simulation-specialist-pass",
+    "business": "cost-business-legal-pass",
+    "reviewer": "reviewer-critique-pass",
+    "challenge": "challenge-division-adversarial-pass",
+    "validator": "validator-cross-consistency-pass",
+    "quality_gate": "quality-gate-final-verdict",
+}
 
 # WHAT: Signature for the optional pipeline lifecycle observer.
 # ARGS: (stage, status, detail) where status is one of
@@ -123,13 +157,73 @@ def _run_stage(
     return path
 
 
+def _run_parallel_stages(
+    stages: tuple[str, ...],
+    client: ModelClient,
+    product_brief: str,
+    upstream: str,
+    artifacts_root: Path,
+    on_event: EventCallback | None,
+) -> dict[str, Path]:
+    """WHAT: Runs a set of independent stages concurrently against the same
+    upstream context, collecting every result before returning.
+
+    ARGS:
+        stages (tuple[str, ...]): Stage ids to dispatch; each must have an
+            entry in STAGE_SPECS.
+        client (ModelClient): Shared model backend for every stage.
+        product_brief (str): One-sentence hackathon demo prompt.
+        upstream (str): Shared upstream artifact text passed as the user
+            prompt to every stage — the stages examine the same input
+            independently; they never feed each other (that reconciliation
+            is the Validator's job, not this function's).
+        artifacts_root (Path): Root directory for all written artifacts.
+        on_event (EventCallback | None): Optional lifecycle observer.
+
+    RETURNS:
+        dict[str, Path]: Mapping of stage name to its output file, covering
+            every stage in `stages` that completed successfully.
+
+    RAISES:
+        ModelUnavailableError: Re-raised only after every in-flight stage
+            finishes (success or failure) — a slow sibling stage is never
+            abandoned mid-write just because another one failed first.
+
+    HOW: Same "submit all, collect all, re-raise the first error" pattern
+    already used for the PARALLEL_DISCIPLINES fan-out, generalized so the
+    Review/Challenge fan-out doesn't duplicate the ThreadPoolExecutor
+    bookkeeping.
+    """
+
+    def _dispatch(stage: str) -> tuple[str, Path]:
+        path = _run_stage(
+            stage, client, STAGE_SPECS[stage], product_brief, upstream, artifacts_root, on_event
+        )
+        return stage, path
+
+    results: dict[str, Path] = {}
+    with ThreadPoolExecutor(max_workers=len(stages)) as pool:
+        futures = {pool.submit(_dispatch, s): s for s in stages}
+        first_error: BaseException | None = None
+        for future in futures:
+            try:
+                stage, path = future.result()
+                results[stage] = path
+            except Exception as exc:  # noqa: BLE001 - collect, re-raise after all finish
+                if first_error is None:
+                    first_error = exc
+        if first_error is not None:
+            raise first_error
+    return results
+
+
 def run_pipeline(
     product_brief: str,
     artifacts_root: Path,
     on_event: EventCallback | None = None,
 ) -> dict[str, Path]:
-    """WHAT: Runs the full Research -> fan-out -> business -> challenge ->
-    quality-gate pipeline.
+    """WHAT: Runs the full Research -> fan-out -> business -> Review ||
+    Challenge -> Validate -> quality-gate pipeline.
 
     ARGS:
         product_brief (str): One-sentence hackathon demo prompt.
@@ -156,7 +250,7 @@ def run_pipeline(
     research_path = _run_stage(
         "research",
         research_client,
-        "research-problem-analysis-pass",
+        STAGE_SPECS["research"],
         product_brief,
         product_brief,
         artifacts_root,
@@ -171,34 +265,20 @@ def run_pipeline(
         # WHAT: This one client is shared by every remaining stage; if it
         # can't be built, none of them will ever run — mark all of them
         # "error" (not left "pending") so the dashboard shows exactly why.
-        for stage in (*PARALLEL_DISCIPLINES, "business", "challenge", "quality_gate"):
+        for stage in (*PARALLEL_DISCIPLINES, "business", *REVIEW_STAGES, "validator", "quality_gate"):
             _emit(on_event, stage, "error", str(exc))
         raise
 
-    def _dispatch(discipline: str) -> tuple[str, Path]:
-        path = _run_stage(
-            discipline,
+    outputs.update(
+        _run_parallel_stages(
+            PARALLEL_DISCIPLINES,
             specialist_client,
-            f"{discipline}-specialist-pass",
             product_brief,
             research_findings,
             artifacts_root,
             on_event,
         )
-        return discipline, path
-
-    with ThreadPoolExecutor(max_workers=len(PARALLEL_DISCIPLINES)) as pool:
-        futures = {pool.submit(_dispatch, d): d for d in PARALLEL_DISCIPLINES}
-        first_error: BaseException | None = None
-        for future in futures:
-            try:
-                discipline, path = future.result()
-                outputs[discipline] = path
-            except Exception as exc:  # noqa: BLE001 - collect, re-raise after all finish
-                if first_error is None:
-                    first_error = exc
-        if first_error is not None:
-            raise first_error
+    )
 
     combined_upstream = "\n\n".join(
         outputs[d].read_text(encoding="utf-8") for d in PARALLEL_DISCIPLINES
@@ -206,7 +286,7 @@ def run_pipeline(
     business_path = _run_stage(
         "business",
         specialist_client,
-        "cost-business-legal-pass",
+        STAGE_SPECS["business"],
         product_brief,
         combined_upstream,
         artifacts_root,
@@ -215,26 +295,42 @@ def run_pipeline(
     outputs["business"] = business_path
 
     combined_with_business = combined_upstream + "\n\n" + business_path.read_text(encoding="utf-8")
-    challenge_path = _run_stage(
-        "challenge",
+
+    # WHAT: Reviewer and Challenge Division both critique the same assembled
+    # package independently and concurrently — see REVIEW_STAGES's docstring
+    # comment for why neither may see the other's findings before Validate.
+    outputs.update(
+        _run_parallel_stages(
+            REVIEW_STAGES,
+            specialist_client,
+            product_brief,
+            combined_with_business,
+            artifacts_root,
+            on_event,
+        )
+    )
+
+    combined_with_review = combined_with_business + "\n\n" + "\n\n".join(
+        outputs[s].read_text(encoding="utf-8") for s in REVIEW_STAGES
+    )
+    validator_path = _run_stage(
+        "validator",
         specialist_client,
-        "challenge-division-adversarial-pass",
+        STAGE_SPECS["validator"],
         product_brief,
-        combined_with_business,
+        combined_with_review,
         artifacts_root,
         on_event,
     )
-    outputs["challenge"] = challenge_path
+    outputs["validator"] = validator_path
 
-    combined_with_challenge = (
-        combined_with_business + "\n\n" + challenge_path.read_text(encoding="utf-8")
-    )
+    combined_with_validation = combined_with_review + "\n\n" + validator_path.read_text(encoding="utf-8")
     outputs["quality_gate"] = _run_stage(
         "quality_gate",
         specialist_client,
-        "quality-gate-final-verdict",
+        STAGE_SPECS["quality_gate"],
         product_brief,
-        combined_with_challenge,
+        combined_with_validation,
         artifacts_root,
         on_event,
     )

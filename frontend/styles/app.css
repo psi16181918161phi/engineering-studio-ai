@@ -286,9 +286,10 @@ textarea:focus-visible,
   min-width: 0;
 }
 
-/* WHAT: Sequential stages (research, business, challenge, quality_gate)
-   span the full grid width so the four parallel specialists visually
-   read as one concurrent row between them. */
+/* WHAT: Sequential stages (research, business, validator, quality_gate)
+   span the full grid width so the parallel specialists, and separately the
+   parallel Reviewer/Challenge Division pair, each visually read as one
+   concurrent row between the sequential stages surrounding them. */
 .stage-card[data-lane="sequential"] {
   grid-column: 1 / -1;
 }

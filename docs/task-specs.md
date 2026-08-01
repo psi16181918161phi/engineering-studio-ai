@@ -154,7 +154,34 @@ requires_human_review: true — no binding legal advice rendered.
 SCOPE: artifacts/business/ :: this pass only.
 ```
 
-## 8. Challenge Division Adversarial Pass
+## 8. Reviewer Critique Pass
+
+```markdown
+# Task Specification
+
+## Mission
+Read-only critique of every specialist artifact produced so far for
+"{PRODUCT_BRIEF}" (Mechanical, Electrical, Firmware, Simulation, Cost/
+Business/Legal) against each artifact's own Task Specification acceptance
+criteria. Never edit the artifact itself.
+
+## Allowed Files
+artifacts/reviewer/ only.
+
+## Forbidden Files
+Every specialist's own artifact folder — a Reviewer never also implements
+(SRP; AGENTS.md SS2).
+
+## Expected Outputs
+A per-artifact findings list and a Pass/Rework verdict per artifact, each
+with a confidence score (0.0-1.0) and a requires_human_review flag.
+
+## SCOPE Declaration
+SCOPE: artifacts/reviewer/ :: critique-only. Never modify the artifacts
+under review.
+```
+
+## 9. Challenge Division Adversarial Pass
 
 ```markdown
 # Task Specification
@@ -174,7 +201,36 @@ SCOPE: artifacts/business/challenge-report.md :: critique-only. Never modify
 the artifacts under review.
 ```
 
-## 9. Quality Gate Final Verdict
+## 10. Validator Cross-Consistency Pass
+
+```markdown
+# Task Specification
+
+## Mission
+Join point after the Reviewer and Challenge Division have both reported on
+"{PRODUCT_BRIEF}". Check cross-artifact consistency (e.g. quantities, units,
+and interfaces agree across specialists) and reconcile or escalate any
+conflict between Review Findings and Challenge Findings.
+
+## Allowed Files
+artifacts/validator/ only.
+
+## Forbidden Files
+Every specialist's, Reviewer's, and Challenge Division's own artifact
+folder — a Validator never redoes their work, only reconciles it.
+
+## Expected Outputs
+List of artifacts checked, list of unresolved conflicts (empty if none), and
+a Pass/Reject verdict with a confidence score (0.0-1.0) and a
+requires_human_review flag. Never proceeds silently past an unresolved
+conflict.
+
+## SCOPE Declaration
+SCOPE: artifacts/validator/ :: reconciliation-only. Never redo Reviewer or
+Challenge Division work.
+```
+
+## 11. Quality Gate Final Verdict
 
 ```markdown
 # Task Specification

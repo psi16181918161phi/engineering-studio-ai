@@ -59,15 +59,58 @@ def test_run_pipeline_dispatches_research_specialists_and_business(
         "firmware",
         "simulation",
         "business",
+        "reviewer",
         "challenge",
+        "validator",
         "quality_gate",
     }
     for discipline, path in outputs.items():
         assert path.exists(), f"missing artifact for {discipline}"
     business_text = outputs["business"].read_text(encoding="utf-8")
     assert business_text.startswith("business:")
+    assert outputs["reviewer"].read_text(encoding="utf-8").startswith("reviewer:")
     assert outputs["challenge"].read_text(encoding="utf-8").startswith("challenge:")
+    assert outputs["validator"].read_text(encoding="utf-8").startswith("validator:")
     assert outputs["quality_gate"].read_text(encoding="utf-8").startswith("quality_gate:")
+
+
+def test_run_pipeline_reviewer_and_challenge_see_same_upstream_and_validator_sees_both(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Reviewer and Challenge Division must critique the same
+    assembled package independently (neither may be chained into the
+    other's input), and the Validator must be the join point that sees
+    both — this is the Non-Overlap Rule's runtime contract, not just its
+    prompt-text description in the .agent.md files."""
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FakeAgent)
+
+    outputs = orchestrator.run_pipeline("build a small survey drone", tmp_path)
+
+    combined_with_business = "\n\n".join(
+        outputs[d].read_text(encoding="utf-8") for d in orchestrator.PARALLEL_DISCIPLINES
+    ) + "\n\n" + outputs["business"].read_text(encoding="utf-8")
+
+    # _FakeAgent.run() echoes f"{discipline}: {user_prompt[:20]}" — both
+    # Reviewer and Challenge must have been called with the *same* upstream
+    # text (the assembled package), not with each other's findings.
+    assert outputs["reviewer"].read_text(encoding="utf-8") == (
+        f"reviewer: {combined_with_business[:20]}"
+    )
+    assert outputs["challenge"].read_text(encoding="utf-8") == (
+        f"challenge: {combined_with_business[:20]}"
+    )
+
+    combined_with_review = (
+        combined_with_business
+        + "\n\n"
+        + "\n\n".join(outputs[s].read_text(encoding="utf-8") for s in orchestrator.REVIEW_STAGES)
+    )
+    assert outputs["validator"].read_text(encoding="utf-8") == (
+        f"validator: {combined_with_review[:20]}"
+    )
 
 
 def test_run_pipeline_reports_lifecycle_events_in_stage_order(
@@ -141,7 +184,9 @@ def test_run_pipeline_marks_all_downstream_stages_error_when_specialist_client_u
         "firmware",
         "simulation",
         "business",
+        "reviewer",
         "challenge",
+        "validator",
         "quality_gate",
     }
 

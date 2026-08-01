@@ -28,7 +28,9 @@
     { id: "firmware", label: "Firmware", role: "Domain Specialist", lane: "parallel" },
     { id: "simulation", label: "Simulation", role: "Domain Specialist", lane: "parallel" },
     { id: "business", label: "Cost / Business / Legal", role: "Domain Specialist", lane: "sequential" },
-    { id: "challenge", label: "Challenge Division", role: "Adversarial reviewer", lane: "sequential" },
+    { id: "reviewer", label: "Reviewer", role: "Checklist critique", lane: "parallel" },
+    { id: "challenge", label: "Challenge Division", role: "Adversarial reviewer", lane: "parallel" },
+    { id: "validator", label: "Validator", role: "Cross-artifact reconciliation", lane: "sequential" },
     { id: "quality_gate", label: "Quality Gate", role: "Sole certifying authority", lane: "sequential" },
   ];
 

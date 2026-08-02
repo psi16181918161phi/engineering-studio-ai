@@ -11,8 +11,9 @@ FastAPI TestClient needed to exercise the store's own concurrency.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import engineering_studio.runs as runs_module
 from engineering_studio.fireworks_client import ModelUnavailableError

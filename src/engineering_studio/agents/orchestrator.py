@@ -21,6 +21,7 @@ or threading.
 
 from __future__ import annotations
 
+import logging
 import os
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -29,6 +30,8 @@ from pathlib import Path
 from engineering_studio.agents.specialist import SpecialistAgent
 from engineering_studio.fireworks_client import ModelClient
 from engineering_studio.task_specs import get_task_spec
+
+_LOGGER = logging.getLogger("engineering_studio")
 
 PARALLEL_DISCIPLINES = ("mechanical", "electrical", "firmware", "simulation")
 
@@ -108,14 +111,17 @@ def _emit(on_event: EventCallback | None, stage: str, status: str, detail: str |
     orchestrator depending on any particular transport (SSE, logging, ...).
 
     HOW: No-op when on_event is None; a misbehaving observer must never
-    break the pipeline, so exceptions raised by the callback are swallowed.
+    break the pipeline, so exceptions raised by the callback are logged at
+    debug level (for diagnosability) and otherwise swallowed, never re-raised.
     """
     if on_event is None:
         return
     try:
         on_event(stage, status, detail)
-    except Exception:  # noqa: BLE001 - observer failures are never fatal
-        pass
+    except Exception:
+        _LOGGER.debug(
+            "on_event observer raised for stage=%s status=%s", stage, status, exc_info=True
+        )
 
 
 def _run_stage(

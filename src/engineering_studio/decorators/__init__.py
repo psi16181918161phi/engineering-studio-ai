@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger("engineering_studio")
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def log_call(func: F) -> F:
+def log_call[T: Callable[..., Any]](func: T) -> T:
     """WHAT: Logs function entry, successful exit, and any raised exception.
 
     ARGS:
@@ -123,4 +123,4 @@ def requires_env(*names: str) -> Callable[[F], F]:
     return _decorator
 
 
-__all__ = ["log_call", "validate_args", "requires_env"]
+__all__ = ["log_call", "requires_env", "validate_args"]

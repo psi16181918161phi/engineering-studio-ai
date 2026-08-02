@@ -22,7 +22,7 @@ import shutil
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, TypeVar
+from typing import Final
 
 from playwright.sync_api import Page, sync_playwright
 
@@ -55,9 +55,6 @@ SLIDE_SLUGS: Final[tuple[str, ...]] = (
     "09-team-thanks",
 )
 
-F = TypeVar("F", bound=Callable[..., object])
-
-
 # --- Exceptions -------------------------------------------------------------
 class SlideExportError(RuntimeError):
     """Base class for all slide-export failures.
@@ -86,7 +83,7 @@ class MissingActiveSlideError(SlideExportError):
 
 
 # --- Decorators -------------------------------------------------------------
-def logs_output(func: F) -> F:
+def logs_output[F: Callable[..., object]](func: F) -> F:
     """Print the relative path a capture function returned.
 
     WHAT: Cross-cutting logging wrapper around any ``Path``-returning capture.
@@ -147,7 +144,7 @@ class SlideExporter:
         self._slides = slides
 
     @classmethod
-    def from_slugs(cls, page: Page, slugs: tuple[str, ...]) -> "SlideExporter":
+    def from_slugs(cls, page: Page, slugs: tuple[str, ...]) -> SlideExporter:
         """Build an exporter from an ordered slug tuple.
 
         WHAT: Named constructor mapping slugs to indexed ``Slide`` objects.

@@ -1,0 +1,100 @@
+# Git
+.[Gg][Ii][Tt]
+.[Gg][Ii][Tt][Ii][Gg][Nn][Oo][Rr][Ee]
+
+# Python cache
+[_][_][Pp][Yy][Cc][Aa][Cc][Hh][Ee][_][_]/
+*.[Pp][Yy][CcOoDd]
+*.[Pp][Yy][Oo]
+*.[Pp][Yy][Dd]
+
+# Virtual environments
+.[Vv][Ee][Nn][Vv]/
+[Vv][Ee][Nn][Vv]/
+[Ee][Nn][Vv]/
+
+# Environment files (never include secrets)
+.[Ee][Nn][Vv]
+.[Ee][Nn][Vv].*
+
+# Test and coverage artifacts
+.[Pp][Yy][Tt][Ee][Ss][Tt][_][Cc][Aa][Cc][Hh][Ee]/
+.[Mm][Yy][Pp][Yy][_][Cc][Aa][Cc][Hh][Ee]/
+.[Rr][Uu][Ff][Ff][_][Cc][Aa][Cc][Hh][Ee]/
+.[Bb][Aa][Nn][Dd][Ii][Tt]/
+.[Pp][Yy][Tt][Yy][Pp][Ee]/
+.[Cc][Oo][Vv][Ee][Rr][Aa][Gg][Ee]
+[Cc][Oo][Vv][Ee][Rr][Aa][Gg][Ee].[Xx][Mm][Ll]
+[Hh][Tt][Mm][Ll][Cc][Oo][Vv]/
+
+# Build artifacts
+[Bb][Uu][Ii][Ll][Dd]/
+[Dd][Ii][Ss][Tt]/
+*.[Ee][Gg][Gg]-[Ii][Nn][Ff][Oo]/
+
+# IDE/editor files
+.[Vv][Ss][Cc][Oo][Dd][Ee]/
+.[Ii][Dd][Ee][Aa]/
+*.[Ss][Ww][Pp]
+*.[Ss][Ww][Oo]
+
+# Operating system files
+.[Dd][Ss][_][Ss][Tt][Oo][Rr][Ee]
+[Tt][Hh][Uu][Mm][Bb][Ss].[Dd][Bb]
+
+# Local runtime artifacts
+[Rr][Uu][Nn][Ss]/
+
+# Logs
+*.[Ll][Oo][Gg]
+
+# Docker files (no recursive builds)
+[Dd][Oo][Cc][Kk][Ee][Rr][Ff][Ii][Ll][Ee]
+.[Dd][Oo][Cc][Kk][Ee][Rr][Ii][Gg][Nn][Oo][Rr][Ee]
+[Dd][Oo][Cc][Kk][Ee][Rr]-[Cc][Oo][Mm][Pp][Oo][Ss][Ee]*.[Yy][Mm][Ll]
+.[Dd][Oo][Cc][Kk][Ee][Rr][Ee][Nn][Vv]
+
+# Documentation
+[Dd][Oo][Cc][Ss]/
+*.[Mm][Dd]
+*.[Rr][Ss][Tt]
+*.[Tt][Xx][Tt]
+
+# Notebooks
+*.[Ii][Pp][Yy][Nn][Bb]
+.[Ii][Pp][Yy][Nn][Bb][_][Cc][Hh][Ee][Cc][Kk][Pp][Oo][Ii][Nn][Tt][Ss]/
+
+# Data and model artifacts
+[Dd][Aa][Tt][Aa]/
+[Mm][Oo][Dd][Ee][Ll][Ss]/
+[Aa][Rr][Tt][Ii][Ff][Aa][Cc][Tt][Ss]/
+*.[Cc][Ss][Vv]
+*.[Jj][Ss][Oo][Nn][Ll]
+*.[Pp][Aa][Rr][Qq][Uu][Ee][Tt]
+*.[Pp][Ii][Cc][Kk][Ll][Ee]
+*.[Pp][Kk][Ll]
+*.[Hh]5
+*.[Hh][Dd][Ff]5
+*.[Pp][Tt]
+*.[Pp][Tt][Hh]
+*.[Bb][Ii][Nn]
+*.[Oo][Nn][Nn][Xx]
+
+# Secrets and credentials
+*.[Pp][Ee][Mm]
+*.[Kk][Ee][Yy]
+*.[Cc][Ee][Rr][Tt]
+*.[Pp][12]
+*.[Pp][Ff][Xx]
+[Ss][Ee][Cc][Rr][Ee][Tt][Ss]/
+[Cc][Rr][Ee][Dd][Ee][Nn][Tt][Ii][Aa][Ll][Ss]/
+
+# CI/CD
+.[Gg][Ii][Tt][Hh][Uu][Bb]/
+.[Gg][Ii][Tt][Ll][Aa][Bb]-[Cc][Ii].[Yy][Mm][Ll]
+
+# Temporary files
+[Tt][Mm][Pp]/
+[Tt][Ee][Mm][Pp]/
+*.[Tt][Mm][Pp]
+*.[Bb][Aa][Kk]

@@ -14,8 +14,8 @@ to a fast fake — no real network/model calls, no cross-test state leaks.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import pytest
 from fastapi import FastAPI

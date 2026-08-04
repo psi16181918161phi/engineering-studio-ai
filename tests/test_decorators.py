@@ -30,9 +30,11 @@ def test_log_call_logs_and_reraises_on_exception(caplog: pytest.LogCaptureFixtur
     def boom() -> None:
         raise RuntimeError("kaboom")
 
-    with caplog.at_level(logging.DEBUG, logger="engineering_studio"):
-        with pytest.raises(RuntimeError, match="kaboom"):
-            boom()
+    with (
+        caplog.at_level(logging.DEBUG, logger="engineering_studio"),
+        pytest.raises(RuntimeError, match="kaboom"),
+    ):
+        boom()
 
     assert any("error in" in record.message for record in caplog.records)
 

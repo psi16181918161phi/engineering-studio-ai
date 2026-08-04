@@ -15,18 +15,18 @@
   font-weight: 600;
   text-decoration: none;
   border: 1px solid var(--brand-accent);
-  border-radius: 0.35rem;
-  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  padding: 0.28rem 0.65rem;
   color: var(--brand-accent);
-  background: transparent;
+  background: var(--surface-1);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .run-meta__download:hover,
 .stage-card__download:hover {
   background: var(--brand-accent);
   color: var(--brand-ink);
+  box-shadow: 0 0 0.9rem var(--glow-accent);
+  transform: translateY(-1px);
 }
 
-.stage-card__download {
-  margin-top: 0.4rem;
-}

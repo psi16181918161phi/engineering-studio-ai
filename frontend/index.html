@@ -74,16 +74,23 @@
 
   <template id="stage-card-template">
     <article class="stage-card" data-stage="">
+      <div class="stage-card__accent" data-state="pending" aria-hidden="true"></div>
       <header class="stage-card__header">
-        <h3 class="stage-card__title"></h3>
-        <span class="stage-card__role"></span>
+        <div class="stage-card__icon-badge" data-state="pending">
+          <span class="stage-card__status-icon" aria-hidden="true">○</span>
+        </div>
+        <div class="stage-card__heading">
+          <h3 class="stage-card__title"></h3>
+          <span class="stage-card__role"></span>
+        </div>
       </header>
       <div class="stage-card__status" data-state="pending">
-        <span class="stage-card__status-icon" aria-hidden="true">○</span>
         <span class="stage-card__status-text">Idle</span>
       </div>
-      <button type="button" class="stage-card__toggle" hidden>View output</button>
-      <a class="stage-card__download" href="#" download hidden>Download output</a>
+      <div class="stage-card__actions">
+        <button type="button" class="stage-card__toggle" hidden>View output</button>
+        <a class="stage-card__download" href="#" download hidden>Download output</a>
+      </div>
       <pre class="stage-card__output" hidden></pre>
     </article>
   </template>

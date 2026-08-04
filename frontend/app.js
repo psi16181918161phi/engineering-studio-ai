@@ -7,11 +7,13 @@
  * (c) inspect what each agent actually produced — this file is the only
  * thing that talks to the backend API defined in
  * src/engineering_studio/api/.
- * HOW: No build step, no framework — plain fetch() + EventSource. All
- * agent-produced text is inserted via textContent only, never innerHTML,
- * since artifact content originates from an LLM and must never be treated
- * as trusted markup (XSS hygiene, AGENTS.md SS5 prompt-injection rule
- * extended to the browser).
+ * HOW: No build step, no framework — plain fetch() + EventSource. Every
+ * agent-produced string is either set via textContent or handed to
+ * markdown.js's DOM-building renderer — innerHTML is never used on model
+ * output, since artifact content originates from an LLM and must never be
+ * treated as trusted markup (XSS hygiene, AGENTS.md SS5 prompt-injection
+ * rule extended to the browser; see markdown.js's own header for how the
+ * renderer upholds this same rule for richer Markdown formatting).
  */
 
 (() => {
@@ -33,6 +35,8 @@
     { id: "validator", label: "Validator", role: "Cross-artifact reconciliation", lane: "sequential" },
     { id: "quality_gate", label: "Quality Gate", role: "Sole certifying authority", lane: "sequential" },
   ];
+
+  const STAGE_LABELS = Object.fromEntries(STAGES.map((s) => [s.id, s.label]));
 
   const STATUS_ICON = {
     pending: "○",
@@ -59,6 +63,7 @@
     briefInput: document.getElementById("brief-input"),
     launchButton: document.getElementById("launch-button"),
     launchError: document.getElementById("launch-error"),
+    notifyToggle: document.getElementById("notify-toggle-input"),
     runHistory: document.getElementById("run-history"),
     runMeta: document.getElementById("run-meta"),
     runMetaId: document.getElementById("run-meta-id"),
@@ -67,14 +72,30 @@
     pipelineEmpty: document.getElementById("pipeline-empty"),
     stageGrid: document.getElementById("stage-grid"),
     stageCardTemplate: document.getElementById("stage-card-template"),
+    srAnnouncer: document.getElementById("sr-announcer"),
   };
+
+  /** WHAT: Pushes a short sentence into the visually-hidden aria-live
+   * region so screen-reader users hear stage/run transitions that are
+   * otherwise conveyed purely visually (icon/color/border changes).
+   * WHY: accessibility gap flagged in review — status changes had zero
+   * assistive-tech signal. WHY throttled to real SSE-driven events only
+   * (see call sites below): announcing every stage during a bulk
+   * snapshot catch-up or the end-of-run "mark rest as skipped" sweep
+   * would spam a screen reader with a dozen announcements at once.
+   * aria-atomic="true" on the element (index.html) means each call
+   * replaces the prior announcement rather than appending to it. */
+  function announce(message) {
+    if (els.srAnnouncer) els.srAnnouncer.textContent = message;
+  }
 
   /** WHAT: Mutable client state for whichever run is currently displayed. */
   const state = {
     currentRunId: null,
     eventSource: null,
-    cards: new Map(), // stage id -> { root, statusEl, iconEl, textEl, toggleBtn, outputEl, loaded }
+    cards: new Map(), // stage id -> { root, statusEl, iconEl, textEl, toggleBtn, outputEl, modelEl, loaded }
     history: [], // [{run_id, product_brief, status}], newest first
+    audioCtx: null, // created lazily on the notify-toggle's click gesture; see initNotifyToggle()
   };
 
   function apiUrl(path) {
@@ -156,12 +177,13 @@
       const textEl = root.querySelector(".stage-card__status-text");
       const toggleBtn = root.querySelector(".stage-card__toggle");
       const outputEl = root.querySelector(".stage-card__output");
+      const modelEl = root.querySelector(".stage-card__model");
 
       toggleBtn.addEventListener("click", () => toggleArtifact(stage.id));
 
       els.stageGrid.appendChild(fragment);
       state.cards.set(stage.id, {
-        root, accentEl, badgeEl, statusEl, iconEl, textEl, toggleBtn, outputEl, loaded: false,
+        root, accentEl, badgeEl, statusEl, iconEl, textEl, toggleBtn, outputEl, modelEl, loaded: false,
       });
     }
     els.stageGrid.hidden = false;
@@ -187,6 +209,21 @@
       card.toggleBtn.hidden = true;
       card.outputEl.hidden = true;
     }
+  }
+
+  /** WHAT: Shows which Fireworks model id ran a stage, once known.
+   * WHY: model/cost transparency — the person launching runs shouldn't be
+   * flying blind on which (and therefore how expensive a) model backs
+   * each stage. WHY no dollar figure: Fireworks per-model pricing isn't
+   * available to this app and changes over time — showing a hard-coded
+   * number here would risk being stale/wrong, so the launch panel instead
+   * links out to Fireworks' own current pricing page (see index.html). */
+  function setStageModel(stageId, modelId) {
+    const card = state.cards.get(stageId);
+    if (!card || !card.modelEl || !modelId) return;
+    const shortName = modelId.split("/").pop() || modelId;
+    card.modelEl.textContent = shortName;
+    card.modelEl.title = modelId;
   }
 
   function markRemainingPendingAsSkipped() {
@@ -216,7 +253,7 @@
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const payload = await res.json();
-      card.outputEl.textContent = payload.content;
+      EngineeringStudioMarkdown.render(card.outputEl, payload.content);
       card.loaded = true;
     } catch (err) {
       card.outputEl.textContent = `Could not load artifact: ${err.message}`;
@@ -251,11 +288,17 @@
     for (const stageId of order) {
       const stage = snapshot.stages[stageId];
       if (stage) setStageStatus(stageId, stage.status, stage.detail);
+      if (snapshot.models) setStageModel(stageId, snapshot.models[stageId]);
     }
     if (snapshot.status === "done" || snapshot.status === "error") {
       markRemainingPendingAsSkipped();
       updateGateBanner(snapshot.status, snapshot.status === "error" ? findFirstError(snapshot) : null);
     }
+    // One orientation announcement when a run is (re)selected — not a
+    // per-stage spam, just enough for a screen-reader user to know what
+    // they just loaded (live stage-by-stage announcements come from
+    // applyEvent() below as real SSE events arrive).
+    announce(`Loaded run: ${STATUS_LABEL[snapshot.status] || snapshot.status}.`);
   }
 
   function findFirstError(snapshot) {
@@ -269,11 +312,15 @@
   function applyEvent(event) {
     if (event.type === "stage") {
       setStageStatus(event.stage, event.status, event.detail);
+      announce(`${STAGE_LABELS[event.stage] || event.stage}: ${STATUS_LABEL[event.status] || event.status}.`);
     } else if (event.type === "run") {
       setRunMeta(state.currentRunId, event.status);
       markRemainingPendingAsSkipped();
       updateGateBanner(event.status, event.detail);
       refreshHistory();
+      const summary = event.status === "done" ? "Run complete." : `Run failed: ${event.detail || "see the stage that shows Error."}`;
+      announce(summary);
+      notifyRunFinished(event.status, summary);
     }
   }
 
@@ -392,7 +439,80 @@
     launchRun(brief);
   });
 
+  /** WHAT: Opt-in "notify me when a run finishes" — a browser Notification
+   * plus a short beep, fired only when the tab isn't the one the operator
+   * is actually looking at (runs take multiple minutes; nobody should
+   * have to babysit the tab).
+   * WHY persisted in localStorage: mirrors the theme toggle's pattern —
+   * the preference should survive a reload.
+   * WHY the AudioContext is created inside this click handler, not lazily
+   * at notify time: browsers require a user gesture before audio output
+   * is allowed to start; ticking this checkbox IS that gesture, and the
+   * resulting context stays usable for later `.start()` calls even
+   * outside a gesture, which a completion event (arriving via SSE) is
+   * not. */
+  const NOTIFY_STORAGE_KEY = "engineering-studio-notify";
+
+  function initNotifyToggle() {
+    if (!els.notifyToggle) return;
+    let stored = null;
+    try {
+      stored = window.localStorage.getItem(NOTIFY_STORAGE_KEY);
+    } catch (err) {
+      stored = null;
+    }
+    els.notifyToggle.checked = stored === "1";
+
+    els.notifyToggle.addEventListener("change", () => {
+      const enabled = els.notifyToggle.checked;
+      try {
+        window.localStorage.setItem(NOTIFY_STORAGE_KEY, enabled ? "1" : "0");
+      } catch (err) {
+        /* localStorage unavailable — preference just won't survive a reload. */
+      }
+      if (!enabled) return;
+
+      if (!state.audioCtx && "AudioContext" in window) {
+        state.audioCtx = new AudioContext();
+      }
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    });
+  }
+
+  function playBeep() {
+    const ctx = state.audioCtx;
+    if (!ctx) return;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = 880;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.35);
+  }
+
+  function notifyRunFinished(status, summary) {
+    if (!els.notifyToggle || !els.notifyToggle.checked) return;
+    if (document.hasFocus() && !document.hidden) return; // operator is already watching
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        new Notification("Engineering Studio AI", { body: summary, tag: "engineering-studio-run" });
+      } catch (err) {
+        /* Notification construction can throw in some embedded/webview contexts — non-fatal. */
+      }
+    }
+    playBeep();
+  }
+
   initTheme();
+  initNotifyToggle();
   checkHealth();
   refreshHistory();
 })();

@@ -10,6 +10,7 @@ FastAPI TestClient needed to exercise the store's own concurrency.
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -165,3 +166,119 @@ def test_execute_finishes_error_on_unexpected_exception(monkeypatch, tmp_path) -
     state = _wait_for_terminal(store, run_id)
 
     assert state["status"] == "error"
+
+
+def test_start_run_captures_resolved_model_per_stage(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    monkeypatch.setattr(runs_module, "run_pipeline", _fake_pipeline)
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research-model")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist-model")
+    store = runs_module.RunStore()
+
+    run_id = store.start_run("a test brief")
+    state = store.get(run_id)
+
+    assert state is not None
+    assert state["models"]["research"] == "accounts/fireworks/models/research-model"
+    assert state["models"]["mechanical"] == "accounts/fireworks/models/specialist-model"
+    assert state["models"]["quality_gate"] == "accounts/fireworks/models/specialist-model"
+
+
+def test_start_run_writes_run_json_sidecar(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    monkeypatch.setattr(runs_module, "run_pipeline", _fake_pipeline)
+    store = runs_module.RunStore()
+
+    run_id = store.start_run("a test brief")
+    _wait_for_terminal(store, run_id)
+
+    run_json = tmp_path / run_id / "run.json"
+    assert run_json.is_file()
+    data = json.loads(run_json.read_text(encoding="utf-8"))
+    assert data["run_id"] == run_id
+    assert data["status"] == "done"
+    assert data["stages"]["research"]["status"] == "done"
+
+
+def test_load_from_disk_rehydrates_a_completed_run(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    run_dir = tmp_path / "20260101-000000-abcd1234"
+    run_dir.mkdir(parents=True)
+    (run_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": "20260101-000000-abcd1234",
+                "product_brief": "a persisted brief",
+                "status": "done",
+                "created_at": 1234.0,
+                "stages": {"research": {"status": "done", "detail": "ok", "updated_at": 1234.0}},
+                "models": {"research": "accounts/fireworks/models/research-model"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    store = runs_module.RunStore()
+
+    store.load_from_disk()
+    state = store.get("20260101-000000-abcd1234")
+
+    assert state is not None
+    assert state["status"] == "done"
+    assert state["product_brief"] == "a persisted brief"
+    assert state["stages"]["research"]["status"] == "done"
+    assert state["models"]["research"] == "accounts/fireworks/models/research-model"
+    listed_ids = [run["run_id"] for run in store.list_runs()]
+    assert "20260101-000000-abcd1234" in listed_ids
+
+
+def test_load_from_disk_marks_interrupted_run_as_error(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    run_dir = tmp_path / "20260101-000000-interrupted"
+    run_dir.mkdir(parents=True)
+    (run_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": "20260101-000000-interrupted",
+                "product_brief": "a brief cut short",
+                "status": "running",
+                "created_at": 1234.0,
+                "stages": {
+                    "research": {"status": "done", "detail": "ok", "updated_at": 1234.0},
+                    "mechanical": {"status": "running", "detail": None, "updated_at": 1234.0},
+                },
+                "models": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    store = runs_module.RunStore()
+
+    store.load_from_disk()
+    state = store.get("20260101-000000-interrupted")
+
+    assert state is not None
+    assert state["status"] == "error"
+    assert state["stages"]["research"]["status"] == "done"
+    assert state["stages"]["mechanical"]["status"] == "error"
+    assert "restart" in state["stages"]["mechanical"]["detail"]
+
+
+def test_load_from_disk_skips_malformed_run_json(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    run_dir = tmp_path / "20260101-000000-broken"
+    run_dir.mkdir(parents=True)
+    (run_dir / "run.json").write_text("{not valid json", encoding="utf-8")
+    store = runs_module.RunStore()
+
+    store.load_from_disk()  # must not raise
+
+    assert store.list_runs() == []
+
+
+def test_load_from_disk_noop_when_runs_root_missing(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path / "does-not-exist")
+    store = runs_module.RunStore()
+
+    store.load_from_disk()  # must not raise
+
+    assert store.list_runs() == []

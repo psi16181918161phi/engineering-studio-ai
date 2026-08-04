@@ -63,6 +63,12 @@ Fireworks AI chat completion call. Every specialist writes ONLY to its own
 `src/engineering_studio/artifacts/<discipline>/` folder — see
 [AGENTS.md §3](AGENTS.md#3-scope-control-non-negotiable-for-every-agent-call).
 
+## Builder.io / Native.Builder setup
+
+This repo now includes a lightweight Builder.io integration point in the frontend dashboard. The UI exposes an optional Builder content panel that can be enabled by setting `BUILDER_API_KEY` (and optionally `BUILDER_PUBLIC_API_KEY` / `BUILDER_CONTENT_MODEL`) in `.env`.
+
+For a production setup, point the Builder script at your own content model and publish content entries from Builder.io, then wire them into the dashboard with your chosen entry ID. The current integration is intentionally non-blocking so the existing Engineering Studio AI workflow continues to work even when Builder is not configured.
+
 ## Quick start
 
 ```powershell
@@ -145,7 +151,7 @@ for the full design (Mode A live-demo vs. Mode B CI-safe-mocked distinction).
 ## Repository layout
 
 | Path | Purpose |
-|---|---|
+| --- | --- |
 | `src/engineering_studio/agents/` | One module per specialist (orchestrator, research, mechanical, electrical, firmware, simulation, business, challenge, quality_gate). |
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |

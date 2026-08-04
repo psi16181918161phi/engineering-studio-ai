@@ -41,7 +41,7 @@ services:
       dockerfile: deployment/Dockerfile
     env_file:
       - ../.env
-    profiles: ["gui"]
+    profiles: ["gui"]builder
     stdin_open: true
     tty: true
     command: ["python", "-m", "engineering_studio.gui"]

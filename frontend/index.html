@@ -70,6 +70,12 @@
 
       <div id="stage-grid" class="stage-grid" hidden></div>
     </section>
+
+    <section class="panel builder-panel" aria-labelledby="builder-heading">
+      <h2 id="builder-heading">Builder.io content</h2>
+      <p class="builder-panel__help">Optional content blocks managed in Builder.io can appear here.</p>
+      <div id="builder-content"></div>
+    </section>
   </main>
 
   <template id="stage-card-template">
@@ -90,5 +96,11 @@
 
   <script src="app.js"></script>
   <script src="downloads.js"></script>
+  <script async src="https://cdn.builder.io/js/webcomponents"></script>
+  <script>
+    window.__BUILDER_BLOB__ = window.__BUILDER_BLOB__ || {};
+    window.__BUILDER_BLOB__.apiKey = window.__BUILDER_BLOB__.apiKey || "";
+  </script>
+  <script src="builder.js"></script>
 </body>
 </html>

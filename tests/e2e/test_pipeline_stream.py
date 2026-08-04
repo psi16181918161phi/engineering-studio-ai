@@ -29,6 +29,7 @@ _STAGE_ORDER = (
     "business",
     "reviewer",
     "challenge",
+    "exploratory_qa",
     "validator",
     "quality_gate",
 )

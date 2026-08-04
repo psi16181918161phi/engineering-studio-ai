@@ -55,6 +55,7 @@ standards content.
 | `scaffolding/` | Project Scaffolding / Python Scaffolding |
 | `reviewer.agent.md` | Read-only critique against acceptance criteria |
 | `challenge-division/` | Security / Failure-Analysis / Safety / Red-Team / Paranoid-Devil's-Advocate / Cost-Sustainability / Project-Prosecutor |
+| `exploratory-qa.agent.md` | Real-scenario walkthroughs beyond the checklist and beyond any single adversarial stance |
 | `validator.agent.md` | Cross-artifact consistency join point |
 | `testing.agent.md` | Unit/integration/contract test execution (umbrella; see `testing/` for per-tier splits) |
 | `documentation.agent.md` | Final package compilation |
@@ -96,6 +97,7 @@ sequenceDiagram
     participant S as domain-specialists/* + business/* + scaffolding/*
     participant Rv as reviewer.agent.md
     participant C as challenge-division/*
+    participant Eq as exploratory-qa.agent.md
     participant V as validator.agent.md
     participant T as testing.agent.md
     participant D as documentation.agent.md + latex.agent.md
@@ -108,8 +110,10 @@ sequenceDiagram
     S-->>O: artifacts
     O->>Rv: review artifacts
     O->>C: adversarial review (parallel)
+    O->>Eq: scenario walkthrough (parallel)
     Rv-->>V: Review Findings
     C-->>V: Challenge Findings
+    Eq-->>V: Exploratory QA Findings
     V-->>O: Pass/Reject
     O->>T: run tests
     T-->>O: pass/fail report
@@ -125,3 +129,4 @@ sequenceDiagram
 | 0.1.0   | 2026-07-06 | Hadrian Hu | Initial deployment: curated ~30-file roster matching `VISION_AMD_LABLAB_HACKATHON_ENGINEERING_STUDIO.md` §4, plus `STANDARDS_SUMMARY.md`. |
 | 0.2.0   | 2026-07-10 | Hadrian Hu | Themed the Pipeline order Mermaid `sequenceDiagram` with the Variant B (interface-surface) palette per `coding_stds/visualization/aesthetic_standards.txt` §1.2.3 and `src/engineering_studio/utils/palette.py`. |
 | 0.3.0   | 2026-07-18 | Hadrian Hu | Added roster rows for the OpenAI Hackathon pivot's new folders (`config_management/`, `software_supply_chain/`, `artifacts_management/`, `testing/`, `virtual_env/`) so the index stays a single-hop navigation aid for the next phase (`OPEN_AI_DEV_WEEK_HACKATHON/PLAN.md`). |
+| 0.4.0   | 2026-08-01 | Umar Akhtar | Added `exploratory-qa.agent.md` — runs concurrently with Reviewer and Challenge Division, joining at Validator like the other two — and wired it into `orchestrator.py`'s `REVIEW_STAGES`, not just cataloged. |

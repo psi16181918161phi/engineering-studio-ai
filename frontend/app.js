@@ -30,6 +30,7 @@
     { id: "business", label: "Cost / Business / Legal", role: "Domain Specialist", lane: "sequential" },
     { id: "reviewer", label: "Reviewer", role: "Checklist critique", lane: "parallel" },
     { id: "challenge", label: "Challenge Division", role: "Adversarial reviewer", lane: "parallel" },
+    { id: "exploratory_qa", label: "Exploratory QA", role: "Real-scenario walkthrough", lane: "parallel" },
     { id: "validator", label: "Validator", role: "Cross-artifact reconciliation", lane: "sequential" },
     { id: "quality_gate", label: "Quality Gate", role: "Sole certifying authority", lane: "sequential" },
   ];

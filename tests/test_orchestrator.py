@@ -61,6 +61,7 @@ def test_run_pipeline_dispatches_research_specialists_and_business(
         "business",
         "reviewer",
         "challenge",
+        "exploratory_qa",
         "validator",
         "quality_gate",
     }
@@ -70,18 +71,19 @@ def test_run_pipeline_dispatches_research_specialists_and_business(
     assert business_text.startswith("business:")
     assert outputs["reviewer"].read_text(encoding="utf-8").startswith("reviewer:")
     assert outputs["challenge"].read_text(encoding="utf-8").startswith("challenge:")
+    assert outputs["exploratory_qa"].read_text(encoding="utf-8").startswith("exploratory_qa:")
     assert outputs["validator"].read_text(encoding="utf-8").startswith("validator:")
     assert outputs["quality_gate"].read_text(encoding="utf-8").startswith("quality_gate:")
 
 
-def test_run_pipeline_reviewer_and_challenge_see_same_upstream_and_validator_sees_both(
+def test_run_pipeline_review_stages_see_same_upstream_and_validator_sees_all(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """WHAT: Reviewer and Challenge Division must critique the same
-    assembled package independently (neither may be chained into the
-    other's input), and the Validator must be the join point that sees
-    both — this is the Non-Overlap Rule's runtime contract, not just its
-    prompt-text description in the .agent.md files."""
+    """WHAT: Reviewer, Challenge Division, and Exploratory QA must critique
+    the same assembled package independently (none may be chained into
+    another's input), and the Validator must be the join point that sees
+    all three — this is the Non-Overlap Rule's runtime contract, not just
+    its prompt-text description in the .agent.md files."""
     monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
     monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
     monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
@@ -93,15 +95,13 @@ def test_run_pipeline_reviewer_and_challenge_see_same_upstream_and_validator_see
         outputs[d].read_text(encoding="utf-8") for d in orchestrator.PARALLEL_DISCIPLINES
     ) + "\n\n" + outputs["business"].read_text(encoding="utf-8")
 
-    # _FakeAgent.run() echoes f"{discipline}: {user_prompt[:20]}" — both
-    # Reviewer and Challenge must have been called with the *same* upstream
+    # _FakeAgent.run() echoes f"{discipline}: {user_prompt[:20]}" — every
+    # REVIEW_STAGES member must have been called with the *same* upstream
     # text (the assembled package), not with each other's findings.
-    assert outputs["reviewer"].read_text(encoding="utf-8") == (
-        f"reviewer: {combined_with_business[:20]}"
-    )
-    assert outputs["challenge"].read_text(encoding="utf-8") == (
-        f"challenge: {combined_with_business[:20]}"
-    )
+    for stage in orchestrator.REVIEW_STAGES:
+        assert outputs[stage].read_text(encoding="utf-8") == (
+            f"{stage}: {combined_with_business[:20]}"
+        )
 
     combined_with_review = (
         combined_with_business
@@ -186,6 +186,7 @@ def test_run_pipeline_marks_all_downstream_stages_error_when_specialist_client_u
         "business",
         "reviewer",
         "challenge",
+        "exploratory_qa",
         "validator",
         "quality_gate",
     }

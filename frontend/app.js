@@ -150,6 +150,8 @@
       root.querySelector(".stage-card__title").textContent = stage.label;
       root.querySelector(".stage-card__role").textContent = stage.role;
 
+      const accentEl = root.querySelector(".stage-card__accent");
+      const badgeEl = root.querySelector(".stage-card__icon-badge");
       const statusEl = root.querySelector(".stage-card__status");
       const iconEl = root.querySelector(".stage-card__status-icon");
       const textEl = root.querySelector(".stage-card__status-text");
@@ -160,7 +162,7 @@
 
       els.stageGrid.appendChild(fragment);
       state.cards.set(stage.id, {
-        root, statusEl, iconEl, textEl, toggleBtn, outputEl, loaded: false,
+        root, accentEl, badgeEl, statusEl, iconEl, textEl, toggleBtn, outputEl, loaded: false,
       });
     }
     els.stageGrid.hidden = false;
@@ -170,6 +172,8 @@
   function setStageStatus(stageId, status, detail) {
     const card = state.cards.get(stageId);
     if (!card) return;
+    card.accentEl.dataset.state = status;
+    card.badgeEl.dataset.state = status;
     card.statusEl.dataset.state = status;
     card.iconEl.textContent = STATUS_ICON[status] || "?";
     card.textEl.textContent = STATUS_LABEL[status] || status;

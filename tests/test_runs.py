@@ -282,3 +282,61 @@ def test_load_from_disk_noop_when_runs_root_missing(monkeypatch, tmp_path) -> No
     store.load_from_disk()  # must not raise
 
     assert store.list_runs() == []
+
+
+def test_load_from_disk_skips_run_dir_without_run_json(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    # WHAT: a run directory with an artifacts/ tree but no run.json sidecar
+    # — e.g. a run created before this persistence feature existed.
+    (tmp_path / "20260101-000000-no-sidecar" / "artifacts").mkdir(parents=True)
+    store = runs_module.RunStore()
+
+    store.load_from_disk()  # must not raise, and must not fabricate a run
+
+    assert store.list_runs() == []
+
+
+def test_load_from_disk_skips_unknown_stage_name(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    run_dir = tmp_path / "20260101-000000-unknownstage"
+    run_dir.mkdir(parents=True)
+    (run_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": "20260101-000000-unknownstage",
+                "product_brief": "a brief",
+                "status": "done",
+                "created_at": 1234.0,
+                "stages": {
+                    "research": {"status": "done", "detail": "ok", "updated_at": 1234.0},
+                    # WHAT: a stage name that predates a STAGE_ORDER rename/removal
+                    # — must be skipped, never crash the whole load.
+                    "not_a_real_stage": {"status": "done", "detail": "ok", "updated_at": 1234.0},
+                },
+                "models": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    store = runs_module.RunStore()
+
+    store.load_from_disk()
+    state = store.get("20260101-000000-unknownstage")
+
+    assert state is not None
+    assert "not_a_real_stage" not in state["stages"]
+    assert state["stages"]["research"]["status"] == "done"
+
+
+def test_persist_locked_logs_and_does_not_raise_on_os_error(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    store = runs_module.RunStore()
+    run = runs_module.RunState(run_id="broken-run", product_brief="a brief")
+    # WHAT: make the run.json path itself an existing directory, so
+    # path.write_text() raises IsADirectoryError (an OSError subclass) —
+    # simulates a disk-level failure without needing to mock the filesystem.
+    run_dir = tmp_path / "broken-run"
+    run_dir.mkdir()
+    (run_dir / "run.json").mkdir()
+
+    store._persist_locked(run)  # must log a warning, never raise

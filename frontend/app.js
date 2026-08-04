@@ -309,18 +309,34 @@
     return null;
   }
 
+  /** WHAT: Applies one live "stage" SSE event — status + a screen-reader
+   * announcement. WHY split out of applyEvent(): keeps that function a
+   * thin type-dispatcher instead of a single fan-out point for every
+   * side effect either event type can cause. */
+  function handleStageEvent(event) {
+    setStageStatus(event.stage, event.status, event.detail);
+    announce(`${STAGE_LABELS[event.stage] || event.stage}: ${STATUS_LABEL[event.status] || event.status}.`);
+  }
+
+  /** WHAT: Applies one live "run" (terminal done/error) SSE event — every
+   * effect of a run reaching a terminal state, gathered in one place
+   * because they're one cohesive unit of work, not because applyEvent()
+   * needed somewhere to put them. */
+  function handleRunEvent(event) {
+    setRunMeta(state.currentRunId, event.status);
+    markRemainingPendingAsSkipped();
+    updateGateBanner(event.status, event.detail);
+    refreshHistory();
+    const summary = event.status === "done" ? "Run complete." : `Run failed: ${event.detail || "see the stage that shows Error."}`;
+    announce(summary);
+    notifyRunFinished(event.status, summary);
+  }
+
   function applyEvent(event) {
     if (event.type === "stage") {
-      setStageStatus(event.stage, event.status, event.detail);
-      announce(`${STAGE_LABELS[event.stage] || event.stage}: ${STATUS_LABEL[event.status] || event.status}.`);
+      handleStageEvent(event);
     } else if (event.type === "run") {
-      setRunMeta(state.currentRunId, event.status);
-      markRemainingPendingAsSkipped();
-      updateGateBanner(event.status, event.detail);
-      refreshHistory();
-      const summary = event.status === "done" ? "Run complete." : `Run failed: ${event.detail || "see the stage that shows Error."}`;
-      announce(summary);
-      notifyRunFinished(event.status, summary);
+      handleRunEvent(event);
     }
   }
 

@@ -7,8 +7,10 @@
   <link rel="stylesheet" href="styles/theme.css" />
   <link rel="stylesheet" href="styles/app.css" />
   <link rel="stylesheet" href="styles/downloads.css" />
+  <link rel="stylesheet" href="styles/markdown.css" />
 </head>
 <body>
+  <div id="sr-announcer" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
   <header class="topbar">
     <div class="topbar__title">
       <h1>Engineering Studio AI</h1>
@@ -46,6 +48,16 @@
         <p id="launch-error" class="error-text" role="alert" hidden></p>
       </form>
 
+      <label class="notify-toggle">
+        <input type="checkbox" id="notify-toggle-input" />
+        Notify me when a run finishes
+      </label>
+      <p class="model-pricing-note">
+        Runs call live models on
+        <a href="https://fireworks.ai/pricing" target="_blank" rel="noopener noreferrer">Fireworks AI</a>
+        — check current pricing before large runs.
+      </p>
+
       <h2 class="history-heading">Run History</h2>
       <ul id="run-history" class="run-history" aria-live="polite">
         <li class="run-history__empty">No runs yet.</li>
@@ -62,7 +74,7 @@
         </div>
       </div>
 
-      <div id="gate-banner" class="gate-banner" hidden></div>
+      <div id="gate-banner" class="gate-banner" role="status" aria-live="polite" hidden></div>
 
       <div id="pipeline-empty" class="pipeline-empty">
         Launch a run to see the agent team go to work.
@@ -82,6 +94,7 @@
         <div class="stage-card__heading">
           <h3 class="stage-card__title"></h3>
           <span class="stage-card__role"></span>
+          <span class="stage-card__model" title=""></span>
         </div>
       </header>
       <div class="stage-card__status" data-state="pending">
@@ -91,10 +104,11 @@
         <button type="button" class="stage-card__toggle" hidden>View output</button>
         <a class="stage-card__download" href="#" download hidden>Download output</a>
       </div>
-      <pre class="stage-card__output" hidden></pre>
+      <div class="stage-card__output" hidden></div>
     </article>
   </template>
 
+  <script src="markdown.js"></script>
   <script src="app.js"></script>
   <script src="downloads.js"></script>
 </body>

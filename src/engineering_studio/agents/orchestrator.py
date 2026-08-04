@@ -78,6 +78,17 @@ STAGE_SPECS: dict[str, str] = {
     "quality_gate": "quality-gate-final-verdict",
 }
 
+# WHAT: Which environment variable names the model id used for each stage
+# (research gets its own model; every other stage shares the specialist
+# model). WHY: single source of truth reused both by `_client_for()` below
+# and by `engineering_studio.runs` (which surfaces the resolved model id
+# per stage to the dashboard for cost/model transparency) — avoids the two
+# modules independently hard-coding the same research-vs-specialist split.
+STAGE_MODEL_ENV_VAR: dict[str, str] = {
+    stage: ("FIREWORKS_MODEL_RESEARCH" if stage == "research" else "FIREWORKS_MODEL_SPECIALIST")
+    for stage in STAGE_ORDER
+}
+
 # WHAT: Signature for the optional pipeline lifecycle observer.
 # ARGS: (stage, status, detail) where status is one of
 # "running" | "done" | "error" and detail is a short human-readable string

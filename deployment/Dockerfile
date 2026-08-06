@@ -34,6 +34,7 @@ WORKDIR /app
 
 COPY pyproject.toml requirements.txt ./
 COPY src/ ./src/
+COPY frontend/ ./frontend/
 
 RUN pip install --no-cache-dir -e ".[gui]" -r requirements.txt
 

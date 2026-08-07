@@ -163,6 +163,37 @@ def test_run_pipeline_emits_error_event_and_reraises_on_specialist_failure(
     assert "simulated model failure" in (error_events[0][2] or "")
 
 
+def test_run_pipeline_emits_error_when_task_spec_lookup_fails(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: A failure resolving the stage's Task Specification (e.g. a
+    missing docs/task-specs.md — the exact bug that broke the first real
+    deployment) must report "error" for that stage, not leave it stuck at
+    "running" forever. get_task_spec() is called inside _run_stage's own
+    try block precisely so this failure mode is never silently unreported."""
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FakeAgent)
+
+    def _boom(slug: str) -> str:
+        raise FileNotFoundError(f"docs/task-specs.md not found (slug={slug!r})")
+
+    monkeypatch.setattr(orchestrator, "get_task_spec", _boom)
+
+    events: list[tuple[str, str, str | None]] = []
+    with pytest.raises(FileNotFoundError, match="docs/task-specs.md not found"):
+        orchestrator.run_pipeline(
+            "build a small survey drone", tmp_path, on_event=lambda *args: events.append(args)
+        )
+
+    research_events = [e for e in events if e[0] == "research"]
+    assert [e[1] for e in research_events] == ["running", "error"], (
+        "research must transition running -> error, never stay stuck at running"
+    )
+    assert "docs/task-specs.md not found" in (research_events[-1][2] or "")
+
+
 def test_run_pipeline_marks_all_downstream_stages_error_when_specialist_client_unavailable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

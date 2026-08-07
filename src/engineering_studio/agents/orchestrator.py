@@ -166,11 +166,15 @@ def _run_stage(
     RAISES:
         ModelUnavailableError: Propagated on model-call failure; an "error"
             event is emitted first so observers see why the stage stopped.
+        TaskSpecNotFoundError: Propagated if spec_slug has no matching Task
+            Specification; an "error" event is emitted first, same as any
+            other stage failure — a missing spec must never leave a stage
+            stuck at "running" forever.
     """
     _emit(on_event, discipline, "running")
-    agent = SpecialistAgent(discipline, client, artifacts_root)
-    spec = get_task_spec(spec_slug).replace("{PRODUCT_BRIEF}", product_brief)
     try:
+        agent = SpecialistAgent(discipline, client, artifacts_root)
+        spec = get_task_spec(spec_slug).replace("{PRODUCT_BRIEF}", product_brief)
         path = agent.run(spec, upstream)
     except Exception as exc:
         _emit(on_event, discipline, "error", str(exc))

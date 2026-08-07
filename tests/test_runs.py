@@ -155,6 +155,11 @@ def test_execute_finishes_error_on_model_unavailable(monkeypatch, tmp_path) -> N
     state = _wait_for_terminal(store, run_id)
 
     assert state["status"] == "error"
+    # WHAT: The exception message must be persisted on the run itself, not
+    # only published transiently over SSE — otherwise a client that missed
+    # the live event (a dropped/reconnecting connection) can never recover
+    # the actual reason a run failed via list_runs()/get().
+    assert "simulated model-unavailable" in (state["detail"] or "")
 
 
 def test_execute_finishes_error_on_unexpected_exception(monkeypatch, tmp_path) -> None:
@@ -166,6 +171,7 @@ def test_execute_finishes_error_on_unexpected_exception(monkeypatch, tmp_path) -
     state = _wait_for_terminal(store, run_id)
 
     assert state["status"] == "error"
+    assert "simulated unexpected failure" in (state["detail"] or "")
 
 
 def test_start_run_captures_resolved_model_per_stage(monkeypatch, tmp_path) -> None:
@@ -261,6 +267,43 @@ def test_load_from_disk_marks_interrupted_run_as_error(monkeypatch, tmp_path) ->
     assert state["stages"]["research"]["status"] == "done"
     assert state["stages"]["mechanical"]["status"] == "error"
     assert "restart" in state["stages"]["mechanical"]["detail"]
+    # WHAT: The persisted run.json had no top-level "detail" (it predates
+    # this field / was never set), so the interrupted-on-restart fallback
+    # message must be filled in here too — a run-level error must always
+    # have *some* human-readable explanation, never a bare None.
+    assert "restart" in (state["detail"] or "")
+
+
+def test_load_from_disk_preserves_persisted_run_level_detail(monkeypatch, tmp_path) -> None:
+    """WHAT: A run that already finished with an error before the last
+    server restart must keep its original detail message on rehydration —
+    load_from_disk() must not overwrite a real, already-terminal detail
+    with the generic "interrupted by restart" fallback."""
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    run_dir = tmp_path / "20260101-000000-erroredout"
+    run_dir.mkdir(parents=True)
+    (run_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": "20260101-000000-erroredout",
+                "product_brief": "a brief that failed cleanly",
+                "status": "error",
+                "detail": "docs/task-specs.md not found (slug='research-problem-analysis-pass')",
+                "created_at": 1234.0,
+                "stages": {"research": {"status": "error", "detail": "same reason", "updated_at": 1234.0}},
+                "models": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    store = runs_module.RunStore()
+
+    store.load_from_disk()
+    state = store.get("20260101-000000-erroredout")
+
+    assert state is not None
+    assert state["status"] == "error"
+    assert state["detail"] == "docs/task-specs.md not found (slug='research-problem-analysis-pass')"
 
 
 def test_load_from_disk_skips_malformed_run_json(monkeypatch, tmp_path) -> None:

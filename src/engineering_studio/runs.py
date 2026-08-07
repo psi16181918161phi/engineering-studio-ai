@@ -74,6 +74,10 @@ class RunState:
         run_id (str): Opaque, URL-safe identifier.
         product_brief (str): The one-sentence brief this run was launched with.
         status (str): "pending" | "running" | "done" | "error".
+        detail (str | None): Terminal-state explanation — the exception
+            message when status is "error", otherwise None. Persisted here
+            (not just published over SSE) so it survives a dropped/missed
+            connection and is retrievable later via list_runs()/get().
         created_at (float): Unix timestamp the run was created.
         stages (dict[str, StageState]): One entry per STAGE_ORDER id.
     """
@@ -81,6 +85,7 @@ class RunState:
     run_id: str
     product_brief: str
     status: str = "pending"
+    detail: str | None = None
     created_at: float = field(default_factory=time.time)
     stages: dict[str, StageState] = field(
         default_factory=lambda: {name: StageState() for name in STAGE_ORDER}
@@ -99,6 +104,7 @@ class RunState:
             "run_id": self.run_id,
             "product_brief": self.product_brief,
             "status": self.status,
+            "detail": self.detail,
             "created_at": self.created_at,
             "stage_order": list(STAGE_ORDER),
             "stages": {
@@ -225,6 +231,7 @@ class RunStore:
         with self._lock:
             run = self._runs[run_id]
             run.status = status
+            run.detail = detail
             self._persist_locked(run)
         self._publish(run_id, {"type": "run", "status": status, "detail": detail})
 
@@ -283,6 +290,7 @@ class RunStore:
                 run_id=data.get("run_id", run_dir.name),
                 product_brief=data.get("product_brief", ""),
                 status=data.get("status", "error"),
+                detail=data.get("detail"),
                 created_at=data.get("created_at", 0.0),
                 models=data.get("models", {}),
             )
@@ -301,6 +309,8 @@ class RunStore:
                 )
             if run.status == "running":
                 run.status = "error"
+                if run.detail is None:
+                    run.detail = "Interrupted by a server restart before this run finished."
 
             with self._lock:
                 self._runs[run.run_id] = run

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Studio AI - Hackathon Submission</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0F1419 0%, #1E2835 100%);
+            color: #E0E0E0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 2px solid #00D98E;
+            padding-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #00D98E;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #FF6B9D;
+            margin-bottom: 5px;
+        }
+
+        .event-info {
+            font-size: 16px;
+            color: #2D3441;
+            margin-top: 10px;
+        }
+
+        .deadline {
+            background: #2D3441;
+            border-left: 4px solid #FF6B9D;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF6B9D;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .card {
+            background: #2D3441;
+            border: 2px solid #505060;
+            border-radius: 8px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #00D98E;
+            box-shadow: 0 0 20px rgba(0, 217, 142, 0.3);
+        }
+
+        .card h2 {
+            color: #00D98E;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .card.cicd h2 {
+            color: #FF6B9D;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            color: #E0E0E0;
+            line-height: 1.8;
+        }
+
+        .status {
+            display: inline-block;
+            background: #00D98E;
+            color: #0F1419;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .url {
+            background: #1E2835;
+            border-left: 3px solid #00D98E;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            word-break: break-all;
+            color: #FF6B9D;
+        }
+
+        .features {
+            background: #1E2835;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #2D3441;
+            color: #E0E0E0;
+        }
+
+        .features li:before {
+            content: "✓ ";
+            color: #00D98E;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .features li:last-child {
+            border-bottom: none;
+        }
+
+        .section {
+            margin: 50px 0;
+        }
+
+        .section h2 {
+            color: #00D98E;
+            font-size: 32px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #00D98E;
+            padding-bottom: 10px;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .agent-card {
+            background: #1E2835;
+            border: 1px solid #2D3441;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .agent-card strong {
+            color: #00D98E;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .agent-card small {
+            color: #2D3441;
+            font-size: 11px;
+        }
+
+        .submission-checklist {
+            background: #1E2835;
+            border: 2px solid #00D98E;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .submission-checklist h3 {
+            color: #00D98E;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #2D3441;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-item .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00D98E;
+            border-radius: 4px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .checklist-item.complete .checkbox {
+            background: #00D98E;
+            color: #0F1419;
+            font-weight: bold;
+        }
+
+        .checklist-item strong {
+            color: #E0E0E0;
+        }
+
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stack-item {
+            background: #1E2835;
+            border-left: 3px solid #FF6B9D;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .stack-item strong {
+            display: block;
+            color: #FF6B9D;
+            margin-bottom: 8px;
+        }
+
+        .stack-item small {
+            color: #2D3441;
+            font-size: 12px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #2D3441;
+            color: #2D3441;
+            font-size: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #00D98E;
+            color: #0F1419;
+        }
+
+        .btn-primary:hover {
+            background: #00B86B;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 217, 142, 0.3);
+        }
+
+        .btn-secondary {
+            background: #FF6B9D;
+            color: #0F1419;
+        }
+
+        .btn-secondary:hover {
+            background: #FF4D7D;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .info-box {
+            background: #1E2835;
+            border-left: 4px solid #00D98E;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .section h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>Engineering Studio AI</h1>
+            <p class="subtitle">Multi-Agent Engineering Design System</p>
+            <p class="event-info">AI Factory • native.builder Hackathon Submission</p>
+            <p class="event-info">Team: X Dark X</p>
+        </header>
+
+        <!-- DEADLINE -->
+        <div class="deadline">
+            ⏰ SUBMISSION DEADLINE: August 10, 2026 - 8:00 PM Pakistan Time
+        </div>
+
+        <!-- MAIN PRODUCTS -->
+        <section class="section">
+            <h2>Live Systems</h2>
+            <div class="grid">
+                <!-- Engineering Studio AI -->
+                <div class="card">
+                    <h2>🚀 Engineering Studio AI</h2>
+                    <p>Multi-agent engineering design system with 11 specialized agents working in parallel to generate complete engineering packages from product briefs.</p>
+
+                    <strong>Features:</strong>
+                    <div class="features">
+                        <ul>
+                            <li>11-stage engineering pipeline</li>
+                            <li>Real-time agent execution</li>
+                            <li>Automatic artifact generation</li>
+                            <li>Bill of Materials, schematics, code</li>
+                            <li>Complete engineering packages</li>
+                            <li>Download ZIP with all artifacts</li>
+                        </ul>
+                    </div>
+
+                    <strong>Live URL:</strong>
+                    <div class="url">https://engineering-studio-ai.onrender.com/</div>
+
+                    <span class="status">✓ ONLINE</span>
+                </div>
+
+                <!-- CI/CD Dashboard -->
+                <div class="card cicd">
+                    <h2>📊 CI/CD Dashboard</h2>
+                    <p>Professional CI/CD dashboard built 100% in native.builder. Connects to GitHub, displays real-time workflow data, monitors deployments and build status.</p>
+
+                    <strong>Features:</strong>
+                    <div class="features">
+                        <ul>
+                            <li>GitHub OAuth authentication</li>
+                            <li>Real-time workflow monitoring</li>
+                            <li>Live deployment tracking</li>
+                            <li>Professional dark-theme UI</li>
+                            <li>Real GitHub API integration</li>
+                            <li>Built in native.builder (hackathon requirement)</li>
+                        </ul>
+                    </div>
+
+                    <strong>Live URL:</strong>
+                    <div class="url">https://35nlu5cau4ggp4279xezbi4h5.nativelyai.app/</div>
+
+                    <span class="status">✓ LIVE</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE 11 AGENTS -->
+        <section class="section">
+            <h2>The 11 Specialized Agents</h2>
+            <div class="agents-grid">
+                <div class="agent-card">
+                    <strong>🔬 Research</strong>
+                    <small>Problem Framing & Feasibility</small>
+                </div>
+                <div class="agent-card">
+                    <strong>⚙️ Mechanical</strong>
+                    <small>Structural Design & Materials</small>
+                </div>
+                <div class="agent-card">
+                    <strong>🔌 Electrical</strong>
+                    <small>Circuit Design & Power</small>
+                </div>
+                <div class="agent-card">
+                    <strong>💻 Firmware</strong>
+                    <small>Embedded Code & Logic</small>
+                </div>
+                <div class="agent-card">
+                    <strong>📊 Simulation</strong>
+                    <small>Physics Validation & Testing</small>
+                </div>
+                <div class="agent-card">
+                    <strong>💰 Cost/Business/Legal</strong>
+                    <small>Budget & Compliance</small>
+                </div>
+                <div class="agent-card">
+                    <strong>👨‍⚖️ Reviewer</strong>
+                    <small>Quality Critique & Standards</small>
+                </div>
+                <div class="agent-card">
+                    <strong>⚡ Challenge Division</strong>
+                    <small>Adversarial Testing</small>
+                </div>
+                <div class="agent-card">
+                    <strong>🧪 Exploratory QA</strong>
+                    <small>Real-Scenario Testing</small>
+                </div>
+                <div class="agent-card">
+                    <strong>✅ Validator</strong>
+                    <small>Cross-Artifact Reconciliation</small>
+                </div>
+                <div class="agent-card">
+                    <strong>🎯 Quality Gate</strong>
+                    <small>Final Certification</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- TECHNICAL STACK -->
+        <section class="section">
+            <h2>Technical Stack</h2>
+            <div class="stack-grid">
+                <div class="stack-item">
+                    <strong>Backend</strong>
+                    <small>Python 3.10+, FastAPI, Fireworks AI</small>
+                </div>
+                <div class="stack-item">
+                    <strong>Frontend</strong>
+                    <small>native.builder, React 18, Vite</small>
+                </div>
+                <div class="stack-item">
+                    <strong>Database</strong>
+                    <small>Supabase (PostgreSQL)</small>
+                </div>
+                <div class="stack-item">
+                    <strong>Authentication</strong>
+                    <small>GitHub OAuth 2.0</small>
+                </div>
+                <div class="stack-item">
+                    <strong>Deployment</strong>
+                    <small>Render (permanent free tier)</small>
+                </div>
+                <div class="stack-item">
+                    <strong>CI/CD</strong>
+                    <small>GitHub Actions</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- SUBMISSION CHECKLIST -->
+        <section class="section">
+            <div class="submission-checklist">
+                <h3>📋 Submission Checklist</h3>
+
+                <div class="checklist-item complete">
+                    <div class="checkbox">✓</div>
+                    <div>
+                        <strong>Engineering Studio AI</strong>
+                        <p style="margin: 0; font-size: 12px; color: #2D3441;">Live system with 11-agent pipeline, real artifact generation</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item complete">
+                    <div class="checkbox">✓</div>
+                    <div>
+                        <strong>CI/CD Dashboard</strong>
+                        <p style="margin: 0; font-size: 12px; color: #2D3441;">Built 100% in native.builder, GitHub integration, live</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item complete">
+                    <div class="checkbox">✓</div>
+                    <div>
+                        <strong>Professional Presentation</strong>
+                        <p style="margin: 0; font-size: 12px; color: #2D3441;">10-slide PPTX with all technical details and URLs</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item complete">
+                    <div class="checkbox">✓</div>
+                    <div>
+                        <strong>Demo Video Scripts</strong>
+                        <p style="margin: 0; font-size: 12px; color: #2D3441;">Professional narration scripts ready for recording</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item complete">
+                    <div class="checkbox">✓</div>
+                    <div>
+                        <strong>GitHub Repository</strong>
+                        <p style="margin: 0; font-size: 12px; color: #2D3441;">Complete source code, documentation, Docker configuration</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>
+                        <strong>Demo Video (3 minutes)</strong>
+                        <p style="margin: 0; font-size: 12px; color: #2D3441;">Engineering Studio AI (1:30) + CI/CD Dashboard (1:30)</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>
+                        <strong>Submit to lablab.ai</strong>
+                        <p style="margin: 0; font-size: 12px; color: #2D3441;">Fill form and upload all files before deadline</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GitHub Repository -->
+        <section class="section">
+            <h2>GitHub Repository</h2>
+            <div class="info-box">
+                <strong>Complete source code and documentation:</strong>
+                <div class="url">https://github.com/psi16181918161phi/engineering-studio-ai</div>
+                <p style="margin-top: 15px; color: #E0E0E0;">
+                    ✓ Full source code for Engineering Studio AI<br/>
+                    ✓ CI/CD configuration and deployment setup<br/>
+                    ✓ Docker containerization<br/>
+                    ✓ API documentation<br/>
+                    ✓ Agent specifications<br/>
+                    ✓ Technical architecture
+                </p>
+            </div>
+        </section>
+
+        <!-- KEY ACHIEVEMENTS -->
+        <section class="section">
+            <h2>Key Achievements</h2>
+            <div class="info-box">
+                <ul style="list-style: none;">
+                    <li style="padding: 8px 0; border-bottom: 1px solid #2D3441;">✓ 11-stage engineering pipeline fully functional and tested</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid #2D3441;">✓ Real-world artifact generation (BOM, schematics, code, analysis)</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid #2D3441;">✓ Production-ready deployment on Render cloud platform</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid #2D3441;">✓ GitHub OAuth 2.0 integration with Supabase</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid #2D3441;">✓ CI/CD dashboard built 100% in native.builder</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid #2D3441;">✓ Complete technical documentation</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid #2D3441;">✓ Enterprise-ready security practices</li>
+                    <li style="padding: 8px 0;">✓ Permanent hosting solution for long-term judge review</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- SUBMISSION INFO -->
+        <section class="section">
+            <h2>Submission Information</h2>
+            <div class="info-box">
+                <strong>Hackathon:</strong> AI Factory - native.builder Hackathon<br/>
+                <strong>Team:</strong> X Dark X<br/>
+                <strong>Deadline:</strong> August 10, 2026 - 8:00 PM PKT<br/>
+                <strong>Submission Platform:</strong> lablab.ai<br/>
+                <br/>
+                <div class="button-group">
+                    <a href="https://lablab.ai/ai-hackathons/nativebuilder-build-without-limits/x-dark-x/submission" class="btn btn-primary">Go to Submission Form →</a>
+                    <a href="https://github.com/psi16181918161phi/engineering-studio-ai" class="btn btn-secondary">View on GitHub →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>Engineering Studio AI | Multi-Agent Engineering Design System</p>
+            <p>Generated: August 9, 2026 | Ready for Hackathon Submission</p>
+        </footer>
+    </div>
+</body>
+</html>

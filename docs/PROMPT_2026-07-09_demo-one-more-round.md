@@ -1,6 +1,6 @@
 ---
 title: "PROMPT — one more round for engineering-studio-ai prototype demo"
-author: "GitHub Copilot (agent session)"
+author: "Hadrian Hu (agent session)"
 date: "2026-07-09"
 version: "2026.1.0.0"
 status: "Ready"

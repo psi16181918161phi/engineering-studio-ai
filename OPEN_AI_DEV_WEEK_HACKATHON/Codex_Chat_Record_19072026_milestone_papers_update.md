@@ -86,7 +86,7 @@ Requested milestone paper updates and chat archival for this session are complet
 
 User: now we need to actually update the math proofs and white paper based on the latest changes for this milestone of the project. So, do not delete any existing content in both tex files, and isntead, append both with new proofs where appropriate and with new content, based on what has been done in terms of agent refinement and finessing the repo. Thanks. Also, save the chat to the #OPEN_AI_DEV_WEEK_HACKATHON subdir. Thanks
 
-GitHub Copilot: Optimized tool selectionI’ll update both LaTeX papers by appending milestone addenda (new formal propositions/proofs in the formal paper, and matching white-paper narrative updates) without deleting existing content, then create a chat record file under the OpenAI hackathon subdirectory. I’ll first inspect the tail sections of both `.tex` files so I can append in the right place cleanly.
+Hadrian Hu: Optimized tool selectionI’ll update both LaTeX papers by appending milestone addenda (new formal propositions/proofs in the formal paper, and matching white-paper narrative updates) without deleting existing content, then create a chat record file under the OpenAI hackathon subdirectory. I’ll first inspect the tail sections of both `.tex` files so I can append in the right place cleanly.
 
 I’m checking where each document currently ends and whether they already have append-only milestone sections, so I can add the new material right before `\end{document}` with zero deletions.
 
@@ -253,7 +253,7 @@ Made changes.
 
 User: i believe it is broken references that are causing the TOC in PDF to not be generated properly. Fix and save chat to the OPEN_AI_DEV_WEEK subdir. Thanks
 
-GitHub Copilot: I’m going to inspect the LaTeX source around the TOC and label/reference definitions, fix the broken cross-references causing rerun churn, then recompile to verify the TOC renders correctly and save a chat log file under the OpenAI Dev Week folder.
+Hadrian Hu: I’m going to inspect the LaTeX source around the TOC and label/reference definitions, fix the broken cross-references causing rerun churn, then recompile to verify the TOC renders correctly and save a chat log file under the OpenAI Dev Week folder.
 
 I’m now checking the source file for missing or malformed `\label`, `\ref`, and ToC setup commands to pinpoint why references stay undefined across runs.
 
@@ -293,7 +293,7 @@ Made changes.
 
 User: also fix the text overflows and overfull hbox issues in the text, as there are some instances of raw code-like syntax overflowing...fix,. and save this chat to the OPEN_AI_DEV_WEEK_HACKATHON as md chat file
 
-GitHub Copilot: I’ll patch the LaTeX source to reduce overflow from code-like identifiers and long table content, then recompile to confirm the overfull warnings are materially reduced and save this chat as a markdown file in the OPEN_AI_DEV_WEEK_HACKATHON folder. I’m starting by inspecting the paper source around the reported warning lines and the preamble line-breaking settings.
+Hadrian Hu: I’ll patch the LaTeX source to reduce overflow from code-like identifiers and long table content, then recompile to confirm the overfull warnings are materially reduced and save this chat as a markdown file in the OPEN_AI_DEV_WEEK_HACKATHON folder. I’m starting by inspecting the paper source around the reported warning lines and the preamble line-breaking settings.
 
 Read memory
 
@@ -395,7 +395,7 @@ Made changes.
 
 User: no proper and clean pdf is generated
 
-GitHub Copilot: I’m going to do a full clean rebuild of the LaTeX document and inspect the final log for any remaining issues that would make the PDF look broken, then I’ll patch the source until the output is clean.
+Hadrian Hu: I’m going to do a full clean rebuild of the LaTeX document and inspect the final log for any remaining issues that would make the PDF look broken, then I’ll patch the source until the output is clean.
 
 Ran terminal command: Set-Location "c:\Users\lordx\Desktop\CodingStandardsRef\engineering-studio-ai\paper\openai_dev_week"; Remove-Item engineering_studio_ai_paper.aux,engineering_studio_ai_paper.out,engineering_studio_ai_paper.toc,engineering_studio_ai_paper.log -ErrorAction SilentlyContinue; pdflatex -interaction=nonstopmode engineering_studio_ai_paper.tex > $null; pdflatex -interaction=nonstopmode engineering_studio_ai_paper.tex > $null; pdflatex -interaction=nonstopmode engineering_studio_ai_paper.tex > $null; $log='engineering_studio_ai_paper.log'; $over=(Select-String -Path $log -Pattern 'Overfull \\hbox').Count; $under=(Select-String -Path $log -Pattern 'Underfull \\hbox').Count; $undef=(Select-String -Path $log -Pattern 'undefined references|There were undefined references').Count; $dup=(Select-String -Path $log -Pattern 'destination with the same identifier').Count; $err=(Select-String -Path $log -Pattern '^! ').Count; Write-Output "OVERFULL=$over UNDERFULL=$under UNDEFINED=$undef DUP_DEST=$dup ERRORS=$err"; Select-String -Path $log -Pattern '^! |Overfull \\hbox|Underfull \\hbox|destination with the same identifier|There were undefined references' | Select-Object -First 120
 

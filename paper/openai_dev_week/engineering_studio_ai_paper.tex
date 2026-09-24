@@ -182,16 +182,16 @@ insufficient to establish that a multi-agent system is trustworthy at
 production scale.
 Four structural properties are required:
 \begin{enumerate}
-    \item[(P1)] The nominal workflow graph must be acyclic so that a
+    \item (P1) The nominal workflow graph must be acyclic so that a
           deterministic execution order exists and no phase can
           re-enter itself without an explicit rework mechanism.
-    \item[(P2)] Every reject/rework loop must terminate within a
+    \item (P2) Every reject/rework loop must terminate within a
           finite, statically-computable bound so that no run can
           diverge.
-    \item[(P3)] The Non-Overlap (single-responsibility) rule must
+    \item (P3) The Non-Overlap (single-responsibility) rule must
           imply a concrete lower bound on distinct agent instances,
           preventing silent responsibility collapse.
-    \item[(P4)] The trust-tier safety invariant must be preserved
+    \item (P4) The trust-tier safety invariant must be preserved
           across an arbitrarily long sequence of subagent invocations
           so that untrusted output can never be mistaken for a
           certified instruction.
@@ -207,29 +207,29 @@ This paper formalizes the MDAP architecture as a seven-tuple
 $\mathcal{R} = (G, \mathcal{M}, \tau, C, R, F_{\max}, D_{\max})$,
 where:
 \begin{enumerate}
-    \item[(A1)] $G = (V, E)$ is a directed graph of $|V|=11$ typed
+    \item (A1) $G = (V, E)$ is a directed graph of $|V|=11$ typed
           artifact-handoff phases, with edges encoding the
           ``must-complete-before'' relation from the governing Phase
           Ownership Table.
-    \item[(A2)] $\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$ is a
+    \item (A2) $\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$ is a
           finite deterministic automaton over $|Q|=8$ artifact
           lifecycle states, with initial state
           $q_0 = \mathrm{Drafted}$ and accepting set
           $F = \{\mathrm{Approved}\}$.
-    \item[(A3)] $\tau : \mathcal{C} \to
+    \item (A3) $\tau : \mathcal{C} \to
           \{\mathrm{T\text{-}0}, \mathrm{T\text{-}1},
           \mathrm{T\text{-}2}, \mathrm{T\text{-}3}\}$ assigns a
           trust tier to every content item in a session, with T-0
           being the highest authority (model constraints) and T-3
           the lowest (every subagent return message).
-    \item[(A4)] $C = (V_C, E_C)$ is an undirected conflict graph over
+    \item (A4) $C = (V_C, E_C)$ is an undirected conflict graph over
           the 12 function classes \FN{00}--\FN{11}, where an edge
           $\{u,v\} \in E_C$ encodes the Non-Overlap Rule's prohibition
           on assigning both $u$ and $v$ to one agent instance.
-    \item[(A5)] $R \in \mathbb{N}_0$ is the per-phase-gate retry
+    \item (A5) $R \in \mathbb{N}_0$ is the per-phase-gate retry
           limit, giving a global rework budget
           $B \coloneqq R \cdot |V| = 11R$.
-    \item[(A6)] $F_{\max} \in \mathbb{N}$ is the per-turn fan-out
+    \item (A6) $F_{\max} \in \mathbb{N}$ is the per-turn fan-out
           ceiling; $D_{\max} = 2$ is the nesting-depth limit.
 \end{enumerate}
 All definitions are grounded, without invented detail, in the five
@@ -241,7 +241,7 @@ governing vision documents cited in Section~\ref{sec:background}.
 Four theorems are proved directly from axioms already adopted as
 engineering policy:
 \begin{enumerate}
-    \item[(R1)] \textbf{Acyclicity} (Theorem~\ref{thm:acyclic}).
+    \item (R1) \textbf{Acyclicity} (Theorem~\ref{thm:acyclic}).
           The nominal workflow graph $G$ is a directed acyclic graph
           (DAG).
           \emph{Method:} construction of a strict topological-index
@@ -250,7 +250,7 @@ engineering policy:
           cycle would require $\phi(u) < \phi(u)$, a contradiction.
           \emph{Boundary cases addressed:} single-vertex graph,
           empty edge set, maximum-density graph ($|E| = 121$).
-    \item[(R2)] \textbf{Bounded Termination} (Theorem~\ref{thm:rework}).
+    \item (R2) \textbf{Bounded Termination} (Theorem~\ref{thm:rework}).
           Every run terminates within at most $P + B = 11 + 11R$
           phase-gate transitions, where $R \in \mathbb{N}_0$ is the
           per-phase retry limit.
@@ -261,7 +261,7 @@ engineering policy:
           \emph{Boundary cases addressed:} $R=0$ (immediate
           escalation on first rejection), $B=0$, and every phase
           saturating its retry allowance simultaneously.
-    \item[(R3)] \textbf{Minimum Agent Multiplicity}
+    \item (R3) \textbf{Minimum Agent Multiplicity}
           (Theorem~\ref{thm:multiplicity}).
           Any deployment compliant with the Non-Overlap Rule requires
           at least $\chi(C[K]) = 4$ distinct agent instances, where
@@ -274,7 +274,7 @@ engineering policy:
           \emph{Boundary cases addressed:} single artifact, empty
           conflict graph (would give a lower bound of 1, vacuously
           consistent), and maximum-clique configurations.
-    \item[(R4)] \textbf{Trust-Tier Invariant}
+    \item (R4) \textbf{Trust-Tier Invariant}
           (Theorem~\ref{thm:trust}).
           For every subagent-originated content item $c$ and every
           invocation sequence of arbitrary finite length, the
@@ -346,14 +346,14 @@ formal verification
     % -----------------------------------------------------------------------
     \item \textbf{Architectural context and motivation.}
     \begin{enumerate}
-        \item[(1.1)] Engineering Studio AI is a proposed multi-agent,
+        \item (1.1) Engineering Studio AI is a proposed multi-agent,
               multi-modal system in which a single natural-language
               product brief is progressively decomposed by a root
               Orchestrator (\FN{01}) into concurrent and sequential
               tasks executed by narrowly-scoped agents spanning the
               full software and hardware (emulated) engineering
               lifecycle.
-        \item[(1.2)] The architecture is operationally governed by five
+        \item (1.2) The architecture is operationally governed by five
               internal vision documents: \VisionClean{} (Layer~0--8
               hierarchy, Trust Tier table), \VisionGov{} (statelessness,
               loop-safety, task-specification schema), \VisionFunc{}
@@ -361,7 +361,7 @@ formal verification
               \VisionFlow{} (Phase Ownership Table, artifact state
               machine), and \VisionHackathon{} (hardware-emulation
               boundary).
-        \item[(1.3)] These documents constitute authoritative operational
+        \item (1.3) These documents constitute authoritative operational
               specifications; they do not, however, provide
               machine-checkable proofs of the structural properties on
               which the architecture's trustworthiness depends.
@@ -371,26 +371,26 @@ formal verification
     % -----------------------------------------------------------------------
     \item \textbf{Problem statement (four required properties).}
     \begin{enumerate}
-        \item[(2.1)] \emph{P1 --- Acyclicity.}
+        \item (2.1) \emph{P1 --- Acyclicity.}
               The nominal workflow graph $G$ must be a DAG so that a
               valid topological execution order exists.
               Without acyclicity, a phase could be re-entered
               indefinitely without invoking the explicit rework
               mechanism, making termination unprovable.
-        \item[(2.2)] \emph{P2 --- Bounded rework termination.}
+        \item (2.2) \emph{P2 --- Bounded rework termination.}
               The reject/rework loop must terminate within a finite,
               statically-computable bound $P + B = 11 + 11R$.
               Without this bound, a sequence of rejections could cause
               the run to diverge; no SLA or token-budget ceiling could
               be guaranteed.
-        \item[(2.3)] \emph{P3 --- Minimum agent multiplicity.}
+        \item (2.3) \emph{P3 --- Minimum agent multiplicity.}
               The Non-Overlap Rule must imply a concrete lower bound
               (at least 4) on distinct agent instances per artifact.
               Without this lower bound, a compliant deployment could
               silently collapse responsibilities into a single agent,
               re-introducing the monolithic failure modes detailed in
               Section~\ref{sec:intro:problem}.
-        \item[(2.4)] \emph{P4 --- Trust-tier invariant.}
+        \item (2.4) \emph{P4 --- Trust-tier invariant.}
               The trust-tier assignment $\tau(c) = \mathrm{T\text{-}3}$
               for every subagent-originated content item $c$ must be
               preserved across an arbitrarily long invocation sequence.
@@ -398,7 +398,7 @@ formal verification
               tier promotions could allow an untrusted subagent return
               to be treated as a certified instruction, a direct safety
               violation.
-        \item[(2.5)] \emph{Sufficiency of P1--P4.}
+        \item (2.5) \emph{Sufficiency of P1--P4.}
               Each of P1--P4 addresses an independently sufficient
               failure mode.
               Proving all four simultaneously establishes that the
@@ -410,7 +410,7 @@ formal verification
     % -----------------------------------------------------------------------
     \item \textbf{Formal model.}
     \begin{enumerate}
-        \item[(3.1)] The MDAP architecture is modelled as the
+        \item (3.1) The MDAP architecture is modelled as the
               seven-tuple
               \begin{align}
                 \mathcal{R}
@@ -418,17 +418,17 @@ formal verification
                 \bigl(G,\;\mathcal{M},\;\tau,\;C,\;R,\;
                        F_{\max},\;D_{\max}\bigr).
               \end{align}
-        \item[(3.2)] Every component of $\mathcal{R}$ is defined
+        \item (3.2) Every component of $\mathcal{R}$ is defined
               by direct citation to a governing document; no component
               is invented.
               Full definitions with validation of well-formedness
               conditions, boundary cases, and cross-definition
               consistency are given in
               Sections~\ref{sec:background}--\ref{sec:model}.
-        \item[(3.3)] The model is minimal: no structure is included
+        \item (3.3) The model is minimal: no structure is included
               beyond what the four proofs require, per Objective~O1b
               (Section~\ref{sec:intro:objectives}).
-        \item[(3.4)] The model is reusable: the formal vocabulary is
+        \item (3.4) The model is reusable: the formal vocabulary is
               stable under addition of new agent roles to the MDAP
               catalog, provided the new roles are assigned function
               classes \FN{00}--\FN{11} and the conflict graph $C$ is
@@ -438,13 +438,13 @@ formal verification
     % -----------------------------------------------------------------------
     \item \textbf{Key results.}
     \begin{enumerate}
-        \item[(4.1)] \emph{Theorem~\ref{thm:acyclic} (Acyclicity).}
+        \item (4.1) \emph{Theorem~\ref{thm:acyclic} (Acyclicity).}
               $G$ is a DAG.
               The topological index $\phi(v) \in \{1,\ldots,11\}$
               constructed in the proof witnesses a strict linear
               ordering compatible with $E$; its existence is both
               necessary and sufficient for acyclicity.
-        \item[(4.2)] \emph{Theorem~\ref{thm:rework} (Bounded
+        \item (4.2) \emph{Theorem~\ref{thm:rework} (Bounded
               Termination).}
               Every run terminates within at most
               $11 + 11R$ phase-gate transitions, where $R \in
@@ -453,14 +453,14 @@ formal verification
               termination: it is non-decreasing, bounded above by
               $B = 11R$, and strictly increases on every rejection
               event, so the sequence of rejection events is finite.
-        \item[(4.3)] \emph{Theorem~\ref{thm:multiplicity} (Minimum
+        \item (4.3) \emph{Theorem~\ref{thm:multiplicity} (Minimum
               Multiplicity).}
               Any Non-Overlap-compliant deployment requires
               $\geq 4$ distinct agent instances per artifact.
               The lower bound is tight: a 4-coloring of the induced
               subgraph $C[K]$ is exhibited, confirming
               $\chi(C[K]) = 4$ exactly.
-        \item[(4.4)] \emph{Theorem~\ref{thm:trust} (Trust-Tier
+        \item (4.4) \emph{Theorem~\ref{thm:trust} (Trust-Tier
               Invariant).}
               For every content item $c$ of subagent origin and every
               finite invocation sequence, $\tau(c) = \mathrm{T\text{-}3}$
@@ -468,7 +468,7 @@ formal verification
               occurred.
               The inductive proof covers all four event types and all
               boundary cases; no silent promotion path exists.
-        \item[(4.5)] \emph{Section~\ref{sec:sketch} (Proof Sketch ---
+        \item (4.5) \emph{Section~\ref{sec:sketch} (Proof Sketch ---
               Token/Cost Convergence).}
               A geometric-series upper bound on total invocation count
               is derived under the assumption that per-agent token
@@ -481,7 +481,7 @@ formal verification
     % -----------------------------------------------------------------------
     \item \textbf{Contribution and reuse.}
     \begin{enumerate}
-        \item[(5.1)] The formal vocabulary of $\mathcal{R}$ is the
+        \item (5.1) The formal vocabulary of $\mathcal{R}$ is the
               primary contribution.
               Future extensions of the MDAP catalog (new agent roles,
               new phases, new trust tiers) can be audited against
@@ -497,11 +497,11 @@ formal verification
               \end{enumerate}
               If no hypothesis is violated, all four theorems hold for
               the extended system without re-proof.
-        \item[(5.2)] The conflict graph $C$ is monotone-safe: adding
+        \item (5.2) The conflict graph $C$ is monotone-safe: adding
               edges to $E_C$ can only strengthen the Non-Overlap
               guarantees; it cannot invalidate
               Theorem~\ref{thm:multiplicity}.
-        \item[(5.3)] The trust-tier function $\tau$ is extensible:
+        \item (5.3) The trust-tier function $\tau$ is extensible:
               adding new tiers between T-3 and T-0 preserves the
               inductive structure of Theorem~\ref{thm:trust}, provided
               the new tiers are ordered and no new promotion path
@@ -511,24 +511,24 @@ formal verification
     % -----------------------------------------------------------------------
     \item \textbf{Implications and recommended follow-on work.}
     \begin{enumerate}
-        \item[(6.1)] Formal verification effort should concentrate on
+        \item (6.1) Formal verification effort should concentrate on
               the token/cost convergence bound
               (Section~\ref{sec:sketch}).
               The specific gap --- ratification of per-agent
               token-budget constants --- is within the authority of
               the MDAP governance board and requires no new
               mathematical machinery.
-        \item[(6.2)] Empirical validation against one real vertical
+        \item (6.2) Empirical validation against one real vertical
               slice (one complete run of the Impl--Review--Validate--
               Test--Gate pipeline on a non-trivial deliverable) would
               complement the formal results with observational
               evidence, per the roadmap recorded in \VisionHackathon{}.
-        \item[(6.3)] Extension of Theorem~\ref{thm:multiplicity} to
+        \item (6.3) Extension of Theorem~\ref{thm:multiplicity} to
               cover the full conflict graph $C$ (not just the induced
               subgraph $C[K]$) would sharpen the lower bound and may
               reveal tighter resource-planning constraints as the MDAP
               catalog grows.
-        \item[(6.4)] No additional axiomatic assumptions are needed to
+        \item (6.4) No additional axiomatic assumptions are needed to
               pursue any of (6.1)--(6.3); all required mathematical
               tools (graph coloring, monovariant arguments, structural
               induction) are already deployed in this paper.
@@ -570,7 +570,7 @@ formal verification
           engineering output --- fails on three independently sufficient
           grounds:
           \begin{enumerate}
-              \item[F1.] \emph{Responsibility collapse.}
+              \item F1. \emph{Responsibility collapse.}
                          When one agent performs both the Specialize
                          (\FN{02}/\FN{03}) and the Review (\FN{04}) function
                          on the same artifact, there exists no independent
@@ -578,7 +578,7 @@ formal verification
                          Non-Overlap Rule (\S5.1, \VisionFunc{}) is
                          violated by construction.
 
-              \item[F2.] \emph{Context-window bloat.}
+              \item F2. \emph{Context-window bloat.}
                          A monolithic context must simultaneously hold the
                          full state of all engineering disciplines, all
                          in-flight artifacts, all review history, and all
@@ -588,7 +588,7 @@ formal verification
                          signal-to-noise ratio of each individual
                          decision decreases monotonically.
 
-              \item[F3.] \emph{Unverifiable trust.}
+              \item F3. \emph{Unverifiable trust.}
                          A self-certifying agent's output cannot be
                          assigned a trust tier lower than T-2 (the user's
                          own instructions) without violating the tier
@@ -619,15 +619,15 @@ formal verification
           Specifically, four properties are stated as theorems and proved
           from first principles:
           \begin{enumerate}
-              \item[G1.] The nominal workflow graph is acyclic
+              \item G1. The nominal workflow graph is acyclic
                          (Theorem~\ref{thm:acyclic}).
-              \item[G2.] The reject/rework loop terminates within a
+              \item G2. The reject/rework loop terminates within a
                          finite, computable bound
                          (Theorem~\ref{thm:rework}).
-              \item[G3.] The Non-Overlap Rule implies a combinatorial lower
+              \item G3. The Non-Overlap Rule implies a combinatorial lower
                          bound of four distinct agent instances per artifact
                          (Theorem~\ref{thm:multiplicity}).
-              \item[G4.] The trust-tier safety invariant is preserved
+              \item G4. The trust-tier safety invariant is preserved
                          across an arbitrarily long sequence of subagent
                          invocations (Theorem~\ref{thm:trust}).
           \end{enumerate}
@@ -658,16 +658,16 @@ formal verification
           Construct a formal, graph-theoretic model of the Engineering
           Studio AI / MDAP workflow that is:
           \begin{enumerate}
-              \item[O1a.] \emph{Grounded.}  Every primitive (vertex,
+              \item O1a. \emph{Grounded.}  Every primitive (vertex,
                           edge, state, tier, function class) is defined
                           by direct reference to an existing governing
                           document; no detail is invented.
-              \item[O1b.] \emph{Sufficient.}  The model must be rich
+              \item O1b. \emph{Sufficient.}  The model must be rich
                           enough to state and prove the four theorems
                           listed in G1--G4 above; no unnecessary
                           abstraction is added beyond what the proofs
                           require.
-              \item[O1c.] \emph{Reusable.}  The formal vocabulary
+              \item O1c. \emph{Reusable.}  The formal vocabulary
                           (workflow graph, artifact state machine,
                           conflict graph, trust-tier function) must be
                           stable enough to serve as the foundation for
@@ -678,20 +678,20 @@ formal verification
     \item \textbf{Proof of four safety/liveness properties (Objective~O2).}
           For each of the four properties G1--G4, provide a proof that:
           \begin{enumerate}
-              \item[O2a.] States its proof type (direct, inductive,
+              \item O2a. States its proof type (direct, inductive,
                           contradiction, or combinatorial) before the proof
                           body, per \S4.1.1 of \ProofStd{}.
-              \item[O2b.] Lists all hypotheses explicitly and validates
+              \item O2b. Lists all hypotheses explicitly and validates
                           each hypothesis against a cited governing
                           document or standard mathematical fact before the
                           proof body begins, per \S4.1.2 of the same
                           standard.
-              \item[O2c.] Justifies every non-trivial inference step;
+              \item O2c. Justifies every non-trivial inference step;
                           no step is implicitly "obvious."
-              \item[O2d.] Addresses all boundary conditions, degenerate
+              \item O2d. Addresses all boundary conditions, degenerate
                           cases, and edge cases explicitly; no case is
                           dismissed as trivial without demonstration.
-              \item[O2e.] Closes with the \LaTeX{} \verb|\qedhere| marker
+              \item O2e. Closes with the \LaTeX{} \verb|\qedhere| marker
                           inside the proof environment, confirming
                           termination of the proof.
           \end{enumerate}
@@ -700,13 +700,13 @@ formal verification
           Identify \emph{exactly} which claims in this paper remain proof
           sketches rather than full proofs, and for each such claim:
           \begin{enumerate}
-              \item[O3a.] Provide the explicit SKETCH label in the
+              \item O3a. Provide the explicit SKETCH label in the
                           section heading, per \S11.4.1 of \ProofStd{}.
-              \item[O3b.] State the precise reason the proof is
+              \item O3b. State the precise reason the proof is
                           incomplete (missing axiom, unspecified
                           distribution, or unvalidated empirical
                           assumption).
-              \item[O3c.] Identify the minimum additional work required
+              \item O3c. Identify the minimum additional work required
                           to elevate the sketch to a full proof.
           \end{enumerate}
           Per O3, only one claim in this paper --- the token/cost
@@ -718,11 +718,11 @@ formal verification
           with knowledge of standard graph theory, finite automata theory,
           combinatorics, and the cited governing documents can:
           \begin{enumerate}
-              \item[O4a.] Verify each step without consulting the
+              \item O4a. Verify each step without consulting the
                           authors.
-              \item[O4b.] Identify the precise governing-document section
+              \item O4b. Identify the precise governing-document section
                           that justifies each non-mathematical premise.
-              \item[O4c.] Confirm that no hidden assumption exists by
+              \item O4c. Confirm that no hidden assumption exists by
                           inspection of the hypothesis lists alone.
           \end{enumerate}
 
@@ -739,16 +739,16 @@ formal verification
           specified in the five vision documents cited in
           Section~\ref{sec:background}:
           \begin{enumerate}
-              \item[S1.] The Layer~0--8 organizational hierarchy and
+              \item S1. The Layer~0--8 organizational hierarchy and
                          the Challenge Division (\VisionClean{}).
-              \item[S2.] The statelessness axiom, task-specification
+              \item S2. The statelessness axiom, task-specification
                          schema, loop-safety rules, and trust-tier
                          hierarchy (\VisionGov{}).
-              \item[S3.] The twelve function classes \FN{00}--\FN{11}
+              \item S3. The twelve function classes \FN{00}--\FN{11}
                          and the Non-Overlap Rule (\VisionFunc{}).
-              \item[S4.] The Phase Ownership Table and artifact state
+              \item S4. The Phase Ownership Table and artifact state
                          machine (\VisionFlow{}).
-              \item[S5.] The baseline coding standards (SOLID, JPL Power
+              \item S5. The baseline coding standards (SOLID, JPL Power
                          of Ten, ACID-for-workflows, and the mathematical
                          proof structure standard) as codified in
                          \code{coding\_stds/}.
@@ -762,17 +762,17 @@ formal verification
           whether a firmware image is functionally correct, or whether a
           cost estimate is numerically accurate).
           \begin{enumerate}
-              \item[E1.] Such claims require domain-specific formal
+              \item E1. Such claims require domain-specific formal
                          semantics (e.g., circuit-theory axioms,
                          programming-language operational semantics)
                          that are not within the scope of this
                          governance-layer formalization.
-              \item[E2.] Responsibility for semantic correctness is
+              \item E2. Responsibility for semantic correctness is
                          assigned at runtime to the domain-specific
                          Reviewer (\FN{04}) and Validator (\FN{05})
                          agents, as mandated by Sections~4.2 and~5.1
                          of \VisionFunc{}.
-              \item[E3.] Excluding semantic correctness does not weaken
+              \item E3. Excluding semantic correctness does not weaken
                          the four proved theorems; those theorems make
                          claims only about the \emph{structure} of the
                          workflow (acyclicity, termination, separation of
@@ -1505,7 +1505,7 @@ stated explicitly; no component is left undefined.
   % ------------------------------------------------------------------
   \item \textbf{Component 1: Workflow Graph $G = (V,E)$.}
   \begin{enumerate}
-    \item[1.1] \emph{Definition.}
+    \item 1.1 \emph{Definition.}
                $G$ is the directed graph of
                Definition~\ref{def:workflow-graph}.  Its vertex set
                is the finite, ordered enumeration
@@ -1523,25 +1523,25 @@ stated explicitly; no component is left undefined.
                    \mathrm{CommitSync},\;
                    \mathrm{Gate}\}. \label{eq:V-def}
                \end{align}
-    \item[1.2] \emph{Cardinality.}
+    \item 1.2 \emph{Cardinality.}
                Counting the elements of \eqref{eq:V-def}:
                $|V| = 11 = P$.
-    \item[1.3] \emph{Edge set.}
+    \item 1.3 \emph{Edge set.}
                $E$ is exactly the set of ``must-complete-before''
                constraints from Table~3.2 and the join-point
                constraints from \S7.2 of \VisionFlow{}.
                No edge is introduced by this paper beyond those listed
                in those sources; no edge is omitted.
-    \item[1.4] \emph{Acyclicity.}
+    \item 1.4 \emph{Acyclicity.}
                $G$ is a directed acyclic graph (DAG).
                Proof: Theorem~\ref{thm:acyclic} (Section
                \ref{sec:proofs}).
-    \item[1.5] \emph{Finiteness.}
+    \item 1.5 \emph{Finiteness.}
                $|V| = 11 < \infty$ and
                $|E| \leq |V|^2 = 121 < \infty$.
                Both bounds are finite; no infinite structure is
                introduced.
-    \item[1.6] \emph{Boundary conditions.}
+    \item 1.6 \emph{Boundary conditions.}
                An empty graph ($|V|=0$ or $|E|=\emptyset$) would
                still be a valid DAG.  The actual $G$ has $|V|=11$
                and at least the ten edges corresponding to the main
@@ -1553,10 +1553,10 @@ stated explicitly; no component is left undefined.
   \item \textbf{Component 2: Artifact State Machine
         $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$.}
   \begin{enumerate}
-    \item[2.1] \emph{Definition.}
+    \item 2.1 \emph{Definition.}
                $\mathcal{M}$ is the finite deterministic automaton of
                Definition~\ref{def:state-machine}.
-    \item[2.2] \emph{State set.}
+    \item 2.2 \emph{State set.}
                $Q$ is the finite set of artifact processing states;
                its elements are enumerated in
                Definition~\ref{def:state-machine}.  Concretely,
@@ -1573,33 +1573,33 @@ stated explicitly; no component is left undefined.
                    \label{eq:Q-def}
                \end{align}
                giving $|Q| = 8$.
-    \item[2.3] \emph{Input alphabet.}
+    \item 2.3 \emph{Input alphabet.}
                $\Sigma$ is the finite set of gate-decision symbols.
                At minimum $\Sigma$ contains the symbols
                $\{\mathtt{approve},\,\mathtt{reject}\}$;
                additional symbols may be introduced by the governance
                document without affecting the bound proofs, provided
                $|\Sigma| < \infty$.
-    \item[2.4] \emph{Transition function.}
+    \item 2.4 \emph{Transition function.}
                $\delta : Q \times \Sigma \to Q$ is the deterministic
                transition function.  Determinism ensures that at every
                state $q \in Q$ and every input $\sigma \in \Sigma$,
                exactly one successor state $\delta(q,\sigma)$ is
                defined.  No non-determinism is introduced.
-    \item[2.5] \emph{Initial state.}
+    \item 2.5 \emph{Initial state.}
                $q_0 = \mathrm{Drafted} \in Q$.
-    \item[2.6] \emph{Accepting states.}
+    \item 2.6 \emph{Accepting states.}
                $F = \{\mathrm{Approved},\mathrm{Escalated}\} \subseteq Q$.
                Both terminal states represent run completion:
                $\mathrm{Approved}$ denotes successful certification by
                the Quality Gate; $\mathrm{Escalated}$ denotes
                circuit-breaker activation (\S5.3.2,
                \VisionGov{}).
-    \item[2.7] \emph{Finiteness.}
+    \item 2.7 \emph{Finiteness.}
                $|Q| = 8 < \infty$; $|\Sigma| < \infty$ (by
                Definition~\ref{def:state-machine} and the governance
                document); $|\delta| = |Q \times \Sigma| < \infty$.
-    \item[2.8] \emph{Termination.}
+    \item 2.8 \emph{Termination.}
                Every run terminates within at most $P + B$
                state-machine transitions.
                Proof: Theorem~\ref{thm:rework}
@@ -1609,7 +1609,7 @@ stated explicitly; no component is left undefined.
   % ------------------------------------------------------------------
   \item \textbf{Component 3: Trust-Tier Function $\tau$.}
   \begin{enumerate}
-    \item[3.1] \emph{Definition.}
+    \item 3.1 \emph{Definition.}
                $\tau$ is defined in Definition~\ref{def:trust}.  Its
                domain is the set of all content items produced or
                consumed during a session; its codomain is the
@@ -1622,28 +1622,28 @@ stated explicitly; no component is left undefined.
                \end{align}
                where ``$<$'' denotes decreasing trust (T-1 is most
                trusted; T-3 is least trusted).
-    \item[3.2] \emph{Assignment rules.}
+    \item 3.2 \emph{Assignment rules.}
                The three tiers are assigned as follows:
                \begin{enumerate}
-                 \item[(T-1)] System-prompt and hard-coded constraints
+                 \item (T-1) System-prompt and hard-coded constraints
                               (\S8.1.1, \VisionGov{}).
-                 \item[(T-2)] User-supplied requests (same section).
-                 \item[(T-3)] Every subagent return message at the
+                 \item (T-2) User-supplied requests (same section).
+                 \item (T-3) Every subagent return message at the
                               moment of production (same section).
                \end{enumerate}
-    \item[3.3] \emph{Re-tagging restriction.}
+    \item 3.3 \emph{Re-tagging restriction.}
                Only \FN{08} (Quality Gate) may re-tag content to a
                lower (more trusted) tier.  No other agent may alter
                $\tau(c)$ downward.  Authority: Table~8.1,
                \VisionClean{}.
-    \item[3.4] \emph{Invariant.}
+    \item 3.4 \emph{Invariant.}
                Every subagent-originated content item $c$ satisfies
                $\tau(c) = \mathrm{T\text{-}3}$ throughout a session
                unless it has been the subject of an explicit
                \FN{08} $\Approved$ certificate event.
                Proof: Theorem~\ref{thm:trust}
                (Section~\ref{sec:proofs}).
-    \item[3.5] \emph{Well-definedness.}
+    \item 3.5 \emph{Well-definedness.}
                $\tau$ is a total function: every content item receives
                a tier assignment at the moment of production (H2 of
                Theorem~\ref{thm:trust}).  No content item is left
@@ -1653,7 +1653,7 @@ stated explicitly; no component is left undefined.
   % ------------------------------------------------------------------
   \item \textbf{Component 4: Conflict Graph $C = (V_C, E_C)$.}
   \begin{enumerate}
-    \item[4.1] \emph{Definition.}
+    \item 4.1 \emph{Definition.}
                $C$ is the undirected conflict graph of
                Definition~\ref{def:conflict-graph}.  Its vertex set
                is the full function-class catalog:
@@ -1665,12 +1665,12 @@ stated explicitly; no component is left undefined.
                  |V_C| = 12.
                  \label{eq:VC-def}
                \end{align}
-    \item[4.2] \emph{Edge semantics.}
+    \item 4.2 \emph{Edge semantics.}
                $\{u,v\} \in E_C$ iff assigning both function classes
                $u$ and $v$ to the same agent instance violates the
                Non-Overlap Rule (\S5.1, \VisionFunc{}) or the
                no-self-certification clause (\S1.2.3, \VisionClean{}).
-    \item[4.3] \emph{Mandatory clique.}
+    \item 4.3 \emph{Mandatory clique.}
                The four mandatory-phase function classes
                \begin{align}
                  K
@@ -1681,12 +1681,12 @@ stated explicitly; no component is left undefined.
                form a $4$-clique in $C$: every pair of distinct
                elements of $K$ is an edge of $C$
                (Stage~II of Theorem~\ref{thm:multiplicity}).
-    \item[4.4] \emph{Minimum multiplicity.}
+    \item 4.4 \emph{Minimum multiplicity.}
                Any compliant deployment covering $K$ requires at least
                $|K| = 4$ distinct agent instances.
                Proof: Theorem~\ref{thm:multiplicity}
                (Section~\ref{sec:proofs}).
-    \item[4.5] \emph{Finiteness.}
+    \item 4.5 \emph{Finiteness.}
                $|V_C| = 12 < \infty$;
                $|E_C| \leq \binom{12}{2} = 66 < \infty$.
   \end{enumerate}
@@ -1694,16 +1694,16 @@ stated explicitly; no component is left undefined.
   % ------------------------------------------------------------------
   \item \textbf{Component 5: Per-Phase Retry Limit $R$.}
   \begin{enumerate}
-    \item[5.1] \emph{Domain.}
+    \item 5.1 \emph{Domain.}
                $R \in \mathbb{N}_0 = \{0,1,2,\ldots\}$.
                The value $R = 0$ is admissible: it means the first
                rejection immediately triggers the circuit-breaker.
-    \item[5.2] \emph{Authority.}
+    \item 5.2 \emph{Authority.}
                Declared at \S8.2.1, \VisionGov{}.
                This paper treats $R$ as an arbitrary but fixed element
                of $\mathbb{N}_0$; no numeric value is assumed beyond
                finiteness.
-    \item[5.3] \emph{Derived budget.}
+    \item 5.3 \emph{Derived budget.}
                The global pooled rework budget is
                \begin{align}
                  B \;\coloneqq\; R \cdot P
@@ -1711,17 +1711,17 @@ stated explicitly; no component is left undefined.
                  \;\in\; \mathbb{N}_0.
                  \label{eq:B-def}
                \end{align}
-    \item[5.4] \emph{Budget exhaustion.}
+    \item 5.4 \emph{Budget exhaustion.}
                Once $b_i = B$ rejection events have occurred in a run,
                no further rejection is processed; the escalation
                mechanism fires (\S5.3.2, \VisionGov{}).
                This is the sole mechanism by which an artifact exits
                the run in the $\mathrm{Escalated}$ state.
-    \item[5.5] \emph{Boundary cases.}
+    \item 5.5 \emph{Boundary cases.}
                \begin{enumerate}
-                 \item[(a)] $R = 0$: $B = 0$; the first rejection is
+                 \item (a) $R = 0$: $B = 0$; the first rejection is
                             immediately escalated.
-                 \item[(b)] $R \to \infty$: excluded by H1 of
+                 \item (b) $R \to \infty$: excluded by H1 of
                             Theorem~\ref{thm:rework}, which requires
                             $R \in \mathbb{N}_0$ (finite).  The model
                             is not defined for $R = \infty$.
@@ -1731,36 +1731,36 @@ stated explicitly; no component is left undefined.
   % ------------------------------------------------------------------
   \item \textbf{Component 6: Fan-Out Ceiling $F_{\max}$.}
   \begin{enumerate}
-    \item[6.1] \emph{Domain.}
+    \item 6.1 \emph{Domain.}
                $F_{\max} \in \mathbb{N} = \{1,2,3,\ldots\}$.
                In particular $F_{\max} \geq 1$; zero fan-out is
                excluded because an Orchestrator that never invokes
                subagents cannot drive the workflow.
-    \item[6.2] \emph{Authority.}
+    \item 6.2 \emph{Authority.}
                Declared at \S5.1.1 and \S5.2.3,
                \VisionGov{}.
                No specific numeric value is assigned by the governance
                document; the proofs treat $F_{\max}$ as an arbitrary
                but fixed element of $\mathbb{N}$.
-    \item[6.3] \emph{Per-turn bound.}
+    \item 6.3 \emph{Per-turn bound.}
                At any single Orchestrator turn $t$, the number of
                distinct subagent invocations satisfies
                \begin{align}
                  \mathrm{invocations}(t) \;\leq\; F_{\max}.
                  \label{eq:fmax-bound}
                \end{align}
-    \item[6.4] \emph{Interaction with $D_{\max}$.}
+    \item 6.4 \emph{Interaction with $D_{\max}$.}
                The per-turn bound \eqref{eq:fmax-bound} applies to
                the \emph{direct} children of the Orchestrator in the
                invocation tree.  Because $D_{\max} = 2$, no subagent
                invokes further subagents; the total invocations per
                turn equals exactly the direct-children count, which is
                bounded by $F_{\max}$.
-    \item[6.5] \emph{Boundary cases.}
+    \item 6.5 \emph{Boundary cases.}
                \begin{enumerate}
-                 \item[(a)] $F_{\max} = 1$: serial execution; each
+                 \item (a) $F_{\max} = 1$: serial execution; each
                             turn invokes at most one subagent.
-                 \item[(b)] Saturation at $F_{\max}$: admissible;
+                 \item (b) Saturation at $F_{\max}$: admissible;
                             represents the worst-case parallel
                             fan-out.
                \end{enumerate}
@@ -1769,17 +1769,17 @@ stated explicitly; no component is left undefined.
   % ------------------------------------------------------------------
   \item \textbf{Component 7: Nesting-Depth Limit $D_{\max}$.}
   \begin{enumerate}
-    \item[7.1] \emph{Value.}
+    \item 7.1 \emph{Value.}
                $D_{\max} = 2$ (a specific, numerically fixed constant,
                not a free parameter).
-    \item[7.2] \emph{Authority.}
+    \item 7.2 \emph{Authority.}
                Declared at \S5.1.1, \S5.1.2,
                \VisionGov{}.
-    \item[7.3] \emph{Semantics.}
+    \item 7.3 \emph{Semantics.}
                The invocation hierarchy has at most two levels:
                \begin{enumerate}
-                 \item[(a)] Depth~0: the Orchestrator (\FN{01}).
-                 \item[(b)] Depth~1: subagents directly invoked by the
+                 \item (a) Depth~0: the Orchestrator (\FN{01}).
+                 \item (b) Depth~1: subagents directly invoked by the
                             Orchestrator (any \FN{02}--\FN{11}).
                \end{enumerate}
                A depth-1 subagent may \emph{not} itself invoke further
@@ -1789,21 +1789,21 @@ stated explicitly; no component is left undefined.
                  d \;\leq\; D_{\max} - 1 \;=\; 1.
                  \label{eq:depth-bound}
                \end{align}
-    \item[7.4] \emph{Consequence.}
+    \item 7.4 \emph{Consequence.}
                \eqref{eq:depth-bound} ensures that the invocation tree
                rooted at any Orchestrator turn has height exactly~1
                (root plus one level of leaves).  This is the key
                structural assumption exploited in Stage~I of the proof
                of Theorem~5 (Section~\ref{sec:sketch}).
-    \item[7.5] \emph{Boundary cases.}
+    \item 7.5 \emph{Boundary cases.}
                \begin{enumerate}
-                 \item[(a)] $D_{\max} = 1$: the Orchestrator itself
+                 \item (a) $D_{\max} = 1$: the Orchestrator itself
                             is the only active agent; no subagent
                             invocations are permitted.  The bound
                             $N \leq F_{\max} \cdot P \cdot (1+R)$
                             still holds (vacuously, with
                             $\mathrm{invocations}(t) = 0$).
-                 \item[(b)] $D_{\max} > 2$: outside the scope of this
+                 \item (b) $D_{\max} > 2$: outside the scope of this
                             model; the governance document does not
                             currently permit deeper nesting.
                \end{enumerate}
@@ -2028,8 +2028,8 @@ We verify each pairwise dependency explicitly.
 
 \textbf{Hypotheses:}
 \begin{enumerate}
-    \item[H1] $G = (V,E)$ is the workflow graph of Definition~\ref{def:workflow-graph}.
-    \item[H2] Every edge $(u,v) \in E$ corresponds to a "must-complete-before"
+    \item H1 $G = (V,E)$ is the workflow graph of Definition~\ref{def:workflow-graph}.
+    \item H2 Every edge $(u,v) \in E$ corresponds to a "must-complete-before"
               constraint from Table~3.2 or a join-point constraint from
               \S7.2 of \VisionFlow{}.
 \end{enumerate}
@@ -2287,12 +2287,12 @@ function (well-founded induction on $\mathbb{N}$).
 \textbf{Hypotheses:}
 \begin{sloppypar}
 \begin{enumerate}
-    \item[H1] The retry limit for any single phase-gate is $R \in
+    \item H1 The retry limit for any single phase-gate is $R \in
               \mathbb{N}$, $R \geq 0$ (\S8.2.1,
               \VisionGov{}).
-    \item[H2] $G$ has a finite vertex set $|V| = P$ (Definition
+    \item H2 $G$ has a finite vertex set $|V| = P$ (Definition
               \ref{def:workflow-graph}; here $P = 11$).
-    \item[H3] Every rejection event (Table~8.1,
+    \item H3 Every rejection event (Table~8.1,
               \VisionFlow{})
               consumes exactly one unit of a global rework budget
               $B \coloneqq R \cdot P$ shared across all phases, and routes
@@ -2695,14 +2695,14 @@ argument).
 
 \textbf{Hypotheses:}
 \begin{enumerate}
-    \item[H1] $C = (\{\FN{00},\ldots,\FN{11}\}, E_C)$ is the conflict
+    \item H1 $C = (\{\FN{00},\ldots,\FN{11}\}, E_C)$ is the conflict
               graph of Definition~\ref{def:conflict-graph}.
-    \item[H2] Every agent instance $a$ (Definition~\ref{def:agent}) is
+    \item H2 Every agent instance $a$ (Definition~\ref{def:agent}) is
               \emph{compliant} iff $S(a)$ is an independent set of $C$,
               i.e. no two functions in $S(a)$ are adjacent in $C$ (this is
               the direct restatement of the Non-Overlap Rule, \S5.1,
               \VisionFunc{}).
-    \item[H3] For a single artifact's lifecycle to be fully governed, every
+    \item H3 For a single artifact's lifecycle to be fully governed, every
               vertex of the clique
               $K = \{\FN{02},\FN{04},\FN{05},\FN{09}\} \subseteq
               \{\FN{00},\ldots,\FN{11}\}$ must be performed by
@@ -2732,14 +2732,14 @@ omitted and all boundary conditions addressed.
 \medskip
 \noindent\textbf{Stage~I: Validate the domain of $K$.}
 \begin{enumerate}
-    \item[I.1] By H1, the vertex set of $C$ is
+    \item I.1 By H1, the vertex set of $C$ is
                $V_C = \{\FN{00},\FN{01},\ldots,\FN{11}\}$, which has
                cardinality $|V_C| = 12$.
-    \item[I.2] By H3, $K = \{\FN{02},\FN{04},\FN{05},\FN{09}\}$.
+    \item I.2 By H3, $K = \{\FN{02},\FN{04},\FN{05},\FN{09}\}$.
                Each element of $K$ is distinct (the four function
                identifiers are pairwise unequal by inspection), so
                $|K| = 4$.
-    \item[I.3] $K \subseteq V_C$ because $\FN{02}, \FN{04}, \FN{05},
+    \item I.3 $K \subseteq V_C$ because $\FN{02}, \FN{04}, \FN{05},
                \FN{09} \in \{\FN{00},\ldots,\FN{11}\}$.
                Hence $K$ is a well-defined vertex subset of $C$.
 \end{enumerate}
@@ -2751,27 +2751,27 @@ is an edge.}
 There are $\binom{4}{2} = 6$ unordered pairs in $K$.
 We list them all and confirm membership in $E_C$ via H3:
 \begin{enumerate}
-    \item[II.1] $\{\FN{02},\FN{04}\}$: Specialize $\leftrightarrow$
+    \item II.1 $\{\FN{02},\FN{04}\}$: Specialize $\leftrightarrow$
                 Review conflict; $\{\FN{02},\FN{04}\} \in E_C$
                 by H3 (explicit citation therein).
-    \item[II.2] $\{\FN{02},\FN{05}\}$: Specialize $\leftrightarrow$
+    \item II.2 $\{\FN{02},\FN{05}\}$: Specialize $\leftrightarrow$
                 Validate conflict; $\{\FN{02},\FN{05}\} \in E_C$
                 by H3 (explicit citation therein).
-    \item[II.3] $\{\FN{04},\FN{09}\}$: Review $\leftrightarrow$
+    \item II.3 $\{\FN{04},\FN{09}\}$: Review $\leftrightarrow$
                 Challenge conflict; $\{\FN{04},\FN{09}\} \in E_C$
                 by H3 (explicit citation therein).
-    \item[II.4] $\{\FN{02},\FN{09}\}$: a Specialist certifying its
+    \item II.4 $\{\FN{02},\FN{09}\}$: a Specialist certifying its
                 own adversarial challenge violates the
                 \begin{sloppypar}
                 ``no self-certification'' clause (\S1.2.3,
                 \VisionClean{});
                 $\{\FN{02},\FN{09}\} \in E_C$ by H3.
                 \end{sloppypar}
-    \item[II.5] $\{\FN{05},\FN{09}\}$: a Validator certifying its
+    \item II.5 $\{\FN{05},\FN{09}\}$: a Validator certifying its
                 own adversarial challenge similarly violates \S1.2.3
                 of the same document;
                 $\{\FN{05},\FN{09}\} \in E_C$ by H3.
-    \item[II.6] $\{\FN{04},\FN{05}\}$: Review $\leftrightarrow$
+    \item II.6 $\{\FN{04},\FN{05}\}$: Review $\leftrightarrow$
                 Validate; both are certification roles over the same
                 artifact output, and joint exercise by one agent
                 violates the independence requirement of \S5.1,
@@ -2792,7 +2792,7 @@ size $4$ in $C$:
 \medskip
 \noindent\textbf{Stage~III: State the coverage requirement precisely.}
 \begin{enumerate}
-    \item[III.1] Let $\mathcal{A}$ be any finite set of compliant agent
+    \item III.1 Let $\mathcal{A}$ be any finite set of compliant agent
                  instances. Define the \emph{coverage} of $\mathcal{A}$
                  as
                  \begin{align}
@@ -2801,11 +2801,11 @@ size $4$ in $C$:
                      \;=\;
                      \bigcup_{a \in \mathcal{A}} S(a).
                  \end{align}
-    \item[III.2] We say $\mathcal{A}$ \emph{covers} $K$ iff
+    \item III.2 We say $\mathcal{A}$ \emph{covers} $K$ iff
                  $K \subseteq \mathrm{Cov}(\mathcal{A})$, i.e.\ every
                  mandatory function has at least one agent instance
                  responsible for it.
-    \item[III.3] The goal is to establish
+    \item III.3 The goal is to establish
                  $|\mathcal{A}| \geq 4$
                  for every $\mathcal{A}$ that covers $K$ and whose
                  every member is compliant.
@@ -2815,9 +2815,9 @@ size $4$ in $C$:
 \noindent\textbf{Stage~IV: Establish the independence constraint on
 each agent.}
 \begin{enumerate}
-    \item[IV.1] Fix any $a \in \mathcal{A}$.  By H2, $a$ is compliant
+    \item IV.1 Fix any $a \in \mathcal{A}$.  By H2, $a$ is compliant
                 iff $S(a)$ is an independent set of $C$.
-    \item[IV.2] $S(a)$ is an independent set of $C$ iff
+    \item IV.2 $S(a)$ is an independent set of $C$ iff
                 \begin{align}
                     \label{eq:indep}
                     \forall\, u, v \in S(a),\;
@@ -2825,10 +2825,10 @@ each agent.}
                     \;\Longrightarrow\;
                     \{u,v\} \notin E_C.
                 \end{align}
-    \item[IV.3] Contrapositive: if $\{u,v\} \in E_C$ for some
+    \item IV.3 Contrapositive: if $\{u,v\} \in E_C$ for some
                 $u \neq v$, then $u$ and $v$ cannot both belong to
                 $S(a)$ for any single compliant agent $a$.
-    \item[IV.4] In particular, by~\eqref{eq:clique} and~\eqref{eq:indep},
+    \item IV.4 In particular, by~\eqref{eq:clique} and~\eqref{eq:indep},
                 for any two distinct $u, v \in K$:
                 $\{u,v\} \in E_C$, so no compliant agent $a$ can satisfy
                 $\{u,v\} \subseteq S(a)$.
@@ -2843,32 +2843,32 @@ each agent.}
 \medskip
 \noindent\textbf{Stage~V: Apply the pigeonhole principle.}
 \begin{enumerate}
-    \item[V.1] Assume for contradiction that $|\mathcal{A}| \leq 3$.
-    \item[V.2] Since $\mathcal{A}$ covers $K$ (III.2--III.3), we have
+    \item V.1 Assume for contradiction that $|\mathcal{A}| \leq 3$.
+    \item V.2 Since $\mathcal{A}$ covers $K$ (III.2--III.3), we have
                $K \subseteq \mathrm{Cov}(\mathcal{A})$, so every
                element of $K$ belongs to $S(a)$ for at least one
                $a \in \mathcal{A}$.
-    \item[V.3] Define a mapping $\phi: K \to \mathcal{A}$ by choosing,
+    \item V.3 Define a mapping $\phi: K \to \mathcal{A}$ by choosing,
                for each $k \in K$, any $a \in \mathcal{A}$ with
                $k \in S(a)$ (such $a$ exists by V.2).
-    \item[V.4] $\phi$ maps a set of size $|K|=4$ into a set of size
+    \item V.4 $\phi$ maps a set of size $|K|=4$ into a set of size
                $|\mathcal{A}| \leq 3$.
                By the pigeonhole principle (Rosen, \emph{op.\ cit.},
                \S6.2), $\phi$ is not injective: there exist distinct
                $u, v \in K$ with $\phi(u) = \phi(v) =: a^*$.
-    \item[V.5] By definition of $\phi$, $u \in S(a^*)$ and
+    \item V.5 By definition of $\phi$, $u \in S(a^*)$ and
                $v \in S(a^*)$, i.e.\ $\{u,v\} \subseteq S(a^*)$,
                giving $|S(a^*) \cap K| \geq 2$.
-    \item[V.6] But $u, v \in K$ with $u \neq v$, so
+    \item V.6 But $u, v \in K$ with $u \neq v$, so
                by~\eqref{eq:clique}, $\{u,v\} \in E_C$.
                Combined with V.5, $S(a^*)$ contains the edge
                $\{u,v\}$ of $C$.
-    \item[V.7] By~\eqref{eq:indep} (contrapositive), $S(a^*)$ is
+    \item V.7 By~\eqref{eq:indep} (contrapositive), $S(a^*)$ is
                \emph{not} an independent set of $C$.
-    \item[V.8] By H2, $a^*$ is therefore \emph{not} compliant.
-    \item[V.9] This contradicts the assumption that every member of
+    \item V.8 By H2, $a^*$ is therefore \emph{not} compliant.
+    \item V.9 This contradicts the assumption that every member of
                $\mathcal{A}$ is compliant (Stage~III.3).
-    \item[V.10] The assumption $|\mathcal{A}| \leq 3$ is therefore
+    \item V.10 The assumption $|\mathcal{A}| \leq 3$ is therefore
                 \emph{false}; hence $|\mathcal{A}| \geq 4$ for every
                 compliant $\mathcal{A}$ covering $K$.
 \end{enumerate}
@@ -2877,32 +2877,32 @@ each agent.}
 \noindent\textbf{Stage~VI: Confirm no boundary case or edge case is
 omitted.}
 \begin{enumerate}
-    \item[VI.1] \emph{Empty $\mathcal{A}$:} $|\mathcal{A}|=0$ trivially
+    \item VI.1 \emph{Empty $\mathcal{A}$:} $|\mathcal{A}|=0$ trivially
                 fails to cover $K$ (since $K \neq \emptyset$), so it
                 does not constitute a valid covering set; the lower bound
                 is vacuously respected.
-    \item[VI.2] \emph{$|\mathcal{A}|=1$:} A single agent $a$ would need
+    \item VI.2 \emph{$|\mathcal{A}|=1$:} A single agent $a$ would need
                 $K \subseteq S(a)$, giving $|S(a) \cap K| = 4 \geq 2$,
                 which violates~\eqref{eq:no-two-in-K} by any pair in $K$;
                 not a valid compliant covering.
-    \item[VI.3] \emph{$|\mathcal{A}|=2$:} Two agents together cover
+    \item VI.3 \emph{$|\mathcal{A}|=2$:} Two agents together cover
                 $|K|=4$ mandatory functions; by pigeonhole at least one
                 agent covers $\geq 2$ functions from $K$,
                 violating~\eqref{eq:no-two-in-K}; not a valid compliant
                 covering.
-    \item[VI.4] \emph{$|\mathcal{A}|=3$:} Same pigeonhole argument as
+    \item VI.4 \emph{$|\mathcal{A}|=3$:} Same pigeonhole argument as
                 Stage~V.1--V.10 with $|\mathcal{A}|=3 < 4 = |K|$; not a
                 valid compliant covering.
-    \item[VI.5] \emph{$|\mathcal{A}|=4$:} Addressed by
+    \item VI.5 \emph{$|\mathcal{A}|=4$:} Addressed by
                 Corollary~\ref{cor:sharp} (tight construction exists);
                 the bound is achievable.
-    \item[VI.6] \emph{$|\mathcal{A}|>4$:} Any superset of a covering
+    \item VI.6 \emph{$|\mathcal{A}|>4$:} Any superset of a covering
                 set of size $4$ also covers $K$; the lower bound of $4$
                 is not violated.
-    \item[VI.7] \emph{Non-distinct agents:} Definition~\ref{def:agent}
+    \item VI.7 \emph{Non-distinct agents:} Definition~\ref{def:agent}
                 requires agent instances to be distinct objects;
                 multisets are excluded by definition.
-    \item[VI.8] \emph{Overlapping $S(a)$ outside $K$:} The proof
+    \item VI.8 \emph{Overlapping $S(a)$ outside $K$:} The proof
                 only uses $S(a) \cap K$; functions outside $K$ are
                 irrelevant to the argument and introduce no additional
                 constraint on the lower bound.
@@ -2911,15 +2911,15 @@ omitted.}
 \medskip
 \noindent\textbf{Stage~VII: Conclusion.}
 \begin{enumerate}
-    \item[VII.1] Stages~I--II establish that $K$ is a $4$-clique in $C$.
-    \item[VII.2] Stage~IV derives that each compliant agent covers at
+    \item VII.1 Stages~I--II establish that $K$ is a $4$-clique in $C$.
+    \item VII.2 Stage~IV derives that each compliant agent covers at
                  most one vertex of $K$.
-    \item[VII.3] Stage~V shows, by contradiction via the pigeonhole
+    \item VII.3 Stage~V shows, by contradiction via the pigeonhole
                  principle, that at least $4$ distinct compliant agent
                  instances are required to cover $K$.
-    \item[VII.4] Stage~VI confirms the argument holds across all
+    \item VII.4 Stage~VI confirms the argument holds across all
                  boundary and edge cases.
-    \item[VII.5] Therefore:
+    \item VII.5 Therefore:
                  \begin{align}
                      \label{eq:lower-bound}
                      \text{any compliant covering of } K
@@ -2940,7 +2940,7 @@ $|\mathcal{A}| \geq 5$.
 \medskip
 \noindent\textbf{Construction.}
 \begin{enumerate}
-    \item[C.1] Define four agent instances
+    \item C.1 Define four agent instances
                $a_1, a_2, a_3, a_4$ (all distinct, as required by
                Definition~\ref{def:agent}) with assignments:
                \begin{align}
@@ -2950,14 +2950,14 @@ $|\mathcal{A}| \geq 5$.
                    S(a_3) &= \{\FN{05}\}, &
                    S(a_4) &= \{\FN{09}\}.
                \end{align}
-    \item[C.2] \emph{Compliance of each $a_i$:}
+    \item C.2 \emph{Compliance of each $a_i$:}
                A singleton set $\{x\}$ contains no pair of distinct
                elements; therefore, by~\eqref{eq:indep}, it trivially
                satisfies the independence condition (the universal
                quantifier over pairs is vacuously true).
                Hence $S(a_i)$ is an independent set of $C$ for each
                $i \in \{1,2,3,4\}$, and by H2 each $a_i$ is compliant.
-    \item[C.3] \emph{Coverage of $K$:}
+    \item C.3 \emph{Coverage of $K$:}
                \begin{align}
                    \label{eq:coverage-check}
                    \mathrm{Cov}(\{a_1,a_2,a_3,a_4\})
@@ -2971,7 +2971,7 @@ $|\mathcal{A}| \geq 5$.
                \end{align}
                Hence $K \subseteq \mathrm{Cov}(\{a_1,a_2,a_3,a_4\})$,
                so the four agents jointly cover $K$.
-    \item[C.4] \emph{Minimality:} $|\{a_1,a_2,a_3,a_4\}| = 4$.
+    \item C.4 \emph{Minimality:} $|\{a_1,a_2,a_3,a_4\}| = 4$.
                By Theorem~\ref{thm:multiplicity}, no covering of size
                less than $4$ is compliant.  Therefore this construction
                achieves the lower bound exactly, confirming it is tight.
@@ -2991,14 +2991,14 @@ events in a session).
 
 \textbf{Hypotheses:}
 \begin{enumerate}
-    \item[H1] $\tau$ is the trust-tier function of
+    \item H1 $\tau$ is the trust-tier function of
               Definition~\ref{def:trust}.
-    \item[H2] Every subagent return message is tagged $\tau(c) =
+    \item H2 Every subagent return message is tagged $\tau(c) =
               \mathrm{T\text{-}3}$ at the moment it is produced (\S8.1.1,
               \VisionGov{}), and no rule in that governance
               document permits an agent other than the Quality Gate
               (\FN{08}) to re-tag content to a lower (more trusted) tier.
-    \item[H3] A session is modeled as a finite list of invocation events
+    \item H3 A session is modeled as a finite list of invocation events
               $e_1, e_2, \ldots, e_n$, each either (a) a user request
               (tier T-2 by definition) or (b) a subagent invocation return
               (tier T-3 by H2) or (c) a Quality Gate certificate
@@ -3035,18 +3035,18 @@ originated from a subagent return event in the prefix $e_1,\ldots,e_i$,
 \noindent\textbf{Hypothesis validation.}  Before proceeding, we verify
 that each hypothesis is admissible and non-circular:
 \begin{enumerate}
-    \item[V.1] \emph{(H1 is well-typed.)} $\tau$ maps content items to
+    \item V.1 \emph{(H1 is well-typed.)} $\tau$ maps content items to
                $\{\mathrm{T\text{-}1},\mathrm{T\text{-}2},\mathrm{T\text{-}3}\}$
                as required by Definition~\ref{def:trust}.  No circularity:
                $\tau$ is defined before this theorem.
-    \item[V.2] \emph{(H2 is consistent with H1.)} H2 asserts that every
+    \item V.2 \emph{(H2 is consistent with H1.)} H2 asserts that every
                subagent return message is tagged $\tau(c)=\mathrm{T\text{-}3}$
                at the moment of production
                (\S8.1.1, \VisionGov{}).
                This is a policy constraint on the system, not a
                consequence of $\tau$'s definition; it is therefore an
                admissible external hypothesis.
-    \item[V.3] \emph{(H2 is non-vacuous.)} The governance document cited
+    \item V.3 \emph{(H2 is non-vacuous.)} The governance document cited
                in H2 explicitly lists the Quality Gate (\FN{08}) as the
                \emph{unique} function permitted to re-tag content to a
                lower (more trusted) tier.  No other agent may re-tag.
@@ -3056,12 +3056,12 @@ that each hypothesis is admissible and non-circular:
                \VisionClean{},
                which assigns the $\Approved$-certificate capability
                exclusively to \FN{08}.
-    \item[V.4] \emph{(H3 is well-founded.)} The session is a \emph{finite}
+    \item V.4 \emph{(H3 is well-founded.)} The session is a \emph{finite}
                list by H3; structural induction over a finite list is
                well-founded (base case: length 0; step: list of length
                $i+1$ is strictly shorter than length $i+1$).
                No infinite regress can occur.
-    \item[V.5] \emph{(Cases in H3 are exhaustive and mutually exclusive.)}
+    \item V.5 \emph{(Cases in H3 are exhaustive and mutually exclusive.)}
                H3 enumerates exactly three event kinds:
                (a) user request, (b) subagent return, (c) Quality Gate
                certificate.  These are disjoint by construction (each event
@@ -3105,7 +3105,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
     \item \textbf{Case 1: $e_{i+1}$ is a user request (type~(a) of H3).}
 
     \begin{enumerate}
-        \item[1.1] \emph{No new subagent-originated content.}
+        \item 1.1 \emph{No new subagent-originated content.}
                    A user request originates from the user (tier T-2 by
                    H1 and Definition~\ref{def:trust}).  By the type
                    distinction of H3, it is not a subagent return; hence
@@ -3115,7 +3115,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
                        \label{eq:case1-new}
                        C^{\mathrm{new}}_{i+1} = \emptyset.
                    \end{align}
-        \item[1.2] \emph{No re-tagging of existing content.}
+        \item 1.2 \emph{No re-tagging of existing content.}
                    A user request does not invoke the Quality Gate (\FN{08})
                    and therefore cannot issue an $\Approved$ certificate.
                    Moreover, by H2 (V.3), only \FN{08} may re-tag content;
@@ -3123,7 +3123,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
                    every $c \in C_i$, the value $\tau(c)$ is unchanged by
                    $e_{i+1}$, and no new Quality Gate certificate for any
                    $c \in C_i$ is introduced.
-        \item[1.3] \emph{Conclusion for Case~1.}
+        \item 1.3 \emph{Conclusion for Case~1.}
                    By~\eqref{eq:case1-new}, $C_{i+1} = C_i$.  By 1.2,
                    the truth value of predicate~\eqref{eq:pred} for each
                    $c \in C_i$ is unaffected.  By (IH), predicate
@@ -3134,7 +3134,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
     \item \textbf{Case 2: $e_{i+1}$ is a subagent return (type~(b) of H3).}
 
     \begin{enumerate}
-        \item[2.1] \emph{Tier of newly introduced content.}
+        \item 2.1 \emph{Tier of newly introduced content.}
                    Let $c' \in C^{\mathrm{new}}_{i+1}$ be any content item
                    introduced by $e_{i+1}$.  By H2 (validated at V.2--V.3),
                    every subagent return message is tagged
@@ -3146,7 +3146,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
                        \label{eq:case2-new}
                        \tau(c') = \mathrm{T\text{-}3}.
                    \end{align}
-        \item[2.2] \emph{No re-tagging of existing content.}
+        \item 2.2 \emph{No re-tagging of existing content.}
                    $e_{i+1}$ is a subagent return, not a Quality Gate
                    event (these are distinct types by V.5).  By H2 (V.3),
                    no agent other than \FN{08} may re-tag content.  A
@@ -3154,7 +3154,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
                    for every $c \in C_i$, the value $\tau(c)$ is unchanged
                    by $e_{i+1}$, and no Quality Gate certificate for any
                    $c \in C_i$ is introduced by $e_{i+1}$.
-        \item[2.3] \emph{Conclusion for Case~2.}
+        \item 2.3 \emph{Conclusion for Case~2.}
                    For $c \in C_i$: predicate~\eqref{eq:pred} continues to
                    hold by (IH) and 2.2.
                    For $c' \in C^{\mathrm{new}}_{i+1}$: predicate
@@ -3168,7 +3168,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
           certificate (type~(c) of H3).}
 
     \begin{enumerate}
-        \item[3.1] \emph{Boundary condition: the certificate is
+        \item 3.1 \emph{Boundary condition: the certificate is
                    well-scoped.}
                    \begin{sloppypar}
                    By definition (\S5.3,
@@ -3180,7 +3180,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
                    $A \subseteq C_i \cup C^{\mathrm{new}}_{i+1}$ of
                    artifacts.
                    \end{sloppypar}
-        \item[3.2] \emph{No new subagent-originated content.}
+        \item 3.2 \emph{No new subagent-originated content.}
                    A Quality Gate certificate event does not itself produce
                    content of type subagent-return.  Therefore:
                    \begin{align}
@@ -3188,13 +3188,13 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
                        C^{\mathrm{new}}_{i+1} = \emptyset,
                        \quad \text{so } C_{i+1} = C_i.
                    \end{align}
-        \item[3.3] \emph{Predicate holds for certified content.}
+        \item 3.3 \emph{Predicate holds for certified content.}
                    For any $c \in A$ (certified by $e_{i+1}$), the
                    \emph{second} disjunct of~\eqref{eq:pred} now holds
                    with $j = i+1$, regardless of the current value of
                    $\tau(c)$.  Hence predicate~\eqref{eq:pred} is
                    satisfied for every $c \in A$.
-        \item[3.4] \emph{Predicate holds for non-certified content.}
+        \item 3.4 \emph{Predicate holds for non-certified content.}
                    For any $c \in C_i \setminus A$ (content not covered
                    by $e_{i+1}$'s certificate), the Quality Gate event
                    neither re-tags $\tau(c)$ nor issues a certificate
@@ -3202,7 +3202,7 @@ By V.5, $e_{i+1}$ falls into exactly one of the following three cases.
                    predicate~\eqref{eq:pred} for $c$ is identical to its
                    truth value in the prefix $e_1,\ldots,e_i$, which
                    satisfies $P(i)$ by (IH).
-        \item[3.5] \emph{Conclusion for Case~3.}
+        \item 3.5 \emph{Conclusion for Case~3.}
                    Combining 3.3 and 3.4 over all $c \in C_{i+1} = C_i$
                    (by~\eqref{eq:case3-new}), predicate~\eqref{eq:pred}
                    holds for every element of $C_{i+1}$.  Hence $P(i+1)$
@@ -3220,25 +3220,25 @@ is omitted.
 \medskip
 \noindent\textbf{Edge-case audit.}
 \begin{enumerate}
-    \item[E.1] \emph{Empty session} ($n = 0$): handled by the base case
+    \item E.1 \emph{Empty session} ($n = 0$): handled by the base case
                ($i = 0$); the theorem's claim holds vacuously over the
                empty event list.
-    \item[E.2] \emph{Single-event session} ($n = 1$): the inductive step
+    \item E.2 \emph{Single-event session} ($n = 1$): the inductive step
                is applied once from $i=0$ to $i=1$; the base case
                guarantees $P(0)$, and any of Cases~1--3 establishes
                $P(1)$.
-    \item[E.3] \emph{Content item certified then later re-encountered:}
+    \item E.3 \emph{Content item certified then later re-encountered:}
                Once the second disjunct of~\eqref{eq:pred} holds for $c$
                (at step $j$), it remains true for all subsequent prefixes
                $j' \geq j$, since past certificate events are not
                retracted (H3 models the session as a list, not a mutable
                store).
-    \item[E.4] \emph{Multiple certificates for the same artifact:}
+    \item E.4 \emph{Multiple certificates for the same artifact:}
                If $c$ is the subject of Quality Gate certificates at both
                $e_j$ and $e_{j'}$ with $j < j' \leq i$, predicate
                \eqref{eq:pred} holds via the earlier certificate $e_j$;
                the later one is redundant but not contradictory.
-    \item[E.5] \emph{Quality Gate event certifying a content item not
+    \item E.5 \emph{Quality Gate event certifying a content item not
                in $C_i$} (e.g., user-originated content):
                The theorem's claim and predicate~\eqref{eq:pred} concern
                only subagent-originated content $c \in C_{i+1}$.
@@ -3283,7 +3283,7 @@ template (\S4.1, \ProofStd{}).
 \medskip
 \noindent\textbf{Hypotheses (fully stated and validated).}
 \begin{enumerate}
-    \item[H1] \emph{Fan-out ceiling.}  $F_{\max} \in \mathbb{N}$ is the
+    \item H1 \emph{Fan-out ceiling.}  $F_{\max} \in \mathbb{N}$ is the
               per-turn fan-out ceiling: the maximum number of distinct
               subagent invocations that the Orchestrator may issue within
               a single state-machine turn.  This parameter is declared as
@@ -3295,7 +3295,7 @@ template (\S4.1, \ProofStd{}).
               element of $\mathbb{N}$; no numeric specialization is made
               or required.
 
-    \item[H2] \emph{Depth limit.}  $D_{\max} = 2$ is the maximum
+    \item H2 \emph{Depth limit.}  $D_{\max} = 2$ is the maximum
               agent-nesting depth: a Level-1 Orchestrator may invoke
               Level-2 subagents, but a Level-2 subagent may not itself
               invoke further subagents (\S5.1.2, same document).
@@ -3306,7 +3306,7 @@ template (\S4.1, \ProofStd{}).
               children), bounding the count of invocations per turn to
               at most $F_{\max}$.
 
-    \item[H3] \emph{Turn--transition correspondence.}  Each
+    \item H3 \emph{Turn--transition correspondence.}  Each
               state-machine transition of $\mathcal{M}$ (as defined in
               Definition~\ref{def:state-machine} and bounded in
               Theorem~\ref{thm:rework}) corresponds to \emph{at most one}
@@ -3327,14 +3327,14 @@ template (\S4.1, \ProofStd{}).
               before promoting this result to production-grade status.
               The proof is complete under H3 as stated; H3 is not hidden.
 
-    \item[H4] \emph{Bounded rework.}  The total number of state-machine
+    \item H4 \emph{Bounded rework.}  The total number of state-machine
               transitions in any run of $\mathcal{M}$ is at most $P + B$,
               where $P = |V| = 11$ is the number of phases and
               $B = R \cdot P$ is the pooled rework budget.  This is
               exactly the conclusion of Theorem~\ref{thm:rework}, which
               has been fully proved above and may be freely applied here.
 
-    \item[H5] \emph{Parameter domains.}
+    \item H5 \emph{Parameter domains.}
               $P \in \mathbb{N}$, $P \geq 1$;
               $R \in \mathbb{N}_{0}$;
               $B = R \cdot P \in \mathbb{N}_{0}$;
@@ -3347,26 +3347,26 @@ template (\S4.1, \ProofStd{}).
 \medskip
 \noindent\textbf{Stage I: Bound the invocations per turn (from H1--H2).}
 \begin{enumerate}
-    \item[I.1] Fix an arbitrary Orchestrator turn $t$.  By H2
+    \item I.1 Fix an arbitrary Orchestrator turn $t$.  By H2
                ($D_{\max}=2$), the invocation tree rooted at $t$ has
                height at most $1$: the root is the Orchestrator (depth~0)
                and its children (depth~1) are subagents, none of which
                may themselves invoke further subagents.
-    \item[I.2] The number of children (subagent invocations) at turn $t$
+    \item I.2 The number of children (subagent invocations) at turn $t$
                is therefore bounded by the fan-out ceiling H1:
                \begin{align}
                    \label{eq:per-turn}
                    \text{invocations}(t) \;\leq\; F_{\max}.
                \end{align}
-    \item[I.3] \emph{Boundary check:}
+    \item I.3 \emph{Boundary check:}
                \begin{enumerate}
-                   \item[I.3a] \emph{Zero invocations at turn $t$:}
+                   \item I.3a \emph{Zero invocations at turn $t$:}
                                $0 \leq F_{\max}$ is trivially satisfied.
                                The bound \eqref{eq:per-turn} holds.
-                   \item[I.3b] \emph{Exactly $F_{\max}$ invocations:}
+                   \item I.3b \emph{Exactly $F_{\max}$ invocations:}
                                This saturates \eqref{eq:per-turn} and is
                                admissible; the bound remains valid.
-                   \item[I.3c] \emph{$D_{\max}=1$ (degenerate):}
+                   \item I.3c \emph{$D_{\max}=1$ (degenerate):}
                                If the depth limit were $1$ instead of $2$,
                                no subagents could be invoked at all, giving
                                $\text{invocations}(t)=0 \leq F_{\max}$;
@@ -3378,34 +3378,34 @@ template (\S4.1, \ProofStd{}).
 \noindent\textbf{Stage II: Bound the total number of Orchestrator
 turns (from H3--H4).}
 \begin{enumerate}
-    \item[II.1] By H4, the total number of state-machine transitions in
+    \item II.1 By H4, the total number of state-machine transitions in
                 any run is at most $P + B$.
-    \item[II.2] By H3, each transition corresponds to at most one
+    \item II.2 By H3, each transition corresponds to at most one
                 Orchestrator turn.  Let $\mathcal{T}$ denote the
                 (multi-)set of Orchestrator turns in a run.  Then:
                 \begin{align}
                     \label{eq:turn-bound}
                     |\mathcal{T}| \;\leq\; P + B.
                 \end{align}
-    \item[II.3] \emph{Boundary check:}
+    \item II.3 \emph{Boundary check:}
                 \begin{enumerate}
-                    \item[II.3a] \emph{Zero transitions ($P=0$):}
+                    \item II.3a \emph{Zero transitions ($P=0$):}
                                  This is excluded by H5 ($P \geq 1$);
                                  the case is vacuous.
-                    \item[II.3b] \emph{Run terminates at base case
+                    \item II.3b \emph{Run terminates at base case
                                  $k_P = P$, $b = 0$:}
                                  The run uses exactly $P$ forward
                                  transitions and $0$ rework events,
                                  giving $|\mathcal{T}| = P \leq P + B$.
                                  The bound holds with slack $B$.
-                    \item[II.3c] \emph{Run saturates the budget
+                    \item II.3c \emph{Run saturates the budget
                                  ($b = B$):}
                                  The run uses at most $P-1$ forward
                                  transitions and exactly $B$ rework
                                  events before escalation, giving
                                  $|\mathcal{T}| \leq P - 1 + B < P + B$.
                                  The bound holds.
-                    \item[II.3d] \emph{Run saturates both ($k_i = P$
+                    \item II.3d \emph{Run saturates both ($k_i = P$
                                  and $b_i = B$ simultaneously):}
                                  By Theorem~\ref{thm:rework}, the run
                                  terminates once either condition is
@@ -3421,7 +3421,7 @@ turns (from H3--H4).}
 \noindent\textbf{Stage III: Derive the global invocation bound
 (combining Stages I--II).}
 \begin{enumerate}
-    \item[III.1] Let $N$ denote the total number of subagent invocations
+    \item III.1 Let $N$ denote the total number of subagent invocations
                  across the entire run.  Since each turn $t \in \mathcal{T}$
                  contributes at most $F_{\max}$ invocations
                  (\eqref{eq:per-turn}) and there are at most $P + B$ turns
@@ -3437,7 +3437,7 @@ turns (from H3--H4).}
                      \;&\leq\; (P + B) \cdot F_{\max}.
                      \label{eq:N-pre}
                  \end{align}
-    \item[III.2] Substituting $B = R \cdot P$ (H5):
+    \item III.2 Substituting $B = R \cdot P$ (H5):
                  \begin{align}
                      N
                      &\leq F_{\max} \cdot (P + B) \notag\\
@@ -3445,7 +3445,7 @@ turns (from H3--H4).}
                      &= F_{\max} \cdot P \cdot (1 + R).
                      \label{eq:sketch-bound}
                  \end{align}
-    \item[III.3] \emph{Closure and finiteness:}
+    \item III.3 \emph{Closure and finiteness:}
                  $F_{\max} \in \mathbb{N}$, $P \in \mathbb{N}$,
                  $R \in \mathbb{N}_{0}$, so
                  $F_{\max} \cdot P \cdot (1+R) \in \mathbb{N}$.
@@ -3457,14 +3457,14 @@ turns (from H3--H4).}
 \medskip
 \noindent\textbf{Stage IV: Verify all arithmetic steps.}
 \begin{enumerate}
-    \item[IV.1] $P + B = P + R \cdot P$:
+    \item IV.1 $P + B = P + R \cdot P$:
                 by substitution of $B = R \cdot P$ (H5). \checkmark
-    \item[IV.2] $P + R \cdot P = P \cdot (1 + R)$:
+    \item IV.2 $P + R \cdot P = P \cdot (1 + R)$:
                 by the distributive law in $\mathbb{N}$. \checkmark
-    \item[IV.3] $F_{\max} \cdot (P + B) = F_{\max} \cdot P \cdot (1+R)$:
+    \item IV.3 $F_{\max} \cdot (P + B) = F_{\max} \cdot P \cdot (1+R)$:
                 combining IV.1 and IV.2 and commutativity of
                 multiplication in $\mathbb{N}$. \checkmark
-    \item[IV.4] Each inequality in \eqref{eq:N-pre} is justified:
+    \item IV.4 Each inequality in \eqref{eq:N-pre} is justified:
                 the first equality is the definition of $N$ as a sum
                 over turns; the first inequality applies
                 \eqref{eq:per-turn} term-wise; the second equality
@@ -3476,34 +3476,34 @@ turns (from H3--H4).}
 \medskip
 \noindent\textbf{Stage V: Boundary and edge-case audit.}
 \begin{enumerate}
-    \item[V.1] \emph{$R = 0$ (no rework budget):}
+    \item V.1 \emph{$R = 0$ (no rework budget):}
                $B = 0$, so $P + B = P$ and the bound reduces to
                $N \leq F_{\max} \cdot P \cdot 1 = F_{\max} \cdot P$.
                This is the no-rework upper bound; correct by
                Stage~II.3b.
-    \item[V.2] \emph{$F_{\max} = 1$ (serial execution):}
+    \item V.2 \emph{$F_{\max} = 1$ (serial execution):}
                Each turn invokes at most one subagent; the bound
                becomes $N \leq P \cdot (1+R)$, which equals the
                maximum number of state-machine transitions.  Consistent
                with H3 and Theorem~\ref{thm:rework}.
-    \item[V.3] \emph{$P = 1$ (single-phase system):}
+    \item V.3 \emph{$P = 1$ (single-phase system):}
                $B = R$; the bound becomes $N \leq F_{\max} \cdot (1+R)$.
                Valid; not excluded by any hypothesis.
-    \item[V.4] \emph{$N = 0$ (no invocations):}
+    \item V.4 \emph{$N = 0$ (no invocations):}
                The right-hand side $F_{\max} \cdot P \cdot (1+R)
                \geq F_{\max} \cdot 1 \cdot 1 \geq 1 > 0$, so
                $0 \leq N \leq F_{\max} \cdot P \cdot (1+R)$ holds.
-    \item[V.5] \emph{Saturation ($N = F_{\max} \cdot P \cdot (1+R)$):}
+    \item V.5 \emph{Saturation ($N = F_{\max} \cdot P \cdot (1+R)$):}
                This requires every turn to issue exactly $F_{\max}$
                invocations and the run to exhaust exactly $P + B$
                transitions.  Both conditions are individually achievable
                (Stage~II.3d; I.3b); their simultaneous achievement is
                an admissible worst case.  The bound is therefore tight
                (not merely sufficient).
-    \item[V.6] \emph{Non-integer $F_{\max}$ or $R$:}
+    \item V.6 \emph{Non-integer $F_{\max}$ or $R$:}
                Excluded by H5.  All parameters are declared to be
                non-negative integers.
-    \item[V.7] \emph{Overflow ($F_{\max} \cdot P \cdot (1+R)$
+    \item V.7 \emph{Overflow ($F_{\max} \cdot P \cdot (1+R)$
                exceeds machine word size):}
                The bound is a mathematical (not computational) statement
                over $\mathbb{N}$; overflow is not a concern at this level
@@ -3514,16 +3514,16 @@ turns (from H3--H4).}
 \medskip
 \noindent\textbf{Stage VI: Conclusion.}
 \begin{enumerate}
-    \item[VI.1] Stages~I--II establish that every run of $\mathcal{M}$
+    \item VI.1 Stages~I--II establish that every run of $\mathcal{M}$
                 has at most $P + B$ Orchestrator turns, each issuing at
                 most $F_{\max}$ subagent invocations.
-    \item[VI.2] Stage~III derives the closed-form bound
+    \item VI.2 Stage~III derives the closed-form bound
                 $N \leq F_{\max} \cdot P \cdot (1+R)$ by direct
                 arithmetic, fully verified in Stage~IV.
-    \item[VI.3] Stage~V confirms the bound holds across all boundary and
+    \item VI.3 Stage~V confirms the bound holds across all boundary and
                 edge cases, including the saturation case in which
                 equality is achievable.
-    \item[VI.4] The sole assumption not derivable from a single
+    \item VI.4 The sole assumption not derivable from a single
                 cited sentence is H3 (turn--transition correspondence),
                 which is explicitly stated, justified by three
                 supporting observations, and flagged for future
@@ -3531,7 +3531,7 @@ turns (from H3--H4).}
                 empirical validation (\S9.2,
                 \ProofStd{}).
                 \end{sloppypar}
-    \item[VI.5] Therefore, under H1--H5:
+    \item VI.5 Therefore, under H1--H5:
                 \begin{align}
                     \label{eq:final-bound}
                     N \;\leq\; F_{\max} \cdot P \cdot (1 + R)
@@ -3562,12 +3562,12 @@ analysis.
 \medskip
 \noindent\textbf{Instantiation Assumptions (fully stated).}
 \begin{enumerate}
-    \item[A1] \emph{Source document.}  The instantiation is described in
+    \item A1 \emph{Source document.}  The instantiation is described in
               \VisionHackathon{}.  All agent roles, tasks, and
               workflow steps cited below are drawn from that document.
               No role or step is introduced that does not appear there.
 
-    \item[A2] \emph{Hardware scope boundary.}  Per the source document's
+    \item A2 \emph{Hardware scope boundary.}  Per the source document's
               own disclosed assumption, ``hardware'' in this instantiation
               denotes simulation and emulation artefacts (Gazebo robot
               simulation, SPICE circuit simulation, bill-of-materials
@@ -3576,12 +3576,12 @@ analysis.
               section.  Any extension to physical fabrication would
               require a separately validated instantiation.
 
-    \item[A3] \emph{Single product brief.}  The instantiation processes
+    \item A3 \emph{Single product brief.}  The instantiation processes
               exactly one product brief per run.  Multi-brief concurrency
               is not modelled here and would require a separate
               compositional argument.
 
-    \item[A4] \emph{Parameter values.}  The concrete parameter values
+    \item A4 \emph{Parameter values.}  The concrete parameter values
               used in this instantiation are:
               \begin{align}
                   P       &= 11
@@ -3595,7 +3595,7 @@ analysis.
                   \notag
               \end{align}
 
-    \item[A5] \emph{No new agent roles.}  This instantiation introduces
+    \item A5 \emph{No new agent roles.}  This instantiation introduces
               no agent roles beyond those already present in the abstract
               model.  Every agent appearing in the workflow below has a
               pre-assigned role from Definition~\ref{def:agent} and a
@@ -3614,69 +3614,69 @@ of Theorem~\ref{thm:acyclic}.
 \medskip
 \noindent\textbf{Verification.}
 \begin{enumerate}
-    \item[I.1] \emph{Vertex set.}  The agent roles appearing in
+    \item I.1 \emph{Vertex set.}  The agent roles appearing in
                \VisionHackathon{} are enumerated below.  Each is
                assigned the role and tier it carries in the abstract model
                (Definition~\ref{def:trust}).
                \begin{enumerate}
-                   \item[I.1.1] \textbf{Orchestrator} --- role: Orchestrator;
+                   \item I.1.1 \textbf{Orchestrator} --- role: Orchestrator;
                                 tier: $\tau = 3$ (highest trust).
-                   \item[I.1.2] \textbf{Mechanical Domain Specialist} ---
+                   \item I.1.2 \textbf{Mechanical Domain Specialist} ---
                                 role: Domain Specialist; tier: $\tau = 2$.
-                   \item[I.1.3] \textbf{Electrical Domain Specialist} ---
+                   \item I.1.3 \textbf{Electrical Domain Specialist} ---
                                 role: Domain Specialist; tier: $\tau = 2$.
-                   \item[I.1.4] \textbf{Firmware Domain Specialist} ---
+                   \item I.1.4 \textbf{Firmware Domain Specialist} ---
                                 role: Domain Specialist; tier: $\tau = 2$.
-                   \item[I.1.5] \textbf{Simulation Domain Specialist} ---
+                   \item I.1.5 \textbf{Simulation Domain Specialist} ---
                                 role: Domain Specialist; tier: $\tau = 2$.
-                   \item[I.1.6] \textbf{Cost Domain Specialist} ---
+                   \item I.1.6 \textbf{Cost Domain Specialist} ---
                                 role: Domain Specialist; tier: $\tau = 2$.
-                   \item[I.1.7] \textbf{Legal Domain Specialist} ---
+                   \item I.1.7 \textbf{Legal Domain Specialist} ---
                                 role: Domain Specialist; tier: $\tau = 2$.
-                   \item[I.1.8] \textbf{Challenge Division} ---
+                   \item I.1.8 \textbf{Challenge Division} ---
                                 role: Adversarial Reviewer; tier: $\tau = 2$.
-                   \item[I.1.9] \textbf{Quality Gate} ---
+                   \item I.1.9 \textbf{Quality Gate} ---
                                 role: Quality Gate; tier: $\tau = 3$.
                \end{enumerate}
                Therefore $V^{*}$ has nine elements and $V^{*} \subseteq V$. \checkmark
 
-    \item[I.2] \emph{Edge set.}  The directed edges encode the
+    \item I.2 \emph{Edge set.}  The directed edges encode the
                information-flow and review relationships stated in the
                source document.  Each edge is listed with its
                justification.
                \begin{enumerate}
-                   \item[I.2.1] Orchestrator $\to$ Mechanical Specialist:
+                   \item I.2.1 Orchestrator $\to$ Mechanical Specialist:
                                 task decomposition.
-                   \item[I.2.2] Orchestrator $\to$ Electrical Specialist:
+                   \item I.2.2 Orchestrator $\to$ Electrical Specialist:
                                 task decomposition.
-                   \item[I.2.3] Orchestrator $\to$ Firmware Specialist:
+                   \item I.2.3 Orchestrator $\to$ Firmware Specialist:
                                 task decomposition.
-                   \item[I.2.4] Orchestrator $\to$ Simulation Specialist:
+                   \item I.2.4 Orchestrator $\to$ Simulation Specialist:
                                 task decomposition.
-                   \item[I.2.5] Orchestrator $\to$ Cost Specialist:
+                   \item I.2.5 Orchestrator $\to$ Cost Specialist:
                                 task decomposition.
-                   \item[I.2.6] Orchestrator $\to$ Legal Specialist:
+                   \item I.2.6 Orchestrator $\to$ Legal Specialist:
                                 task decomposition.
-                   \item[I.2.7] Mechanical Specialist $\to$ Challenge Division:
+                   \item I.2.7 Mechanical Specialist $\to$ Challenge Division:
                                 adversarial review.
-                   \item[I.2.8] Electrical Specialist $\to$ Challenge Division:
+                   \item I.2.8 Electrical Specialist $\to$ Challenge Division:
                                 adversarial review.
-                   \item[I.2.9] Firmware Specialist $\to$ Challenge Division:
+                   \item I.2.9 Firmware Specialist $\to$ Challenge Division:
                                 adversarial review.
-                   \item[I.2.10] Simulation Specialist $\to$ Challenge Division:
+                   \item I.2.10 Simulation Specialist $\to$ Challenge Division:
                                  adversarial review.
-                   \item[I.2.11] Cost Specialist $\to$ Challenge Division:
+                   \item I.2.11 Cost Specialist $\to$ Challenge Division:
                                  adversarial review.
-                   \item[I.2.12] Legal Specialist $\to$ Challenge Division:
+                   \item I.2.12 Legal Specialist $\to$ Challenge Division:
                                  adversarial review.
-                   \item[I.2.13] Challenge Division $\to$ Quality Gate:
+                   \item I.2.13 Challenge Division $\to$ Quality Gate:
                                  validated deliverable forwarding.
-                   \item[I.2.14] Quality Gate $\to$ Orchestrator:
+                   \item I.2.14 Quality Gate $\to$ Orchestrator:
                                  certification feedback.
                \end{enumerate}
                Therefore $E^{*} \subseteq E$. \checkmark
 
-    \item[I.3] \emph{Acyclicity (Theorem~\ref{thm:acyclic} applied
+    \item I.3 \emph{Acyclicity (Theorem~\ref{thm:acyclic} applied
                to $G^{*}$).}  Assign the following topological levels:
                \begin{align}
                    \ell(\text{Orchestrator})          &= 0, \notag\\
@@ -3696,14 +3696,14 @@ of Theorem~\ref{thm:acyclic}.
                DAG, satisfying the acyclicity condition of
                Theorem~\ref{thm:acyclic}. \checkmark
 
-    \item[I.4] \emph{Edge-case: empty specialist set.}  If no
+    \item I.4 \emph{Edge-case: empty specialist set.}  If no
                Domain Specialists were invoked (e.g., all specialist
                tasks had zero output), $G^{*}$ would reduce to
                $\{\text{Orchestrator}, \text{Quality Gate}\}$ with a
                direct delegation edge.  This is a degenerate but valid
                instance; acyclicity is trivially preserved.
 
-    \item[I.5] \emph{Edge-case: all specialists produce identical
+    \item I.5 \emph{Edge-case: all specialists produce identical
                outputs.}  Adversarial review by the Challenge Division
                is role-level, not content-level; even if all specialists
                produced the same artefact, the review step still occurs.
@@ -3722,41 +3722,41 @@ bounds of Theorem~\ref{thm:rework}.
 \medskip
 \noindent\textbf{Verification.}
 \begin{enumerate}
-    \item[II.1] \emph{Initial state.}  At run start, one product brief
+    \item II.1 \emph{Initial state.}  At run start, one product brief
                 arrives at the Orchestrator.  The automaton enters state
                 $\textsc{Idle}$ and transitions immediately to
                 $\textsc{Active}$ upon receipt of the brief.  Initial
                 state condition: satisfied. \checkmark
 
-    \item[II.2] \emph{Forward transitions.}  The eleven states of
+    \item II.2 \emph{Forward transitions.}  The eleven states of
                 $\mathcal{M}$ (corresponding to the eleven phases $P=11$
                 of the abstract model) map to the following workflow
                 milestones in the order they are traversed during a
                 successful (no-rework) run:
                 \begin{enumerate}
-                    \item[II.2.1] \textsc{Active}: brief received by
+                    \item II.2.1 \textsc{Active}: brief received by
                                   Orchestrator.
-                    \item[II.2.2] \textsc{Decomposed}: brief decomposed
+                    \item II.2.2 \textsc{Decomposed}: brief decomposed
                                   into six parallel specialist tasks.
-                    \item[II.2.3] \textsc{Dispatched}: all six tasks
+                    \item II.2.3 \textsc{Dispatched}: all six tasks
                                   dispatched to Domain Specialists.
-                    \item[II.2.4] \textsc{InProgress}: Domain Specialists
+                    \item II.2.4 \textsc{InProgress}: Domain Specialists
                                   executing (Mechanical, Electrical,
                                   Firmware, Simulation, Cost, Legal).
-                    \item[II.2.5] \textsc{Produced}: all specialist
+                    \item II.2.5 \textsc{Produced}: all specialist
                                   deliverables produced.
-                    \item[II.2.6] \textsc{ReviewPending}: deliverables
+                    \item II.2.6 \textsc{ReviewPending}: deliverables
                                   forwarded to Challenge Division.
-                    \item[II.2.7] \textsc{UnderReview}: Challenge Division
+                    \item II.2.7 \textsc{UnderReview}: Challenge Division
                                   adversarially reviewing all deliverables.
-                    \item[II.2.8] \textsc{ReviewComplete}: Challenge
+                    \item II.2.8 \textsc{ReviewComplete}: Challenge
                                   Division review finished.
-                    \item[II.2.9] \textsc{ValidationPending}:
+                    \item II.2.9 \textsc{ValidationPending}:
                                   reviewed deliverables forwarded to
                                   Quality Gate.
-                    \item[II.2.10] \textsc{Validated}: Quality Gate
+                    \item II.2.10 \textsc{Validated}: Quality Gate
                                    validation passed.
-                    \item[II.2.11] \textsc{Certified}: Quality Gate
+                    \item II.2.11 \textsc{Certified}: Quality Gate
                                    certificate issued; run terminates.
                 \end{enumerate}
                 These eleven milestones are in bijection with the eleven
@@ -3765,7 +3765,7 @@ bounds of Theorem~\ref{thm:rework}.
                 least one concrete run, so no phase is vacuously
                 unreachable.  \checkmark
 
-    \item[II.3] \emph{Rework transitions.}  If the Challenge Division
+    \item II.3 \emph{Rework transitions.}  If the Challenge Division
                 raises a blocking objection (state~\textsc{ReviewComplete}
                 $\to$ \textsc{Rework}), the automaton returns to
                 \textsc{InProgress}, consuming one unit of rework budget
@@ -3775,7 +3775,7 @@ bounds of Theorem~\ref{thm:rework}.
                 Theorem~\ref{thm:rework}, this can occur at most $B$
                 times before forced escalation. \checkmark
 
-    \item[II.4] \emph{Escalation boundary.}  If $b = B$ is reached
+    \item II.4 \emph{Escalation boundary.}  If $b = B$ is reached
                 before \textsc{Certified}, the automaton transitions to
                 \textsc{Escalated} (a terminal failure state) rather
                 than looping.  This guarantees termination.  Per A2,
@@ -3783,14 +3783,14 @@ bounds of Theorem~\ref{thm:rework}.
                 instantiation is a flagged non-certification report, not
                 a physical deployment failure. \checkmark
 
-    \item[II.5] \emph{Boundary check: $R = 0$ (no rework permitted).}
+    \item II.5 \emph{Boundary check: $R = 0$ (no rework permitted).}
                 If the deployment configures $R = 0$, then $B = 0$ and
                 the first Challenge Division objection immediately
                 triggers escalation.  The automaton still terminates in
                 a finite number of steps (at most $P = 11$).  This is
                 a valid, non-degenerate configuration. \checkmark
 
-    \item[II.6] \emph{Boundary check: all rework cycles exhausted
+    \item II.6 \emph{Boundary check: all rework cycles exhausted
                 on phase~II.2.4.}  Even if all $B$ rework events occur
                 at the same phase (all retries are of the same specialist
                 task set), the automaton advances to \textsc{Escalated}
@@ -3811,18 +3811,18 @@ to a higher trust tier without a Quality Gate certificate.
 \medskip
 \noindent\textbf{Verification.}
 \begin{enumerate}
-    \item[III.1] \emph{Tier assignments.}  Tier assignments follow
+    \item III.1 \emph{Tier assignments.}  Tier assignments follow
                  directly from A5 and Definition~\ref{def:trust}:
                  \begin{enumerate}
-                     \item[III.1.1] Domain Specialist deliverables are
+                     \item III.1.1 Domain Specialist deliverables are
                                     produced at tier~$\tau = 2$.
-                     \item[III.1.2] Challenge Division review reports
+                     \item III.1.2 Challenge Division review reports
                                     are produced at tier~$\tau = 2$.
-                     \item[III.1.3] Quality Gate certificates are
+                     \item III.1.3 Quality Gate certificates are
                                     issued at tier~$\tau = 3$.
                  \end{enumerate}
 
-    \item[III.2] \emph{Promotion pathway.}  A Domain Specialist
+    \item III.2 \emph{Promotion pathway.}  A Domain Specialist
                  deliverable progresses through the following trust-tier
                  sequence during a successful run:
                  \begin{align}
@@ -3842,7 +3842,7 @@ to a higher trust tier without a Quality Gate certificate.
                  the predicate~\eqref{eq:pred} for every content item
                  and every prefix of the event list. \checkmark
 
-    \item[III.3] \emph{Rework path.}  During a rework cycle, the
+    \item III.3 \emph{Rework path.}  During a rework cycle, the
                  deliverable returns to state \textsc{InProgress} at
                  tier~$\tau = 2$.  Its trust tier is \emph{not}
                  elevated during rework; the tier remains at $2$ until
@@ -3851,7 +3851,7 @@ to a higher trust tier without a Quality Gate certificate.
                  because the trust predicate concerns promotion (upward
                  tier change), not demotion. \checkmark
 
-    \item[III.4] \emph{Edge-case: Quality Gate partial certification.}
+    \item III.4 \emph{Edge-case: Quality Gate partial certification.}
                  If the Quality Gate certifies only a subset of
                  deliverables (e.g., certifies Legal but not
                  Mechanical), each deliverable is tracked
@@ -3860,7 +3860,7 @@ to a higher trust tier without a Quality Gate certificate.
                  No uncertified deliverable acquires tier~3 status.
                  Theorem~\ref{thm:trust} holds item-by-item. \checkmark
 
-    \item[III.5] \emph{Edge-case: Orchestrator re-decomposes after
+    \item III.5 \emph{Edge-case: Orchestrator re-decomposes after
                  rework.}  Even if the Orchestrator issues a revised
                  brief fragment during rework, the resulting specialist
                  output starts at tier~2 (new subagent-originated
@@ -3883,7 +3883,7 @@ graph $\chi$.
 \medskip
 \noindent\textbf{Verification.}
 \begin{enumerate}
-    \item[IV.1] \emph{Function-class partition.}  Each of the six
+    \item IV.1 \emph{Function-class partition.}  Each of the six
                 Domain Specialists is assigned exactly one function
                 class.  The partition is:
                 \begin{align}
@@ -3905,22 +3905,22 @@ graph $\chi$.
                 specialist agents, so the assignment is a bijection.
                 \checkmark
 
-    \item[IV.2] \emph{Conflict-graph edges.}  The conflict graph
+    \item IV.2 \emph{Conflict-graph edges.}  The conflict graph
                 $\chi$ declares the following adjacencies as
                 conflict-adjacent (requiring role separation) in the
                 source document:
                 \begin{enumerate}
-                    \item[IV.2.1] Mechanical $\sim$ Electrical
+                    \item IV.2.1 Mechanical $\sim$ Electrical
                                   (physical interference analysis).
-                    \item[IV.2.2] Electrical $\sim$ Firmware
+                    \item IV.2.2 Electrical $\sim$ Firmware
                                   (hardware/software interface).
-                    \item[IV.2.3] Simulation $\sim$ Mechanical
+                    \item IV.2.3 Simulation $\sim$ Mechanical
                                   (model validity dependency).
-                    \item[IV.2.4] Cost $\sim$ Legal
+                    \item IV.2.4 Cost $\sim$ Legal
                                   (financial compliance coupling).
                 \end{enumerate}
 
-    \item[IV.3] \emph{Separation check.}  For every edge
+    \item IV.3 \emph{Separation check.}  For every edge
                 $(f_i, f_j) \in \chi$, the agents assigned to
                 $\mathcal{F}_i$ and $\mathcal{F}_j$ are distinct
                 (by IV.1, every specialist agent is assigned exactly
@@ -3928,7 +3928,7 @@ graph $\chi$.
                 shares an agent.  Theorem~\ref{thm:multiplicity}
                 is satisfied for this instantiation. \checkmark
 
-    \item[IV.4] \emph{Edge-case: one specialist absent} (e.g., Legal
+    \item IV.4 \emph{Edge-case: one specialist absent} (e.g., Legal
                 specialist not invoked).  If $\mathcal{F}_{6}$ is
                 empty in a particular run, the Cost--Legal conflict
                 edge becomes vacuous (there is no Legal agent to
@@ -3937,7 +3937,7 @@ graph $\chi$.
                 Theorem~\ref{thm:multiplicity} still holds with
                 $|\mathcal{F}| = 5$ in that run. \checkmark
 
-    \item[IV.5] \emph{Edge-case: two specialists from the same
+    \item IV.5 \emph{Edge-case: two specialists from the same
                 domain.}  If two agents were assigned the same
                 function class (e.g., two Electrical Specialists),
                 they would be indistinguishable in the conflict graph
@@ -3960,23 +3960,23 @@ following concrete parameter values.
 \medskip
 \noindent\textbf{Parameter Instantiation.}
 \begin{enumerate}
-    \item[V.1] $P = 11$ (from II.2 above). \checkmark
-    \item[V.2] $F_{\max}$: the maximum number of Domain Specialist
+    \item V.1 $P = 11$ (from II.2 above). \checkmark
+    \item V.2 $F_{\max}$: the maximum number of Domain Specialist
                subagents invocable in a single Orchestrator turn.  In
                this instantiation, $F_{\max} = 6$ (one per
                function class).  This is consistent with H1 ($F_{\max}
                \in \mathbb{N}$, $F_{\max} \geq 1$). \checkmark
-    \item[V.3] $R$: the rework-to-phase ratio, declared by the
+    \item V.3 $R$: the rework-to-phase ratio, declared by the
                deployment configuration.  The source document does not
                fix a numeric value; the bound is stated parametrically
                in $R$. \checkmark
-    \item[V.4] $B = R \cdot P = 11R$ (from H5 and V.1). \checkmark
+    \item V.4 $B = R \cdot P = 11R$ (from H5 and V.1). \checkmark
 \end{enumerate}
 
 \medskip
 \noindent\textbf{Bound Computation.}
 \begin{enumerate}
-    \item[V.5] Substituting the concrete values into
+    \item V.5 Substituting the concrete values into
                \eqref{eq:final-bound}:
                \begin{align}
                    N
@@ -3988,14 +3988,14 @@ following concrete parameter values.
                    \label{eq:concrete-bound}
                \end{align}
 
-    \item[V.6] \emph{Boundary checks for \eqref{eq:concrete-bound}:}
+    \item V.6 \emph{Boundary checks for \eqref{eq:concrete-bound}:}
                \begin{enumerate}
-                   \item[V.6a] $R = 0$: $N \leq 66$.  A single
+                   \item V.6a $R = 0$: $N \leq 66$.  A single
                                end-to-end run with no rework invokes
                                at most $66$ subagent calls. \checkmark
-                   \item[V.6b] $R = 1$: $N \leq 132$.  One rework
+                   \item V.6b $R = 1$: $N \leq 132$.  One rework
                                cycle per phase doubles the bound. \checkmark
-                   \item[V.6c] $R \to \infty$: the bound is unbounded,
+                   \item V.6c $R \to \infty$: the bound is unbounded,
                                which is consistent with an unbounded
                                rework budget.  H5 requires $R \in
                                \mathbb{N}_{0}$; the bound remains
@@ -4003,7 +4003,7 @@ following concrete parameter values.
                                \checkmark
                \end{enumerate}
 
-    \item[V.7] \emph{Saturation witness.}  The bound
+    \item V.7 \emph{Saturation witness.}  The bound
                $N = 66(1+R)$ is achieved when:
                (a)~every Orchestrator turn invokes all six specialists
                ($\text{invocations}(t) = F_{\max} = 6$); and
@@ -4026,7 +4026,7 @@ subagent invocations and terminating in a finite number of steps.
 \medskip
 \noindent\textbf{Verification (step-by-step).}
 \begin{enumerate}
-    \item[VI.1] \emph{Walk initiation.}  A single product brief is
+    \item VI.1 \emph{Walk initiation.}  A single product brief is
                 received by the Orchestrator ($G^{*}$ vertex I.1.1;
                 automaton state \textsc{Active}).  Precondition: the
                 brief is a well-formed input artefact.  This is a
@@ -4034,7 +4034,7 @@ subagent invocations and terminating in a finite number of steps.
                 the model is not required to verify brief
                 well-formedness. \checkmark
 
-    \item[VI.2] \emph{Decomposition step.}  The Orchestrator
+    \item VI.2 \emph{Decomposition step.}  The Orchestrator
                 decomposes the brief into six parallel tasks and
                 dispatches them along edges I.2.1--I.2.6.  The
                 automaton transitions:
@@ -4048,7 +4048,7 @@ subagent invocations and terminating in a finite number of steps.
                 Three forward transitions consumed; $k = 3$,
                 $k \leq P + B$. \checkmark
 
-    \item[VI.3] \emph{Parallel specialist execution.}  Each of the
+    \item VI.3 \emph{Parallel specialist execution.}  Each of the
                 six Domain Specialists executes its task in parallel.
                 From the perspective of the automaton, these are
                 concurrent processes within state \textsc{InProgress};
@@ -4057,7 +4057,7 @@ subagent invocations and terminating in a finite number of steps.
                 automaton fires one transition per phase boundary,
                 not per individual specialist completion). \checkmark
 
-    \item[VI.4] \emph{Adversarial review.}  Specialist outputs are
+    \item VI.4 \emph{Adversarial review.}  Specialist outputs are
                 forwarded to the Challenge Division along edges
                 I.2.7--I.2.12.  The automaton transitions:
                 \begin{align}
@@ -4070,7 +4070,7 @@ subagent invocations and terminating in a finite number of steps.
                 Three further forward transitions; $k = 6 \leq P + B$.
                 \checkmark
 
-    \item[VI.5] \emph{Review outcome --- Case A (no objections).}
+    \item VI.5 \emph{Review outcome --- Case A (no objections).}
                 The Challenge Division raises no blocking objection.
                 The automaton transitions:
                 \begin{align}
@@ -4085,7 +4085,7 @@ subagent invocations and terminating in a finite number of steps.
                 Final state \textsc{Certified} reached; run terminates.
                 \checkmark
 
-    \item[VI.6] \emph{Review outcome --- Case B (blocking objection,
+    \item VI.6 \emph{Review outcome --- Case B (blocking objection,
                 rework initiated).}  The Challenge Division raises a
                 blocking objection at \textsc{ReviewComplete}.
                 The automaton fires:
@@ -4101,7 +4101,7 @@ subagent invocations and terminating in a finite number of steps.
                 $B$ times before \textsc{Escalated} is reached.
                 \checkmark
 
-    \item[VI.7] \emph{Review outcome --- Case C (escalation).}
+    \item VI.7 \emph{Review outcome --- Case C (escalation).}
                 If $b = B$ is reached, the automaton fires:
                 \begin{align}
                     \textsc{ReviewComplete}
@@ -4113,7 +4113,7 @@ subagent invocations and terminating in a finite number of steps.
                 this results in a flagged simulation report, not a
                 physical deployment failure. \checkmark
 
-    \item[VI.8] \emph{Quality Gate certification step.}  In Case~A,
+    \item VI.8 \emph{Quality Gate certification step.}  In Case~A,
                 the Quality Gate issues a certificate along edge
                 I.2.13, promoting all certified deliverables from
                 tier~$\tau = 2$ to tier~$\tau = 3$ (Stage~III.2).
@@ -4121,27 +4121,27 @@ subagent invocations and terminating in a finite number of steps.
                 $\to$ Orchestrator) signals run completion.  No
                 further transitions are generated. \checkmark
 
-    \item[VI.9] \emph{Global termination.}  In all three cases (A,
+    \item VI.9 \emph{Global termination.}  In all three cases (A,
                 B-then-A, or C), the automaton reaches a terminal
                 state (\textsc{Certified} or \textsc{Escalated}) in
                 at most $P + B$ transitions.  By~\eqref{eq:concrete-bound},
                 the total subagent invocation count satisfies
                 $N \leq 66(1+R) < \infty$.  The run terminates. \checkmark
 
-    \item[VI.10] \emph{Summary: all theorems instantiated.}
+    \item VI.10 \emph{Summary: all theorems instantiated.}
                  \begin{enumerate}
-                     \item[VI.10a] Theorem~\ref{thm:acyclic}: $G^{*}$
+                     \item VI.10a Theorem~\ref{thm:acyclic}: $G^{*}$
                                    is a DAG (Stage~I.3). \checkmark
-                     \item[VI.10b] Theorem~\ref{thm:rework}: $\mathcal{M}$
+                     \item VI.10b Theorem~\ref{thm:rework}: $\mathcal{M}$
                                    terminates within $P+B$ transitions
                                    (Stages~II.4, VI.9). \checkmark
-                     \item[VI.10c] Theorem~\ref{thm:trust}: no content
+                     \item VI.10c Theorem~\ref{thm:trust}: no content
                                    is promoted without a Quality Gate
                                    certificate (Stage~III). \checkmark
-                     \item[VI.10d] Theorem~\ref{thm:multiplicity}:
+                     \item VI.10d Theorem~\ref{thm:multiplicity}:
                                    no conflict-adjacent roles share an
                                    agent (Stage~IV.3). \checkmark
-                     \item[VI.10e] Theorem~5 (Sketch): the invocation
+                     \item VI.10e Theorem~5 (Sketch): the invocation
                                    count satisfies
                                    $N \leq 66(1+R)$
                                    (Stage~V.5). \checkmark
@@ -4266,7 +4266,7 @@ counters.}
           occurs (same exhaustive case split as in
           Theorem~\ref{thm:rework}):
           \begin{enumerate}
-              \item[F] \emph{Forward transition at phase $j$:}
+              \item F \emph{Forward transition at phase $j$:}
                        $k_{i+1} = k_i + 1$;
                        $b^{(j')}_{i+1} = b^{(j')}_{i}$ for all $j'$.
                        \begin{align}
@@ -4277,7 +4277,7 @@ counters.}
                            &= \Psi(i) - 1.
                            \notag
                        \end{align}
-              \item[R] \emph{Rework at phase $j$:}
+              \item R \emph{Rework at phase $j$:}
                        $k_{i+1} = k_i$;
                        $b^{(j)}_{i+1} = b^{(j)}_{i} + 1$;
                        $b^{(j')}_{i+1} = b^{(j')}_{i}$ for $j' \neq j$.
@@ -4311,15 +4311,15 @@ counters.}
 
     \item \emph{Boundary and edge-case audit.}
           \begin{enumerate}
-              \item[L1-E1] \emph{All $R_j = 0$ (no rework allowed):}
+              \item L1-E1 \emph{All $R_j = 0$ (no rework allowed):}
                            $\Psi(0) = P$; the run terminates in exactly
                            $P$ steps (forward transitions only), consistent
                            with Theorem~\ref{thm:acyclic}.
-              \item[L1-E2] \emph{$P = 1$ (single-phase workflow):}
+              \item L1-E2 \emph{$P = 1$ (single-phase workflow):}
                            $\Psi(0) = 1 + R_1$; terminates in
                            $1 + R_1$ steps.  No contradiction with
                            Theorem~\ref{thm:rework}'s bound.
-              \item[L1-E3] \emph{Rework at phase $j$ with $b^{(j)}_i =
+              \item L1-E3 \emph{Rework at phase $j$ with $b^{(j)}_i =
                            R_j$} (budget exhausted for that phase):
                            the automaton transitions to the
                            \textsc{Escalated} terminal state instead of
@@ -4327,7 +4327,7 @@ counters.}
                            Theorem~\ref{thm:rework}, applied per-phase).
                            The counter increment does not occur; the
                            bound is not violated.
-              \item[L1-E4] \emph{Mixed model} (some phases pooled,
+              \item L1-E4 \emph{Mixed model} (some phases pooled,
                            others per-phase): decompose into two disjoint
                            index sets $J_{\mathrm{pool}}$ and
                            $J_{\mathrm{ind}}$; apply~\eqref{eq:lim-phi-perphase}
@@ -4421,14 +4421,14 @@ token/cost step.}
     \item \emph{Promotion criterion.}
           The sketch is promoted to a full proof when and only when:
           \begin{enumerate}
-              \item[L2-P1] A specific numeric value or an empirically
+              \item L2-P1 A specific numeric value or an empirically
                            validated distribution for $c_{\max}$ is
                            established against at least one real vertical
                            slice (\S9.2, \ProofStd{}) of the MDAP system,
                            yielding a concrete upper bound
                            $\mathcal{C} \leq \mathcal{C}^{*}$ for a
                            computed $\mathcal{C}^{*} \in \mathbb{R}_{>0}$.
-              \item[L2-P2] A benchmark dataset per \S9.2 of \ProofStd{}
+              \item L2-P2 A benchmark dataset per \S9.2 of \ProofStd{}
                            is archived under
                            \code{MATHEMATICAL\_\allowbreak PROOFS/misc/}.
           \end{enumerate}
@@ -4438,20 +4438,20 @@ token/cost step.}
 
     \item \emph{Boundary and edge-case audit.}
           \begin{enumerate}
-              \item[L2-E1] \emph{Zero-cost invocation} ($c(v,w) = 0$):
+              \item L2-E1 \emph{Zero-cost invocation} ($c(v,w) = 0$):
                            allowed by $c_{\max} \geq 0$;
                            \eqref{eq:lim-cost-bound} still holds with
                            $\mathcal{C} \leq 0$, hence $\mathcal{C} = 0$
                            in that degenerate case.
-              \item[L2-E2] \emph{Unbounded input sequences} ($|w|
+              \item L2-E2 \emph{Unbounded input sequences} ($|w|
                            \to \infty$): Assumption~A3 explicitly
                            bounds $c$ uniformly over all $w$; if A3
                            fails, the bound fails.  This is the exact
                            condition that must be validated empirically.
-              \item[L2-E3] \emph{$N = 0$ (no invocations):}
+              \item L2-E3 \emph{$N = 0$ (no invocations):}
                            $\mathcal{C} = 0 \leq c_{\max} \cdot 0 = 0$.
                            Bound holds trivially.
-              \item[L2-E4] \emph{$R = 0$ (no rework):}
+              \item L2-E4 \emph{$R = 0$ (no rework):}
                            $B = 0$; $N \leq F_{\max} \cdot P$;
                            $\mathcal{C} \leq F_{\max} \cdot P \cdot
                            c_{\max}$.  Consistent with
@@ -4537,11 +4537,11 @@ extension.}
     \item \emph{Constraint on the domain-correctness predicate.}
           For the extension to be well-formed, $\Pi_v$ must satisfy:
           \begin{enumerate}
-              \item[L3-C1] \emph{Decidability:} $\Pi_v(a)$ is
+              \item L3-C1 \emph{Decidability:} $\Pi_v(a)$ is
                            computable for every artifact $a$ reachable
                            in the workflow, i.e., the Quality Gate
                            can decide correctness in finite time.
-              \item[L3-C2] \emph{Monotonicity under certification:}
+              \item L3-C2 \emph{Monotonicity under certification:}
                            if $\Pi_v(a) = 1$ at the time of
                            certification and the artifact is not
                            subsequently modified, then $\Pi_v(a) = 1$
@@ -4549,7 +4549,7 @@ extension.}
                            mutated post-certification, a re-certification
                            protocol is required, which is a separate
                            extension.)
-              \item[L3-C3] \emph{Non-interference with coordination
+              \item L3-C3 \emph{Non-interference with coordination
                            scaffold:} $\Pi_v$ does not alter the
                            transition function $\delta$ of
                            $\mathcal{M}$ or the trust-tier function
@@ -4558,17 +4558,17 @@ extension.}
 
     \item \emph{Boundary and edge-case audit.}
           \begin{enumerate}
-              \item[L3-E1] \emph{$\Pi_v$ is always true} (trivial
+              \item L3-E1 \emph{$\Pi_v$ is always true} (trivial
                            predicate): the extension reduces to the
                            original Theorem~\ref{thm:trust}.
-              \item[L3-E2] \emph{$\Pi_v$ is always false} (no artifact
+              \item L3-E2 \emph{$\Pi_v$ is always false} (no artifact
                            can be certified): the Quality Gate never
                            fires; the run terminates in
                            \textsc{Escalated} (by H3 of
                            Theorem~\ref{thm:rework}).  The coordination
                            scaffold is still sound; only the semantic
                            layer has failed.
-              \item[L3-E3] \emph{Two concurrent Quality Gates certify
+              \item L3-E3 \emph{Two concurrent Quality Gates certify
                            the same artifact with conflicting verdicts:}
                            prevented by L3-C3 (each $\Pi_v$ is
                            read-only and deterministic; certification
@@ -4607,7 +4607,7 @@ extension.}
           invented.
 
           \begin{enumerate}
-              \item[C1a.] \emph{Workflow graph.}
+              \item C1a. \emph{Workflow graph.}
                     A directed graph
                     \begin{align}
                         G \;=\; (V,\, E),
@@ -4624,7 +4624,7 @@ extension.}
                     separately by the Rework Automaton
                     (Definition~\ref{def:state-machine}).
 
-              \item[C1b.] \emph{Artifact state machine.}
+              \item C1b. \emph{Artifact state machine.}
                     A deterministic finite automaton
                     \begin{align}
                         \mathcal{M}
@@ -4638,7 +4638,7 @@ extension.}
                     The automaton tracks the lifecycle status of each
                     artifact across the phases of $G$.
 
-              \item[C1c.] \emph{Trust-tier function.}
+              \item C1c. \emph{Trust-tier function.}
                     A function
                     \begin{align}
                         \tau \;:\; V \;\longrightarrow\;
@@ -4652,7 +4652,7 @@ extension.}
                     may be promoted past tier~2 without an explicit
                     Quality Gate certification.
 
-              \item[C1d.] \emph{Conflict graph.}
+              \item C1d. \emph{Conflict graph.}
                     A graph
                     \begin{align}
                         C \;=\; (\mathcal{F},\,E_C),
@@ -4798,11 +4798,11 @@ extension.}
           rework path.
           Specifically:
           \begin{enumerate}
-              \item[S1a.] By Theorem~\ref{thm:acyclic}, every nominal
+              \item S1a. By Theorem~\ref{thm:acyclic}, every nominal
                           execution path in $G$ visits each vertex at
                           most once and terminates at a designated
                           terminal vertex in at most $|V| = 11$ steps.
-              \item[S1b.] By Theorem~\ref{thm:rework}, every run of
+              \item S1b. By Theorem~\ref{thm:rework}, every run of
                           the augmented graph $G^{*}$ terminates in
                           at most
                           \begin{align}
@@ -4822,7 +4822,7 @@ extension.}
           sequence of agent invocations.
           Specifically:
           \begin{enumerate}
-              \item[S2a.] By Theorem~\ref{thm:trust}, for every
+              \item S2a. By Theorem~\ref{thm:trust}, for every
                           invocation sequence of length $n \geq 0$, the
                           trust-tier invariant
                           \begin{align}
@@ -4834,7 +4834,7 @@ extension.}
                           \end{align}
                           holds; untrusted content is never silently
                           promoted to certified status.
-              \item[S2b.] By Theorem~\ref{thm:multiplicity}, the
+              \item S2b. By Theorem~\ref{thm:multiplicity}, the
                           Non-Overlap Rule is structurally enforced:
                           any valid assignment of agents to function
                           classes requires at least
@@ -4917,16 +4917,16 @@ completion is a prerequisite for the items that follow it.
           Specifically, the following hypotheses require empirical
           confirmation before the theorems are considered production-grade:
           \begin{enumerate}
-              \item[FW3a.] Hypothesis~H2 of Theorem~\ref{thm:rework}:
+              \item FW3a. Hypothesis~H2 of Theorem~\ref{thm:rework}:
                     that the per-phase retry limit $R$ is finite and
                     consistently enforced across all phases of a live
                     deployment.
-              \item[FW3b.] Hypothesis~H3 of Theorem~\ref{thm:trust}:
+              \item FW3b. Hypothesis~H3 of Theorem~\ref{thm:trust}:
                     that every Quality Gate in a live deployment raises
                     the trust tier by exactly one unit (i.e., that no
                     Quality Gate implementation silently skips the
                     certification step or applies a non-unit increment).
-              \item[FW3c.] The Non-Overlap Rule
+              \item FW3c. The Non-Overlap Rule
                     (Theorem~\ref{thm:multiplicity}, hypothesis):
                     that no deployed agent instance is
                     assigned to two conflict-adjacent function classes

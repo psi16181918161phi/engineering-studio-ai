@@ -1,0 +1,138 @@
+/**
+ * WHAT: Styling for the DOM nodes produced by markdown.js (`.md-*`
+ * classes) — rendered inside `.stage-card__output`.
+ * WHY: Kept in its own file (additive-file convention already used by
+ * downloads.css) so it never conflicts with app.css's own edits.
+ * HOW: References the locked palette custom properties exclusively — no
+ * literal hex colors — same rule as every other stylesheet in this app.
+ */
+
+/* WHAT: No `display` declared here on purpose — `.stage-card__output` is a
+   <div> (block by default), and declaring `display: block` explicitly
+   would out-rank the browser's default `[hidden] { display: none }` UA
+   rule (author styles always beat UA styles at equal specificity),
+   breaking the "Hide output" toggle in app.js (card.outputEl.hidden =
+   true would stop actually hiding it). Let the UA default handle both
+   states. */
+
+.stage-card__output > *:first-child {
+  margin-top: 0;
+}
+
+.stage-card__output > *:last-child {
+  margin-bottom: 0;
+}
+
+.md-h1, .md-h2, .md-h3, .md-h4, .md-h5, .md-h6 {
+  color: var(--brand-primary);
+  margin: 0.9rem 0 0.4rem;
+  line-height: 1.25;
+}
+
+.md-h1 { font-size: 1.05rem; }
+.md-h2 { font-size: 1rem; }
+.md-h3, .md-h4, .md-h5, .md-h6 { font-size: 0.92rem; }
+
+.md-p {
+  margin: 0 0 0.7rem;
+}
+
+.md-strong {
+  color: var(--brand-primary);
+  font-weight: 700;
+}
+
+.md-em {
+  font-style: italic;
+}
+
+.md-strike {
+  opacity: 0.7;
+}
+
+.md-code {
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.85em;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+}
+
+.md-pre {
+  margin: 0 0 0.8rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  overflow-x: auto;
+}
+
+.md-pre code {
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.82rem;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.md-a {
+  color: var(--brand-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.md-a:hover {
+  color: var(--brand-primary);
+}
+
+.md-ul, .md-ol {
+  margin: 0 0 0.8rem;
+  padding-left: 1.4rem;
+}
+
+.md-li {
+  margin: 0.2rem 0;
+}
+
+.md-task-checkbox {
+  margin-right: 0.35rem;
+  accent-color: var(--brand-accent);
+}
+
+.md-blockquote {
+  margin: 0 0 0.8rem;
+  padding: 0.3rem 0.8rem;
+  border-left: 3px solid var(--brand-accent);
+  background: var(--surface-1);
+  color: var(--brand-accent);
+}
+
+.md-hr {
+  border: none;
+  border-top: 1px solid var(--border-soft);
+  margin: 0.9rem 0;
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 0.8rem;
+  font-size: 0.85rem;
+}
+
+.md-table th, .md-table td {
+  border: 1px solid var(--border-soft);
+  padding: 0.35rem 0.55rem;
+  text-align: left;
+}
+
+.md-table th {
+  color: var(--brand-primary);
+  background: var(--surface-2);
+  font-weight: 700;
+}
+
+.md-table tbody tr:nth-child(even) {
+  background: var(--surface-1);
+}

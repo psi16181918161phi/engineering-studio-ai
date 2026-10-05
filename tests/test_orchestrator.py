@@ -59,15 +59,58 @@ def test_run_pipeline_dispatches_research_specialists_and_business(
         "firmware",
         "simulation",
         "business",
+        "reviewer",
         "challenge",
+        "exploratory_qa",
+        "validator",
         "quality_gate",
     }
     for discipline, path in outputs.items():
         assert path.exists(), f"missing artifact for {discipline}"
     business_text = outputs["business"].read_text(encoding="utf-8")
     assert business_text.startswith("business:")
+    assert outputs["reviewer"].read_text(encoding="utf-8").startswith("reviewer:")
     assert outputs["challenge"].read_text(encoding="utf-8").startswith("challenge:")
+    assert outputs["exploratory_qa"].read_text(encoding="utf-8").startswith("exploratory_qa:")
+    assert outputs["validator"].read_text(encoding="utf-8").startswith("validator:")
     assert outputs["quality_gate"].read_text(encoding="utf-8").startswith("quality_gate:")
+
+
+def test_run_pipeline_review_stages_see_same_upstream_and_validator_sees_all(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Reviewer, Challenge Division, and Exploratory QA must critique
+    the same assembled package independently (none may be chained into
+    another's input), and the Validator must be the join point that sees
+    all three — this is the Non-Overlap Rule's runtime contract, not just
+    its prompt-text description in the .agent.md files."""
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FakeAgent)
+
+    outputs = orchestrator.run_pipeline("build a small survey drone", tmp_path)
+
+    combined_with_business = "\n\n".join(
+        outputs[d].read_text(encoding="utf-8") for d in orchestrator.PARALLEL_DISCIPLINES
+    ) + "\n\n" + outputs["business"].read_text(encoding="utf-8")
+
+    # _FakeAgent.run() echoes f"{discipline}: {user_prompt[:20]}" — every
+    # REVIEW_STAGES member must have been called with the *same* upstream
+    # text (the assembled package), not with each other's findings.
+    for stage in orchestrator.REVIEW_STAGES:
+        assert outputs[stage].read_text(encoding="utf-8") == (
+            f"{stage}: {combined_with_business[:20]}"
+        )
+
+    combined_with_review = (
+        combined_with_business
+        + "\n\n"
+        + "\n\n".join(outputs[s].read_text(encoding="utf-8") for s in orchestrator.REVIEW_STAGES)
+    )
+    assert outputs["validator"].read_text(encoding="utf-8") == (
+        f"validator: {combined_with_review[:20]}"
+    )
 
 
 def test_run_pipeline_reports_lifecycle_events_in_stage_order(
@@ -120,6 +163,37 @@ def test_run_pipeline_emits_error_event_and_reraises_on_specialist_failure(
     assert "simulated model failure" in (error_events[0][2] or "")
 
 
+def test_run_pipeline_emits_error_when_task_spec_lookup_fails(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: A failure resolving the stage's Task Specification (e.g. a
+    missing docs/task-specs.md — the exact bug that broke the first real
+    deployment) must report "error" for that stage, not leave it stuck at
+    "running" forever. get_task_spec() is called inside _run_stage's own
+    try block precisely so this failure mode is never silently unreported."""
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FakeAgent)
+
+    def _boom(slug: str) -> str:
+        raise FileNotFoundError(f"docs/task-specs.md not found (slug={slug!r})")
+
+    monkeypatch.setattr(orchestrator, "get_task_spec", _boom)
+
+    events: list[tuple[str, str, str | None]] = []
+    with pytest.raises(FileNotFoundError, match="docs/task-specs.md not found"):
+        orchestrator.run_pipeline(
+            "build a small survey drone", tmp_path, on_event=lambda *args: events.append(args)
+        )
+
+    research_events = [e for e in events if e[0] == "research"]
+    assert [e[1] for e in research_events] == ["running", "error"], (
+        "research must transition running -> error, never stay stuck at running"
+    )
+    assert "docs/task-specs.md not found" in (research_events[-1][2] or "")
+
+
 def test_run_pipeline_marks_all_downstream_stages_error_when_specialist_client_unavailable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -141,7 +215,10 @@ def test_run_pipeline_marks_all_downstream_stages_error_when_specialist_client_u
         "firmware",
         "simulation",
         "business",
+        "reviewer",
         "challenge",
+        "exploratory_qa",
+        "validator",
         "quality_gate",
     }
 

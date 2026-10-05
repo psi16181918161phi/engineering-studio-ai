@@ -31,8 +31,8 @@ everything else is identical).
 ## Verification status (disclosed, not fabricated)
 
 - **Verified 2026-07-10**: `docker compose -f deployment/docker-compose.yml
-  build dashboard` succeeded (image `deployment-dashboard:latest`, 192MB);
-  `docker run -p 8000:8000 deployment-dashboard:latest` started the
+  build dashboard` succeeded (image `engineering-studio-ai-openai:latest`, 192MB);
+  `docker run -p 8000:8000 engineering-studio-ai-openai:latest` started the
   container and `GET /api/health` returned `{"status":"ok"}` — the
   dashboard surface is confirmed to build and run correctly end-to-end.
   `cli`/`gui` profile services share the same image and were not

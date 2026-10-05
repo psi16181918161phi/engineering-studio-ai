@@ -33,6 +33,19 @@
   /* Dark Mode is the default semantic mapping: black bg, pink fg. */
   --brand-primary: var(--brand-pink);
   --brand-ink: var(--brand-black);
+
+  /* WHAT: Alpha-blended derivatives of the 3 locked hexes above — used for
+     glass/glow/elevation effects. WHY: gives the flat palette depth
+     without introducing a 4th hue (still just pink/black/rose-gold, at
+     different opacities) — see AGENTS.md/TEAM_QA.md §4 "accents only,
+     never a 4th convenience color" rule. */
+  --glow-primary: rgba(255, 174, 201, 0.45);
+  --glow-accent: rgba(183, 110, 121, 0.55);
+  --surface-1: rgba(255, 174, 201, 0.04);
+  --surface-2: rgba(255, 174, 201, 0.08);
+  --border-soft: rgba(183, 110, 121, 0.4);
+  --border-strong: rgba(183, 110, 121, 0.75);
+  --shadow-ambient: rgba(0, 0, 0, 0.5);
 }
 
 /* Light Mode: swap fg/bg roles — pink bg, black fg. Palette itself is
@@ -42,12 +55,67 @@
 :root[data-theme="light"] {
   --brand-primary: var(--brand-black);
   --brand-ink: var(--brand-pink);
+
+  --glow-primary: rgba(0, 0, 0, 0.18);
+  --glow-accent: rgba(183, 110, 121, 0.4);
+  --surface-1: rgba(0, 0, 0, 0.03);
+  --surface-2: rgba(0, 0, 0, 0.06);
+  --border-soft: rgba(183, 110, 121, 0.45);
+  --border-strong: rgba(0, 0, 0, 0.55);
+  --shadow-ambient: rgba(183, 110, 121, 0.25);
 }
 
-/* WHAT: Base page colors, relied on by app.css (command-and-control UI). */
+/* WHAT: Base page colors + a soft ambient glow field, relied on by app.css
+   (command-and-control UI). WHY: a single flat fill read as "boring" —
+   two low-opacity radial glows (still only the locked pink/rose-gold hues)
+   give the background depth without competing with foreground content. */
 body {
+  position: relative;
   background-color: var(--brand-ink);
+  background-image:
+    radial-gradient(ellipse 60% 50% at 15% -10%, var(--glow-primary), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 100% 0%, var(--glow-accent), transparent 55%);
+  background-attachment: fixed;
   color: var(--brand-primary);
+}
+
+/* WHAT: A slow-drifting dot-grid texture layered behind all real content.
+   WHY: pure flat black read as "boring" — this gives the dashboard a
+   living background without adding a 4th color (dots are the locked
+   rose-gold at low opacity) or touching contrast of any foreground text
+   (fixed + pointer-events:none + very low opacity, painted strictly
+   behind .topbar/.layout via stacking order below).
+   HOW: two offset dot layers drifting diagonally at different sizes for a
+   subtle parallax feel; disabled entirely under prefers-reduced-motion. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(var(--border-soft) 1px, transparent 1px),
+    radial-gradient(var(--border-soft) 1px, transparent 1px);
+  background-size: 34px 34px, 34px 34px;
+  background-position: 0 0, 17px 17px;
+  opacity: 0.3;
+  animation: texture-drift 70s linear infinite;
+}
+
+@keyframes texture-drift {
+  from { background-position: 0 0, 17px 17px; }
+  to { background-position: 340px 340px, 357px 357px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+  .stage-card__accent[data-state="running"],
+  .stage-card__icon-badge[data-state="running"],
+  .stage-card__status[data-state="running"] {
+    animation: none !important;
+  }
 }
 
 .accent {

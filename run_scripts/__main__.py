@@ -39,11 +39,12 @@ if _RUN_SCRIPTS_DIR not in _sys.path:
     _sys.path.insert(0, _RUN_SCRIPTS_DIR)
 # ---------------------------------------------------------------------------
 
-import importlib  # noqa: E402
-import logging  # noqa: E402
-import os  # noqa: E402
-import sys  # noqa: E402
-from typing import Final, Sequence  # noqa: E402
+import importlib
+import logging
+import os
+import sys
+from collections.abc import Sequence
+from typing import Final
 
 # ---------------------------------------------------------------------------
 # Module-level constants (REQ-FP-04)

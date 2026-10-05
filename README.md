@@ -48,8 +48,11 @@ flowchart TD
     E --> CB
     F --> CB
     S --> CB
-    CB --> CD["Challenge Division (critique)"]
-    CD --> QG["Quality Gate (verdict)"]
+    CB --> RV["Reviewer (critique)"]
+    CB --> CD["Challenge Division (adversarial critique)"]
+    RV --> VA["Validator (cross-consistency)"]
+    CD --> VA
+    VA --> QG["Quality Gate (verdict)"]
 ```
 
 <!-- Mermaid Variant B (interface-surface) theming per
@@ -146,7 +149,7 @@ for the full design (Mode A live-demo vs. Mode B CI-safe-mocked distinction).
 
 | Path | Purpose |
 |---|---|
-| `src/engineering_studio/agents/` | One module per specialist (orchestrator, research, mechanical, electrical, firmware, simulation, business, challenge, quality_gate). |
+| `src/engineering_studio/agents/` | `orchestrator.py` — the pipeline conductor, dispatching every stage (research, mechanical, electrical, firmware, simulation, business, reviewer, challenge, validator, quality_gate) in order. `specialist.py` — a single generic `SpecialistAgent` class, parameterized by a discipline string, that every stage above is dispatched through. |
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
 | `src/engineering_studio/api/` | HTTP/SSE route definitions for the command-and-control dashboard (`runs.py`, `health.py`, `downloads.py` — per-stage and zip-all artifact downloads) — see folder `README.md`. |

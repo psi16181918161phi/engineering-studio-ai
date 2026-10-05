@@ -12,13 +12,14 @@ from __future__ import annotations
 
 import time
 import zipfile
+from collections.abc import Callable
 from io import BytesIO
 from pathlib import Path
-from typing import Callable
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
 import engineering_studio.api.downloads as api_downloads_module
 import engineering_studio.api.runs as api_runs_module
 import engineering_studio.runs as runs_module

@@ -1,6 +1,6 @@
 ---
 title: "WISHLIST — engineering-studio-ai demo improvements for one more round"
-author: "GitHub Copilot (agent session)"
+author: "Hadrian Hu (agent session)"
 date: "2026-07-09"
 version: "2026.1.0.0"
 status: "Draft"

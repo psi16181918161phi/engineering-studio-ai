@@ -109,10 +109,10 @@ class EngineeringStudioClient:
 
 
 __all__ = [
-    "EngineeringStudioClient",
-    "ModelInfo",
     "PROVIDERS",
     "ROLES",
+    "EngineeringStudioClient",
+    "ModelInfo",
     "build_model_client",
     "get_model_info",
 ]

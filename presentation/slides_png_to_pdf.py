@@ -21,7 +21,6 @@ import functools
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import ParamSpec, TypeVar
 
 from PIL import Image
 
@@ -30,9 +29,6 @@ SLIDES_PNG_DIR = PRESENTATION_DIR / "slides_png"
 OUTPUT_PDF = PRESENTATION_DIR / "engineering-studio-ai-slides.pdf"
 
 _LOGGER = logging.getLogger(__name__)
-
-_P = ParamSpec("_P")
-_R = TypeVar("_R")
 
 
 class SlideDeckError(Exception):
@@ -60,7 +56,7 @@ class NoSlidesFoundError(SlideDeckError):
         self.slides_dir = slides_dir
 
 
-def log_step(func: Callable[_P, _R]) -> Callable[_P, _R]:
+def log_step[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     """Decorator that logs entry/exit of a pipeline step.
 
     WHAT: Wraps a function to emit a debug log before and after it runs.
@@ -71,7 +67,7 @@ def log_step(func: Callable[_P, _R]) -> Callable[_P, _R]:
     """
 
     @functools.wraps(func)
-    def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         _LOGGER.debug("start: %s", func.__name__)
         result = func(*args, **kwargs)
         _LOGGER.debug("done: %s", func.__name__)

@@ -64,8 +64,7 @@ _ROOT_STR: str = str(_ROOT)
 if _ROOT_STR not in sys.path:
     sys.path.insert(0, _ROOT_STR)
 
-from run_scripts.__main__ import main  # noqa: E402
-
+from run_scripts.__main__ import main
 
 if __name__ == "__main__":
     sys.exit(main())

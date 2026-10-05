@@ -15,9 +15,12 @@ from engineering_studio.task_specs import (
 )
 
 
-def test_load_task_specs_finds_all_nine_stages() -> None:
+def test_load_task_specs_finds_all_twelve_stages() -> None:
     specs = load_task_specs()
-    assert len(specs) == 9
+    assert len(specs) == 12
+    assert "reviewer-critique-pass" in specs
+    assert "exploratory-qa-scenario-pass" in specs
+    assert "validator-cross-consistency-pass" in specs
 
 
 def test_get_task_spec_returns_scope_declaration() -> None:

@@ -160,12 +160,21 @@ python scripts/local_mutation_gate.py --report .codex/evidence/mutation.json
 Browser tests start a loopback server with the fake pipeline and a fresh
 run-history directory for each test. Local CI uses preinstalled dependencies.
 The mutation gate uses an offline, dependency-free injector plus pytest. It
-requires every declared parser and branch-regression mutant to be killed.
+requires every declared parser, branch-regression, and workflow mutant to be killed.
 It reports the baseline, mutation operators, source hashes, and killing tests.
 This rollout scope excludes unlisted modules, operators, and equivalent mutants
 and does not provide a repository-wide mutation score. The scope is defined
-by the two mutation catalogs in the script. A surviving mutant, stale anchor,
+by the mutation catalogs in the script. A surviving mutant, stale anchor,
 test setup error, timeout, or missing result blocks the gate.
+
+### Workflow planning and execution
+
+`agents/workflow.py` declares six ordered batches and their exact ordered
+artifact inputs. Plan validation rejects duplicate stages and edges to the
+same or a later batch. It runs without clients, artifact reads, or events.
+`agents/orchestrator.py` executes those batches and exposes the existing
+stage IDs, metadata, and lifecycle callbacks. Both fan-outs finish before
+their successors start, and peer review stages share the same input package.
 
 ## Repository layout
 

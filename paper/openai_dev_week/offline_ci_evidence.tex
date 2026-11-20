@@ -69,11 +69,34 @@ containing only evidence for the previous candidate cannot make the
 new candidate ready.
 \end{theorem}
 
+\noindent\textbf{Proof type:} Direct, with finite case analysis and
+induction for the scan.
+
+\noindent\textbf{Hypotheses:}
+\begin{enumerate}[label=H\arabic*.]
+\item\label{hyp:offline-manifests} Candidate manifests have the exact,
+componentwise identity in Definition~\ref{def:offline-ci-snapshot}.
+\item\label{hyp:offline-validation} Valid inputs have a finite,
+nonempty required-check set and a finite, authenticated frozen snapshot.
+\item\label{hyp:offline-authentication} Eligibility and review
+qualification obey Definition~\ref{def:offline-ci-snapshot}, with
+trustworthy authentication and fixed authorization for the evaluation.
+\end{enumerate}
+
+\noindent\textbf{Proof dependencies:}
+\begin{enumerate}
+\item Definition~\ref{def:offline-ci-snapshot} supplies the input
+domains, validity rules, and witness predicates (H1--H3).
+\item Boolean excluded middle and finite set membership determine
+the per-check partition and the gate partition (H2--H3).
+\item Induction on finite prefixes proves the scan invariant (H2).
+\end{enumerate}
+
 \begin{proof}
 \begin{enumerate}
 \item \textbf{Validity and domains.}
 For a validated candidate, the components $s$, $a$, and $p$
-are byte strings in the specified manifest domains.
+are byte strings in the specified manifest domains (H1).
 The equality test applies to these three objects,
 rather than to their names or their timestamps.
 The policy determines $Q_p$ and the applicable authorization rules
@@ -81,7 +104,7 @@ before the evidence is considered.
 In particular, the appearance of a check in a receipt cannot
 add that check to $Q_p$, and its absence cannot remove a check.
 Validation supplies a finite nonempty set $Q_p$
-and a finite authenticated collection $E$.
+and a finite authenticated collection $E$ (H2).
 If any validation premise fails, the outer rule returns
 \textsc{Blocked} before forming any predicates.
 Thus a partial or unauthenticated read is distinguished from
@@ -109,7 +132,7 @@ Define
       \label{eq:offline-ci-fail}
 \end{align}
 Each predicate is Boolean because set membership is fixed
-by the validated snapshot and its fixed verification rules.
+by the validated snapshot and its fixed verification rules (H2--H3).
 A signed endorsement of a different receipt is outside $V_r$.
 An endorsement from the producer of $r$ is outside $V_r$,
 including when that producer is also authorized to review

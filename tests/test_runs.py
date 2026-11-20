@@ -11,9 +11,12 @@ FastAPI TestClient needed to exercise the store's own concurrency.
 from __future__ import annotations
 
 import json
+import os
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from tempfile import mkdtemp
 from typing import Any
 
 import pytest
@@ -385,15 +388,214 @@ def test_load_from_disk_skips_unknown_stage_name(monkeypatch, tmp_path) -> None:
     assert state["stages"]["research"]["status"] == "done"
 
 
-def test_persist_locked_logs_and_does_not_raise_on_os_error(monkeypatch, tmp_path) -> None:
+def test_persist_locked_logs_and_does_not_raise_on_os_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """WHAT: Check best-effort persistence when the destination is a directory.
+
+    WHY: A refused publication must not stop the live run.
+    HOW: Leave the conflicting destination in place and assert the warning.
+    """
     monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
     store = runs_module.RunStore()
     run = runs_module.RunState(run_id="broken-run", product_brief="a brief")
-    # WHAT: make the run.json path itself an existing directory, so
-    # path.write_text() raises IsADirectoryError (an OSError subclass) —
-    # simulates a disk-level failure without needing to mock the filesystem.
     run_dir = tmp_path / "broken-run"
     run_dir.mkdir()
     (run_dir / "run.json").mkdir()
 
-    store._persist_locked(run)  # must log a warning, never raise
+    with store._lock:
+        store._persist_locked(run)
+
+    assert "failed to persist run state for broken-run" in caplog.text
+    assert list(run_dir.iterdir()) == [run_dir / "run.json"]
+
+
+@pytest.mark.parametrize("has_prior_snapshot", [False, True])
+def test_partial_snapshot_write_preserves_previous_publication(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    has_prior_snapshot: bool,
+) -> None:
+    """WHAT: Exercise a write that fails after emitting a prefix.
+
+    WHY: A failed update cannot publish incomplete JSON or destroy prior state.
+    HOW: Write a real prefix and raise before the replacement can begin.
+    """
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    store = runs_module.RunStore()
+    prior = runs_module.RunState(run_id="partial", product_brief="previous state")
+    run_dir = tmp_path / prior.run_id
+    snapshot = run_dir / "run.json"
+    run_dir.mkdir()
+    previous = (json.dumps(prior.to_dict(), indent=2) + "\n").encode()
+    if has_prior_snapshot:
+        snapshot.write_bytes(previous)
+
+    write_text = Path.write_text
+
+    def fail_after_prefix(path: Path, data: str, **kwargs: Any) -> int:
+        """WHAT: Fail after a real write. WHY: Model a torn staged snapshot.
+
+        HOW: Save an incomplete JSON prefix before raising OSError.
+        """
+        write_text(path, data[:8], **kwargs)
+        raise OSError("injected partial snapshot write")
+
+    monkeypatch.setattr(Path, "write_text", fail_after_prefix)
+    updated = runs_module.RunState(run_id=prior.run_id, product_brief="new state")
+    with store._lock:
+        store._persist_locked(updated)
+
+    if has_prior_snapshot:
+        assert snapshot.read_bytes() == previous
+    else:
+        assert not snapshot.exists()
+    assert list(run_dir.iterdir()) == ([snapshot] if has_prior_snapshot else [])
+    assert "failed to persist run state for partial" in caplog.text
+
+
+def test_replace_failure_keeps_committed_snapshot_and_cleans_staging(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """WHAT: Keep the old snapshot when commit is refused.
+
+    WHY: Staging success alone has no publication effect.
+    HOW: Observe the full staged update and inject a replacement failure.
+    """
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    store = runs_module.RunStore()
+    prior = runs_module.RunState(run_id="refused", product_brief="previous state")
+    updated = runs_module.RunState(run_id=prior.run_id, product_brief="new state")
+    snapshot = tmp_path / prior.run_id / "run.json"
+    snapshot.parent.mkdir()
+    previous = json.dumps(prior.to_dict()).encode()
+    snapshot.write_bytes(previous)
+    replacements: list[Path] = []
+
+    def refuse(source: Path, destination: Path) -> None:
+        """WHAT: Refuse one publication. WHY: Test the commit boundary.
+
+        HOW: Check the input and destination before raising an OSError.
+        """
+        replacements.append(source)
+        assert destination == snapshot
+        assert source != snapshot
+        assert json.loads(source.read_bytes()) == updated.to_dict()
+        assert destination.read_bytes() == previous
+        raise PermissionError("injected replacement refusal")
+
+    monkeypatch.setattr(os, "replace", refuse)
+    with store._lock:
+        store._persist_locked(updated)
+
+    assert len(replacements) == 1
+    assert snapshot.read_bytes() == previous
+    assert list(snapshot.parent.iterdir()) == [snapshot]
+    assert "failed to persist run state for refused" in caplog.text
+
+
+def test_snapshot_publication_replaces_previous_bytes_once(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Check exact snapshots before and after publication.
+
+    WHY: Writing the canonical path in place exposes unfinished state.
+    HOW: Capture the sibling stage and canonical paths at the real replace call.
+    """
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    store = runs_module.RunStore()
+    prior = runs_module.RunState(run_id="replace", product_brief="previous state")
+    updated = runs_module.RunState(run_id=prior.run_id, product_brief="new state")
+    snapshot = tmp_path / prior.run_id / "run.json"
+    snapshot.parent.mkdir()
+    previous = json.dumps(prior.to_dict()).encode()
+    snapshot.write_bytes(previous)
+    replace = os.replace
+    replacements: list[Path] = []
+
+    def inspect_then_replace(source: Path, destination: Path) -> None:
+        """WHAT: Observe then commit. WHY: Preserve the visibility boundary.
+
+        HOW: Check both paths immediately before calling the real replacement.
+        """
+        replacements.append(source)
+        assert destination == snapshot
+        assert source.parent.parent == destination.parent
+        assert destination.read_bytes() == previous
+        assert json.loads(source.read_bytes()) == updated.to_dict()
+        replace(source, destination)
+
+    monkeypatch.setattr(os, "replace", inspect_then_replace)
+    with store._lock:
+        store._persist_locked(updated)
+
+    assert len(replacements) == 1
+    assert json.loads(snapshot.read_bytes()) == updated.to_dict()
+    assert list(snapshot.parent.iterdir()) == [snapshot]
+
+
+def test_cleanup_failure_after_replace_keeps_new_snapshot(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """WHAT: Preserve a completed replacement if staging cleanup fails.
+
+    WHY: Cleanup runs after publication and cannot undo the new snapshot.
+    HOW: Raise on context exit after observing the complete new document.
+    """
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    store = runs_module.RunStore()
+    prior = runs_module.RunState(run_id="cleanup", product_brief="previous state")
+    updated = runs_module.RunState(run_id=prior.run_id, product_brief="new state")
+    snapshot = tmp_path / prior.run_id / "run.json"
+    snapshot.parent.mkdir()
+    snapshot.write_text(json.dumps(prior.to_dict()), encoding="utf-8")
+    published = json.dumps(updated.to_dict()).encode()
+    staging_paths: list[Path] = []
+
+    @contextmanager
+    def fail_cleanup(*, dir: Path, prefix: str) -> Iterator[str]:
+        """WHAT: Refuse staging cleanup. WHY: Exercise the postcommit boundary.
+
+        HOW: Retain the directory and raise after confirming atomic replacement.
+        """
+        directory = mkdtemp(dir=dir, prefix=prefix)
+        staging_paths.append(Path(directory))
+        yield directory
+        assert snapshot.read_bytes() == published
+        raise PermissionError("injected cleanup refusal")
+
+    monkeypatch.setattr(runs_module, "TemporaryDirectory", fail_cleanup)
+    with store._lock:
+        store._persist_locked(updated)
+
+    assert snapshot.read_bytes() == published
+    assert len(staging_paths) == 1
+    assert staging_paths[0].is_dir()
+    assert "failed to persist run state for cleanup" in caplog.text
+
+
+def test_load_from_disk_ignores_run_state_staging_directories(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Recover only published run state.
+
+    WHY: An interrupted writer may leave an unread staging directory behind.
+    HOW: Leave complete staged JSON in both published and never-published runs.
+    """
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    committed = runs_module.RunState(run_id="published", product_brief="committed", status="done")
+    (tmp_path / committed.run_id).mkdir()
+    (tmp_path / committed.run_id / "run.json").write_text(
+        json.dumps(committed.to_dict()), encoding="utf-8"
+    )
+    for run_id in ("published", "never-published"):
+        stage = tmp_path / run_id / ".run-state-orphan"
+        stage.mkdir(parents=True)
+        pending = runs_module.RunState(run_id=run_id, product_brief="staged only", status="done")
+        (stage / "run.json").write_text(json.dumps(pending.to_dict()), encoding="utf-8")
+    store = runs_module.RunStore()
+
+    store.load_from_disk()
+
+    assert store.list_runs() == [committed.to_dict()]

@@ -21,6 +21,7 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from queue import SimpleQueue
+from tempfile import TemporaryDirectory
 from typing import Any
 
 from engineering_studio.agents.orchestrator import STAGE_MODEL_ENV_VAR, STAGE_ORDER
@@ -245,17 +246,21 @@ class RunStore:
         the bookkeeping around them (status, timestamps, which models ran)
         survive too, so `load_from_disk()` can rehydrate it at startup.
 
-        HOW: Caller must already hold `self._lock` — this both prevents a
-        torn/interleaved write when two stages finish near-simultaneously
-        and keeps the write on the same thread that just computed `run`'s
-        new state (no second read-modify-write race). Best-effort: a
-        write failure (e.g. disk full) is logged, never raised, since
-        losing persistence must never crash a live pipeline run.
+        HOW: The caller holds the store lock, so publications are serialized.
+        Write and close a private staging file on the same filesystem, then
+        replace the canonical path in one operation. A staging or replacement
+        failure leaves the previous snapshot intact. I/O failures are logged
+        without stopping the live pipeline. This provides atomic visibility
+        on filesystems with atomic replacement; no fsync is performed.
         """
         path = RUNS_ROOT / run.run_id / "run.json"
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(run.to_dict()), encoding="utf-8")
+            snapshot = json.dumps(run.to_dict())
+            with TemporaryDirectory(dir=path.parent, prefix=".run-state-") as directory:
+                staged = Path(directory) / path.name
+                staged.write_text(snapshot, encoding="utf-8")
+                os.replace(staged, path)
         except OSError:
             _LOGGER.warning("failed to persist run state for %s", run.run_id, exc_info=True)
 

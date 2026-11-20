@@ -1,0 +1,834 @@
+% Version: 2026.1.0.0
+% WHAT: A formal companion to Engineering Studio AI's OpenAI Dev Week paper.
+% WHY: A failed in-place write can erase an otherwise recoverable run snapshot.
+% HOW: Model one namespace entry and prove atomic visibility by trace induction.
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,tabularx,ragged2e}
+\usepackage{enumitem}
+\usepackage[final]{microtype}
+\usepackage{fancyhdr,lastpage}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Atomic Publication of Engineering Studio Run Snapshots},
+  pdfsubject={Engineering Studio AI formal companion}
+}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Engineering Studio AI}
+\rhead{Atomic run snapshots}
+\cfoot{\thepage\ of \pageref{LastPage}}
+\setlength{\headheight}{15pt}
+\setlength{\emergencystretch}{2em}
+\setlist[enumerate]{leftmargin=*}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{counterexample}[theorem]{Counterexample}
+\newcommand{\Bytes}{\mathcal{B}}
+\newcommand{\Valid}{\mathcal{J}}
+\newcommand{\absent}{\bot}
+
+\title{Atomic Publication of Engineering Studio Run Snapshots\\
+\large A formal companion to the OpenAI Dev Week paper}
+\date{2026-11-20}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Engineering Studio restores run history from a JSON sidecar. The baseline
+writer opens that sidecar directly, so serializing writes with a process-local
+lock still permits a failed or interrupted write to erase a previously
+complete snapshot. This companion characterizes a narrow alternative:
+serialize the snapshot, write and close a private temporary file in the
+destination directory, and publish it by atomic replacement. An inductive
+trace model proves that a successful lookup selects the last whole
+publication or observes absence before the first publication. A
+counterexample shows why direct truncation lacks this property. The proof
+treats filesystem semantics as explicit premises and separates file
+visibility from power-loss durability, validation of arbitrary JSON,
+multi-process consistency, artifact state, and API events.
+\end{abstract}
+
+\section*{Key Words}
+Atomic replacement; run history; linearization point; failed publication;
+snapshot isolation; process restart.
+
+\section*{Executive Summary}
+The target is one run's \texttt{run.json}. Prepare complete bytes away
+from the name used by recovery. A successful rename changes which snapshot
+that name selects; failures before that operation leave the entry and its
+old bytes alone. Recovery addresses the final name exclusively. The
+\texttt{RunStore} tests should exercise existing and absent targets, inject
+write and replacement failures, and verify that old snapshots remain
+loadable. The implementation maintainer owns the filesystem premise;
+an independent reviewer checks the actual write, close, replace, and
+cleanup order against the model. A local check on one filesystem gives
+evidence for that environment.
+
+\section*{Key Findings}
+Publication is an event in the filesystem namespace, whereas a successful
+return is an observation by the caller. An interrupted caller may miss the
+result of an already completed publication. A cleanup failure can leave
+private bytes behind without changing which bytes a recovery lookup selects.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Atomic run snapshot findings, Part I}
+\label{tab:findings-1}
+\begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}X l@{}}
+\toprule
+Case & Result and limit & Source \\
+\midrule
+Typed contents & A finite byte string differs from a missing entry, even when the string is empty. & \ref{def:states} \\
+Trace cut & A lookup selects an entry at one transition boundary under the reader premise. & \ref{def:trace} \\
+Zero publications & Recovery sees the initial snapshot, which can be absent. & \ref{thm:visibility} \\
+First success & A successful replacement can publish to a previously missing name. & \ref{thm:visibility} \\
+Write or close error & A prepublication error preserves the prior entry under staging isolation. & \ref{thm:visibility} \\
+Replace error & Preservation requires failure before the namespace change. & \ref{thm:visibility} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\begin{table}[!htbp]
+\centering\small
+\caption{Atomic run snapshot findings, Part II}
+\label{tab:findings-2}
+\begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}X l@{}}
+\toprule
+Case & Result and limit & Source \\
+\midrule
+Equal bytes & Two successful publications may be indistinguishable by content. & \ref{thm:visibility} \\
+Competing reads & An open before replacement can finish afterward with the older bytes. & \ref{thm:visibility} \\
+Cleanup error & Orphans remain invisible to the literal-name lookup. & \ref{thm:visibility} \\
+Process interruption & Visibility follows the completed namespace event, not caller acknowledgement. & \ref{thm:visibility} \\
+Serial writes & The last successful replacement wins for one name; no logical conflict protocol follows. & \ref{thm:visibility} \\
+Direct truncation & A reader can select empty or partial bytes between open and close. & \ref{cex:truncate} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Symbols used in the trace and visibility claim}
+\label{tab:symbols}
+\begin{tabularx}{\linewidth}{@{}lX l@{}}
+\toprule
+Symbol & Domain and meaning & Source \\
+\midrule
+$\Bytes$ & Finite byte strings, including the empty string $\epsilon$. & \ref{def:states} \\
+$\Valid$ & Subset of $\Bytes$ with the required full JSON serialization. & \ref{def:states} \\
+$\absent$ & Absence of the public namespace entry. & \ref{def:states} \\
+$T$ & Finite trace length, measured in transitions. & \ref{def:trace} \\
+$k$ & Cut index in $\{0,\ldots,T\}$. & \ref{def:trace} \\
+$P_k$ & Public entry contents evaluated at cut $k$. & \ref{def:trace} \\
+$S_k$ & Finite private staging map at cut $k$. & \ref{def:trace} \\
+$L_k$ & Payload of the most recent commit, or the initial public value. & \ref{def:trace} \\
+$A_k$ & Count of successful publications through cut $k$. & \ref{def:trace} \\
+$u$ & A unique temporary namespace key. & \ref{def:states} \\
+$b$ & Complete serialized attempt payload in $\Valid$. & \ref{def:states} \\
+$r$ & A reader's successful lookup cut. & \ref{def:trace} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\clearpage
+\tableofcontents
+\listoftables
+\clearpage
+
+\section{Source and scope}
+\label{sec:source}
+The OpenAI Dev Week formal paper is the companion baseline for the
+workflow and its lifecycle. The concrete persistence entry point is
+\texttt{RunStore.\allowbreak\_persist\_locked}; the recovery projection is
+\texttt{RunStore.\allowbreak load\_from\_disk} in the runtime
+\texttt{runs.py} module. The baseline implementation at
+\texttt{535f5de} writes directly to \texttt{run.json}. The process lock
+prevents interleaving among cooperating callers within that process,
+but an interruption can still occur after truncation.
+
+This companion fixes the semantic target for a replacement writer:
+keep the same public file name, serialized schema and best-effort error
+behavior. It covers one run directory, without changing the pipeline,
+artifact storage, history schema or API and stream payloads. Atomic
+visibility is a claim about which complete bytes a directory entry can
+select. The Python replacement API and POSIX rename semantics motivate
+the premises below \cite{python, posix}. A deployed filesystem must
+satisfy those premises; calling the API is not itself evidence about
+every configured storage backend.
+
+\section{Model and main result}
+\label{sec:model}
+\begin{definition}[Namespace and eligible payloads]
+\label{def:states}
+Let $\Bytes=\{0,\ldots,255\}^{<\omega}$ be the set of finite byte
+strings, with empty string $\epsilon$. Let $\Valid\subseteq\Bytes$
+be the complete UTF-8 JSON encodings of valid application snapshots.
+Write $\absent\notin\Bytes$ for a missing entry. The final name is
+the literal \texttt{run.json} entry of a fixed directory. Private names
+$u$ are distinct from the final name. A stage is a private entry with
+a byte string and a phase, open or closed. A closed stage may be
+published only after its bytes have been established equal to the
+attempt's fixed payload $b\in\Valid$.
+\end{definition}
+
+\begin{definition}[Trace and observation cut]
+\label{def:trace}
+A finite trace has $T\geq0$ transitions, indexed $1,\ldots,T$.
+Cut $k$ is immediately after transition $k$, with $0$ the initial cut.
+At cut $k$, $P_k\in\Bytes\cup\{\absent\}$ is the public entry value
+and $S_k$ is the finite map of private entries. A publication is the
+namespace transition consuming a closed stage and changing the final
+entry to its complete payload. Let $A_k$ count such transitions through
+cut $k$. Let $L_k$ be their last payload, or $P_0$ if $A_k=0$.
+A successful reader selects the public entry at one cut $r$ within
+its lookup interval, and reads the selected immutable file to the end,
+or observes $\absent$ at that cut.
+\end{definition}
+
+\begin{theorem}[Atomic visibility of one run snapshot]
+\label{thm:visibility}
+Under the hypotheses below, every cut satisfies
+\begin{equation}
+  P_k=L_k\in\Valid\cup\{\absent\}, \qquad 0\le k\le T .
+\end{equation}
+A successful lookup observes $L_r$.
+An attempt which ends before its publication changes no public bytes.
+Its cleanup can affect only its private name. When an attempt
+publishes, the next cut has its complete payload, regardless of
+whether the caller later receives an acknowledgement.
+\end{theorem}
+
+\noindent\textbf{Proof type:} Direct, using induction on finite traces
+and case analysis of the observable transitions.
+
+\noindent\textbf{Hypotheses.}
+\begin{enumerate}[label=H\arabic*.,ref=\arabic*]
+\item\label{hyp:init} The initial final entry is absent or holds an
+eligible payload. No external writer mutates the final path or its
+file object. The directory and final name stay fixed.
+\item\label{hyp:private} Cooperating writers for the fixed run are
+serialized. Each attempt gets a fresh exclusive private name on the
+same filesystem and never modifies another stage. Bytes are fixed
+before staging. Only exact, fully written, closed stages may publish.
+\item\label{hyp:replace} Successful replacement changes the public
+namespace in one transition and consumes its stage name. An error
+classified as prepublication leaves the public entry untouched. Cleanup
+targets only the attempt's private name.
+\item\label{hyp:read} Lookup follows one literal final name and selects
+an absent entry or one file object atomically. A successful read returns
+all bytes of that object, whose content remains immutable across later
+replacements. I/O errors are distinct from observations of absence.
+\item\label{hyp:trace} The trace is finite and includes the listed
+preparation, publication, lookup, cleanup, interruption, and local
+bookkeeping events. Process interruption can stop an attempt and leave
+its private files behind. Filesystem corruption and power failure are
+outside the model.
+\end{enumerate}
+
+\noindent\textbf{Proof dependencies.}
+\begin{enumerate}
+\item Definitions~\ref{def:states} and~\ref{def:trace} fix
+eligible byte strings, event indices, and the observation cut.
+\item Induction over $\{0,\ldots,T\}$ and exhaustive case splits
+prove the trace invariant from H\ref{hyp:init}--H\ref{hyp:trace}.
+\item H\ref{hyp:read} identifies completed reader output from its
+lookup cut; H\ref{hyp:replace} supplies the publication point.
+\end{enumerate}
+
+\begin{proof}
+We induct on the cut index $k$ of the fixed finite trace.
+\begin{enumerate}
+\item \textbf{Domains, initial condition, and candidate invariant.}
+Fix $T\in\mathbb{N}_0$ and a trace satisfying H\ref{hyp:init}
+through H\ref{hyp:trace}. The trace may have length zero.
+A successful publication must come from an attempt that has fixed
+a finite payload $b$ in $\Valid$, by H\ref{hyp:private}.
+The payload is fixed before the first stage write, so a private
+prefix and a payload are distinct state concepts even if their
+current byte values happen to be equal.
+The former can still be changed; the latter is the target of
+the serialization operation.
+The variable $P_k$ is a public file value, whereas $S_k$
+represents entries that the reader's address does not select.
+A failed lookup is modeled separately from the value $\absent$.
+For example, a permissions error supplies no content observation.
+If a successful lookup returns missing, it supplies an observation
+of $\absent$ under H\ref{hyp:read}.
+For the induction define the set
+\begin{equation}
+\label{eq:commits}
+C_k=\{i:1\leq i\leq k,\ i\text{ is a successful publication}\}.
+\end{equation}
+Its finiteness follows from that of the index set.
+Its cardinality is $A_k$ by the counting definition.
+If $C_k$ is nonempty, the usual order of integers gives a
+unique maximum, so the last payload $L_k$ is well defined.
+If $C_k$ is empty, $L_k$ has the initial value by definition.
+For a private key, equality of file values does not imply
+equality of keys. In particular and independently of values,
+H\ref{hyp:private} excludes the public key from the domain of
+$S_k$ at every cut.
+We will carry the invariant
+\begin{equation}
+\label{eq:inv}
+  P_k=L_k\in\Valid\cup\{\absent\},
+  \qquad
+  0\leq A_k\leq k .
+\end{equation}
+The inequality will make the endpoints of the count explicit.
+No inequality about timestamps, payload sizes, or application
+status is part of this invariant.
+
+\item \textbf{Base case.}
+At $k=0$ there is no integer satisfying $1\leq i\leq k$.
+Thus $C_0$ is empty, which yields $A_0=0$ and $L_0=P_0$.
+H\ref{hyp:init} gives the membership part of \eqref{eq:inv}.
+A prior private orphan, if present, has a key different from the
+public name. Freshness includes distinction from such live keys.
+A model state with an absent public entry and a nonempty private
+map is therefore permitted.
+In that state an initial lookup returns absence, even when
+a closed private file already contains a complete JSON document.
+If $T=0$, this base case supplies the entire trace conclusion
+and no existence of a writer operation is inferred.
+If $T>0$, it supplies the hypothesis for the first transition.
+The bound is tight at this initial cut because $0\leq0\leq0$.
+The induction does not require the initial byte string to have
+been produced by this implementation; it requires only the
+eligibility specified in H\ref{hyp:init}.
+
+\item \textbf{Induction hypothesis and partition of the next step.}
+Fix $k<T$ and assume \eqref{eq:inv} at cut $k$.
+The successor index $k+1$ exists and is at most $T$.
+By H\ref{hyp:trace} the next event is in one of three classes.
+The first changes the public entry by a successful publication.
+The second changes only preparation, staging, or attempt bookkeeping.
+The third is a reader action.
+If an implementation reports a successful operation after the
+replacement, model the replacement and the report as distinct
+events. Thus a report belongs to the second class.
+If an interruption occurs immediately after replacement,
+there is still a completed publication in the first class before
+the interruption in the second class.
+Under the atomic namespace premise an interruption cannot split a
+single publication transition into two observable public updates.
+A reader which starts before that transition and finishes after
+it still has a selection cut at either side of it.
+Distinguish event classification by the operation performed,
+before considering whether byte values changed.
+A replacement with equal bytes belongs to the first class,
+which prevents overlap with a nonpublication that also leaves
+the observed byte value equal.
+One event cannot both commit a private stage and be an ordinary
+read event, since the model decomposes execution at the
+namespace selection and replacement boundaries.
+This yields disjoint cases and covers the allowed events.
+An unmodeled external unlink would require another case and
+is excluded by H\ref{hyp:init}.
+
+\item \textbf{Preparation events.}
+First consider a computation of the whole serialized payload.
+Its write set is local memory; there is no operation on $P_k$.
+If serialization raises, no publishable stage has been
+established. The state at the next cut therefore has
+$P_{k+1}=P_k$ and $C_{k+1}=C_k$.
+If creation of the private directory or file fails instead, it
+cannot obtain the public name, by H\ref{hyp:private}.
+It may have no private effect or leave some private allocation.
+Either is compatible with the invariant, which depends only on
+the public entry and on successful publications.
+If creation succeeds, freshness adds a private key distinct
+from all current keys. It does not rebind the final name.
+A write of a proper prefix updates that private entry.
+A write of all bytes also updates only that private entry.
+Neither of these writes is a publication.
+This distinction matters for a failure during buffering, which
+can leave a private prefix not recognizable as JSON.
+On a short-write failure the attempt cannot use that entry
+as a closed stage with proved equality to $b$.
+A successful close may establish exactly that equality and the
+closed phase. It does not transfer the private name.
+A close failure has the same public effect as a failed write,
+even if all bytes in fact reached system buffers.
+Its uncertain terminal stage is never offered for publication.
+This relies on control ordering: reaching the replacement
+requires a completed successful write and close.
+A process may stop at any of these finer boundaries.
+In all such preparation cases the history $C_k$ is unchanged.
+Hence $A_{k+1}=A_k$ and $L_{k+1}=L_k$.
+Substitution of $P_k=L_k$ proves the equality at $k+1$,
+and membership follows from the induction hypothesis.
+Finally $A_{k+1}=A_k\leq k<k+1$ proves the upper count bound.
+
+\item \textbf{Replacement success and exact bytes.}
+Now take the first event class. H\ref{hyp:private} supplies
+one private name $u$ in the closed phase whose bytes equal
+the whole payload $b\in\Valid$.
+By H\ref{hyp:replace}, the replacement has one namespace effect:
+it sets the final entry to that closed file and consumes the
+private file name. A surrounding private directory may survive
+until its own cleanup; that directory is not the public entry.
+There is no cut with an intermediate public prefix.
+If the old entry existed, the new file replaces that binding.
+If it was absent, the new file creates the public binding.
+These are the two entry states by Definition~\ref{def:states}.
+At this successor cut,
+\begin{align}
+\label{eq:publish}
+     P_{k+1} &= b,\\
+     C_{k+1} &= C_k\cup\{k+1\}.
+\end{align}
+Because $C_k\subseteq\{1,\ldots,k\}$, $k+1$ was not already
+counted. It is larger than each element of $C_k$ and is
+the unique maximum of $C_{k+1}$.
+Consequently $A_{k+1}=A_k+1$ and $L_{k+1}=b$.
+Equation~\eqref{eq:publish} yields $P_{k+1}=L_{k+1}$.
+The membership claim follows from $b\in\Valid$.
+The count bound follows by adding one to $A_k\leq k$,
+which also preserves nonnegativity.
+A replacement of bytes $b$ by $b$ still adds precisely one
+index to the commit set. A trace count can increase while the
+bytes and the byte length remain unchanged.
+A reader cannot infer an execution count from byte equality.
+
+\item \textbf{Failed replacement, cleanup, and acknowledgement.}
+Consider a replacement that fails before the namespace change.
+H\ref{hyp:replace} gives $P_{k+1}=P_k$.
+The event index is not a successful publication;
+therefore $C_{k+1}=C_k$.
+The same conclusion holds for cleanup of an attempt that never
+published, because cleanup addresses only that attempt's fresh
+private namespace. Deleting a private entry changes $S_k$ without
+changing the literal final name.
+A cleanup error may leave $S_k$ larger than it would otherwise
+have been. Its footprint is still private.
+If cleanup runs after replacement, it cannot delete the public
+file by removing the original private name:
+that name was consumed by replacement, and the cleanup targets
+only the private temporary location.
+A private directory and a public file may refer to the same
+filesystem but their namespace addresses remain distinct.
+The same reasoning covers later logging or return to the caller.
+These operations can change warning text or caller state;
+they add no index to $C_k$.
+If a caller encounters an error after publication, then the
+attempt is not an instance of the theorem's prepublication clause.
+Its replacement still occurs in the history.
+In particular it would be incorrect to infer rollback from
+a warning emitted while cleaning a temporary directory.
+For all these second-class events, $L_{k+1}=L_k$ and the
+bounds and membership in \eqref{eq:inv} transfer unchanged.
+A filesystem whose error return can report failure after an
+unknown publication cannot use that return alone to establish
+the failed-before-change premise.
+
+\item \textbf{Reader events and induction closure.}
+A successful read neither publishes nor writes the private map.
+An unsuccessful read also cannot change either namespace
+according to H\ref{hyp:read}.
+Thus $P_{k+1}=P_k$ and $C_{k+1}=C_k$ for reader events.
+A result from the reader may be returned at a later cut.
+That local return is bookkeeping, still without a publication.
+The induction hypothesis gives $P_{k+1}=L_{k+1}$ for
+this third event class, with unchanged membership and bounds.
+We have proved the induction step for every possible transition.
+By finite induction, \eqref{eq:inv} holds for all cuts,
+including the maximal index $T$.
+This proves a prefix property: applying the same argument
+to a trace prefix gives exactly the same $P_k$ and $L_k$.
+Future transitions do not retroactively change a prior cut.
+The prefix property handles a stopped execution without
+requiring any future retry or eventual publication.
+It also permits a read-only trace to have many events but
+no commit, since none of the reader cases increments the count.
+
+
+\item \textbf{From namespace state to the reader's result.}
+Let a particular successful reader have lookup cut $r$.
+H\ref{hyp:read} supplies $0\leq r\leq T$ and identifies
+the selected entry with $P_r$. If $P_r=\absent$, there is
+no selected byte string; the observation is absence.
+Otherwise the reader gets a file object with contents $P_r$.
+Since publishing replaces the entry and does not write into
+a published object, its read-to-end observes the same finite
+string even if the read returns at a later boundary.
+Therefore the result is $P_r=L_r$ in both cases.
+A reader exception is outside this statement because it has
+no completed contents to equate with $L_r$.
+A reader need not reconstruct the namespace event order.
+In the proof the cut is a witness supplied by selection semantics,
+not a new timestamp field or an extra disk read.
+The recovery loader's test for file existence followed by open
+need not be atomic as a pair.
+If it skips because a literal check sees absence, that lookup
+is the absence witness. With an existing entry it may open a
+newer file by the time the open occurs.
+Only the selection that supplied the observed result matters.
+An external deletion between checks could introduce behavior
+outside H\ref{hyp:init}; a later replacement alone does not
+remove the previously existing final name.
+
+\item \textbf{Before, across, and after one replacement.}
+For a single successful publication at transition $h$,
+the adjacent cuts are $h-1$ and $h$, where $1\leq h\leq T$.
+The invariant gives
+\begin{equation}
+\label{eq:adjacent}
+ (P_{h-1},P_h)=(L_{h-1},b).
+\end{equation}
+If a read selects before $h$, it cannot obtain its bytes
+from the publication at $h$. Selection at $h-1$ gives
+$L_{h-1}$ exactly, including possible absence.
+Selection at $h$ gives $b$ exactly.
+Selection later gives $b$ until the next publication,
+and the last payload thereafter.
+These possibilities are exhaustive for a specific replacement:
+the selected cut is either strictly below $h$, exactly $h$,
+or strictly above it.
+A read begun before $h$ can be delayed without selecting
+until after $h$, in which case it may return the new payload.
+If it selected an old object before $h$ and returns after $h$,
+its result remains the old payload.
+The proof assigns the atomic observation to selection,
+not to invocation or return.
+A reader entirely between two consecutive publications
+has no alternative public value under the invariant.
+A reader entirely before the first publication has only
+$P_0$ as an allowed successful observation.
+Multiple readers can choose different cuts and return in an
+order different from their selections.
+Their distinct outcomes are consistent with one ordered
+sequence of namespace publications.
+Sorting readers by return time would not justify a monotonic
+history without an additional constraint on the reads.
+
+\item \textbf{Exactly which attempts can change the public entry.}
+Consider an attempt from selection of $b$ to its last event.
+Writers for this run are serialized under H\ref{hyp:private},
+so no other attempt has a publication strictly within that
+interval. Reader events can overlap.
+If the attempt never commits, none of its own events enters
+$C_k$. All prefixes of this attempt preserve the public value
+at its start. The invariant independently supplies this
+fact at every cut inside the attempt.
+If it commits once, preparation cuts retain that prior value.
+The publication cut selects precisely its closed bytes.
+Later bookkeeping and cleanup in the attempt retain those
+new bytes. A second replacement is not a continuation of the
+same publication: the old stage key was consumed, and a new
+eligible stage needs a fresh attempt.
+A retry after prepublication failure can compute a new payload
+and stage it under a fresh name. Such a retry starts at a cut
+whose public value is still the last committed snapshot.
+The proof of the first attempt does not imply that a retry
+will be attempted or succeed.
+A retry after an uncertain acknowledgement can publish again
+even when the first attempt succeeded. The second commit
+does not falsify the invariant, because its position is in $C_k$.
+An idempotency record would be required to turn that fact into
+an exactly-once attempt protocol. There is no such record
+among the present state variables.
+Best-effort persistence is compatible with this distinction:
+the in-memory run can advance after an error, while recovery
+can still return the prior complete sidecar.
+
+\item \textbf{Interruption and the namespace cut.}
+Take the prefix ending at the point immediately before the
+process ceases to execute.
+If interruption precedes the allocation of the private namespace,
+that attempt has no stage file to leave behind.
+If interruption occurs while the file is open, $S_k$ can
+include arbitrary partially produced bytes at the private key.
+If it occurs after close and before replacement, $S_k$ can
+include a complete eligible payload at that key.
+Neither private condition changes the observed public entry,
+because H\ref{hyp:read} selects only the final name.
+If interruption occurs after replacement and before cleanup,
+the public entry has the new bytes, and an empty private
+directory may still be discoverable by enumeration.
+If interruption occurs after cleanup and before acknowledgement,
+even that private directory may be absent while the new bytes
+remain public.
+Thus two trace prefixes with identical caller observations
+may differ in their committed state.
+Conversely two prefixes with different cleanup outcomes may
+have identical public states.
+Both statements follow by taking the indicated cuts and
+substituting their respective $C_k$ into \eqref{eq:inv}.
+A fresh recovery process can encounter a private orphan from
+the earlier process. This changes neither its lookup address
+nor the identity of the last namespace commit.
+It is a separate engineering question whether such orphan
+directories are reclaimed later.
+Removing them globally while another process is preparing a
+stage would need an ownership rule beyond this proof.
+Under H\ref{hyp:private}, all in-scope cleanup names belong
+to the attempt which created them.
+
+\item \textbf{Boundary audit for contents and extent.}
+The string $\epsilon$ has length zero and is an element
+of $\Bytes$ by its construction as a finite string.
+The symbol $\absent$ is outside $\Bytes$ and therefore distinct
+from $\epsilon$ even at the abstraction boundary.
+The namespace induction itself uses only closure of the
+admitted content type under copying, so a variant with
+$\Valid=\Bytes$ could publish $\epsilon$ as a present file.
+That variant would say nothing about JSON decoding.
+In the service specialization, $\epsilon\notin\Valid$:
+there is no complete JSON value in the empty text.
+An empty stage file before bytes arrive is thus legitimate
+private state but cannot become a successful application snapshot.
+When a field of a snapshot is itself the empty string, the
+whole JSON serialization can still be nonempty and eligible.
+This separates the edge case of an empty application value
+from that of an empty byte sequence.
+There is no maximum permitted byte length in the abstract set
+$\Bytes$. Every individual payload has finite length, so
+each prefix in the preparation case is well defined.
+A concrete allocation or capacity limit can prevent reaching
+the successful stage condition; it does not produce a smaller
+committed version merely by truncating private bytes.
+The abstract proof never divides by length or requires a strict
+size inequality for successive snapshots.
+If the initial entry is absent and every attempt fails,
+the final cut remains absent. If the initial entry contains
+even a minimal complete snapshot and every attempt fails,
+the final cut contains exactly those initial bytes.
+If a valid initial entry has a larger byte length than the
+first replacement, the reader still sees complete replacement
+bytes with no old suffix; the selected object is the staged
+object, not a partially overwritten prefix of the old object.
+Reversing the lengths gives the symmetric outcome by object
+selection, with no old prefix constraint.
+At the trace boundary $A_k=0$, $L_k=P_0$ is the defined
+fallback. At the other bound $A_k=k$, the abstract count
+requires every indexed event to be a publication. With an
+initially empty private map and an explicit preparation event
+for each commit, this can occur only at cut zero. The invariant
+does not assert achievability of its coarse upper bound.
+At $T=1$ a nonpublishing event preserves $P_0$; a publishing
+event needs a valid closed stage at cut zero, for instance
+when the described trace is a suffix of an earlier execution.
+An initially present but malformed final file is excluded by
+H\ref{hyp:init}. Before a new successful publication, the model
+with that relaxed premise can show preservation of the malformed
+bytes, but cannot claim eligibility or successful rehydration.
+
+
+\item \textbf{Multiple writes and serialization limits.}
+Order the nonempty commit indices as $i_1<\cdots<i_m$,
+where $m=A_T$. For any $k\geq i_m$, the largest committed
+index in $C_k$ is $i_m$ and $P_k$ equals the payload there.
+For a cut between $i_j$ and $i_{j+1}$, with $1\leq j<m$,
+the maximum is $i_j$; hence $P_k$ equals that payload.
+When $m=1$ this interior index set is empty, so there is
+only the before-first and after-first partition.
+When $m=0$ there is no maximum to evaluate,
+and the fallback part of Definition~\ref{def:trace} applies.
+These cases account for every cut, by comparing $k$
+to a finite increasing list of indices.
+Physical commit order does not imply chronological order of
+snapshot data. If payload $b_1$ has a later application timestamp
+than $b_2$, then publishing $b_2$ after $b_1$ still makes
+$b_2$ the final contents. The theorem compares transition
+indices, not application timestamps.
+The process-local lock makes the no-other-attempt clause used
+above applicable to cooperating writes within that process.
+Two distinct processes can each stage valid bytes in private
+temporary directories, and the filesystem may serialize their
+namespace replacement events.
+Even then no winner is determined by the logical age of the
+data in those bytes. For a concrete instance, let both
+processes start from the same run version and record different
+stage completions, each omitting the other's update.
+If they both publish, the later replacement can hide the other
+completed stage in subsequent recovery.
+Each file can still be whole at every lookup.
+If one process fails while the other publishes, the unchanged
+public value cannot be attributed to the whole failing time
+interval, only to the failure event itself.
+The theorem's interval claim therefore uses serialized writers;
+a process-local lock supplies no interprocess serialization.
+Establishing application-level lost-update freedom would need
+version conflict checks or a shared transaction protocol.
+
+\item \textbf{Refinement obligations for the application writer.}
+The source-to-model mapping has a specific dependency order.
+The call must serialize a complete run snapshot before publishing.
+Creating the destination parent directory creates no final
+file; any early directory creation is a namespace effect
+on a different name from the public entry.
+The resulting destination directory must remain stable
+through staging and replacement.
+A per-attempt private temporary directory inside that parent
+supplies the fresh key and normally the same filesystem.
+Under the fixed namespace assumption, the destination parent
+does not change while the staged file is being written.
+Moving the staging directory elsewhere may invalidate
+the same-filesystem premise and produce a failed replacement.
+The writer invokes the complete staged write, then closes the
+staged file before trying to replace the public entry.
+A successful write alone does not prove publication,
+and a failure in either step cannot reach the replacement.
+Publication acts on the staged file, rather than its container.
+The cleanup then acts on the temporary directory, rather than
+on the public entry.
+The literal \texttt{run.json} lookup excludes a temporary
+directory and its internal file by construction.
+No fallback search for other JSON files is licensed by
+H\ref{hyp:read}; adding one would widen the observable namespace.
+A logging handler which performs unrelated public file effects
+would be an external writer outside the assumed case.
+Application correctness additionally needs the values entering
+serialization to satisfy the snapshot schema.
+For example, a payload that decodes as a JSON number rather
+than a run object must not be assigned to $\Valid$ simply
+because it has syntactically valid JSON.
+The application produces a complete snapshot from its current
+run state. The theorem does not make validation guarantees
+about unrelated preexisting files or user-added run directories.
+Later transformation of an old \texttt{running} status into
+an interrupted error is an application rule after decoding.
+It does not change which byte string the read selected.
+
+\item \textbf{Independence audit.}
+The invariant was derived from finite induction, the effect
+of successful replacement, and isolation of other write sets.
+There is no assumption about model output quality, the workflow
+graph's stage count, a model provider, network availability,
+test coverage, or the semantics of SSE delivery.
+Those components do not appear in $P_k$, $S_k$, or $C_k$.
+There is no appeal to process scheduling fairness or eventually
+settled storage.
+The writer-serialization assumption is needed for the
+no-other-attempt argument over an entire attempt's interval.
+It is not needed for the per-transition equality if a given
+multiwriter trace independently has ordered atomic namespace
+effects and separate staging keys.
+The reader immutability premise is needed when the selected
+object is read after a replacement; it is not needed to
+establish $P_k=L_k$ as a namespace state equation.
+Payload validity is used for the membership conclusion,
+while the recurrence would still hold for arbitrary bytes.
+Private cleanup success is not used in the induction,
+which is why the conclusion is about visibility and not
+space reclamation.
+Acknowledgement is not used to count a commit,
+which is why a missing acknowledgement proves neither
+that the process published nor that it failed before publication.
+A later committed snapshot can have the same application
+timestamp or exactly equal bytes without changing the proof.
+None of these nondependencies asserts that the corresponding
+operational concern is unimportant; it identifies which
+additional theorem would be needed to guarantee it.
+
+\item \textbf{Auditor checklist.}
+An auditor can check the executable refinement in the
+following finite order.
+\begin{enumerate}
+\item Locate the producer of serialized bytes and establish that
+it completes before the replacement. Check the explicit encoding.
+\item Trace every write and cleanup target. Resolve the intended
+public path and verify that every other path is private to
+one attempt under namespace assumptions.
+\item Confirm that write and close failures cannot reach the
+replacement. Exercise both absent and existing final names.
+\item Confirm that the successful replacement is the only
+operation that rebinds the public entry. Check that the staged
+file is in the destination filesystem and closed before use.
+\item Inject a failure before replacement and compare the old
+and observed bytes exactly. Inject a cleanup failure separately
+and identify whether it follows publication.
+\item Exercise recovery against an orphaned stage without a
+public file, and beside an older valid public file. Verify the
+loader's literal name projection and rehydration rule separately.
+\item Check the running environment's namespace guarantees.
+An operating system may reject replacement while a reader holds
+an incompatible open handle. That rejection warrants a failure
+case, not a fictional successful concurrent publication.
+\item Record the scope of the observations. Test results on one
+local environment do not independently validate all platform
+or mount choices.
+\end{enumerate}
+
+\item \textbf{Scope of the established result.}
+The observation equation is a visibility statement for one
+file and successful selections.
+It gives no upper bound on I/O latency and no guarantee that
+a replacement will ever succeed.
+Restart recovery after process interruption is distinguished
+from recovery after power loss, filesystem corruption, remote
+storage anomalies, or external manipulation of the directory.
+The proof contains no file or directory \texttt{fsync} and
+does not establish flushing order or crash durability.
+It also does not combine the sidecar and specialist artifacts
+into a transaction. A reader may recover the last sidecar
+snapshot without all related stage files matching that moment.
+The proof supplies neither a cross-run snapshot nor rollback
+of a stage or publication authorization.
+Within the stated scope, the induction and selection arguments
+establish all parts of Theorem~\ref{thm:visibility}.
+\end{enumerate}
+\end{proof}
+
+\section{Why direct truncation is insufficient}
+\label{sec:countermodel}
+\begin{counterexample}[A complete old snapshot can be lost]
+\label{cex:truncate}
+Let $P_0=b_0$ be a complete application snapshot.
+A writer opens the final name in truncating mode.
+After truncation and before a complete write, the final entry
+can contain $\epsilon$ or a proper prefix $p$ of the desired
+payload. In particular choose a cut immediately after truncation
+and interrupt the writer there. The final entry now holds
+$\epsilon\notin\Valid$ even though no complete publication
+occurred. Consequently a recovery lookup at that cut cannot
+recover $b_0$. A lock that serializes writers leaves this
+counterexample intact, since it has only one writer.
+\end{counterexample}
+
+\section{Local verification boundary}
+\label{sec:verification}
+Compare the pre-failure and post-failure bytes in the same run
+directory. Exercise failures in the staged write and replacement,
+and verify repeated publication and literal-name recovery.
+Successful local tests constrain the implementation observed in
+those tests. The independent reviewer should compare the source,
+test receipts, and compiled paper to the final candidate.
+File and directory flush behavior, cross-platform durability,
+and the integrity of remote mounts require evidence outside this
+companion.
+
+\begin{thebibliography}{9}
+\bibitem{python}
+Python Software Foundation, \textit{Python Standard Library},
+\texttt{os.replace} and \texttt{tempfile.TemporaryDirectory},
+Python 3 documentation.
+
+\bibitem{posix}
+The Open Group, \textit{POSIX.1-2024, System Interfaces},
+\texttt{rename}, including replacement visibility of the
+destination name within the filesystem assumptions.
+\end{thebibliography}
+
+\clearpage
+\section*{Changelog}
+\addcontentsline{toc}{section}{Changelog}
+\begin{table}[!htbp]
+\centering\small
+\caption{Revision history}
+\label{tab:changelog}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+Version & Date & Change \\
+\midrule
+2026.1.0.0 & 2026-11-20 & Introduced the single-run namespace model,
+trace proof, direct-write counterexample, and implementation audit. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\end{document}

@@ -82,7 +82,7 @@ def _parser_mutations() -> tuple[Mutation, ...]:
 
 
 def _coverage_mutations() -> tuple[Mutation, ...]:
-    """WHAT: Exercise the four repaired branch boundaries.
+    """WHAT: Exercise repaired branch and persistence boundaries.
 
     WHY: Literal coverage alone does not validate behavior.
     HOW: Force the opposite guard result and require an assertion failure.
@@ -107,6 +107,20 @@ def _coverage_mutations() -> tuple[Mutation, ...]:
             "runs.py",
             "if run.detail is None:",
             "if True:",
+            "tests/test_runs.py",
+        ),
+        Mutation(
+            "truncate-canonical-snapshot",
+            "runs.py",
+            "staged.write_text(snapshot,",
+            "path.write_text(snapshot,",
+            "tests/test_runs.py",
+        ),
+        Mutation(
+            "skip-snapshot-publication",
+            "runs.py",
+            "os.replace(staged, path)",
+            "pass",
             "tests/test_runs.py",
         ),
         Mutation(

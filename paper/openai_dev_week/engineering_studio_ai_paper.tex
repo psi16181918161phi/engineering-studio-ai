@@ -1,4 +1,4 @@
-% Version: 2026.1.0.0
+% Version: 2026.2.1.0
 % ============================================================================
 % Engineering Studio AI — Multi-Modal Multi-Agent Discipline Framework
 % Formal Model and Mathematical Proofs
@@ -5812,6 +5812,8 @@ $d_{13}$ & domain-specialists/systems & Boundary case (minimum population) still
 
 % ============================================================================
 \newpage
+\input{offline_ci_evidence.tex}
+
 \section*{Changelog}
 \label{sec:changelog}
 
@@ -5822,6 +5824,10 @@ $d_{13}$ & domain-specialists/systems & Boundary case (minimum population) still
 \toprule
 \textbf{Version} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
 \midrule
+2026.2.1.0 & 2026-11-20 & Hadrian Hu & Add a local CI evidence gate
+for the X Studio X expansion. Prove exact-candidate acceptance,
+stale-evidence isolation, and behavior under missing or conflicting
+check evidence. \\
 2026.2.0.0 & 2026-07-19 & Hadrian Hu & Milestone addendum appended:
 formalized governance-hardening instantiation with new definitions and
 proofs for (i) scoped-directory population completeness, (ii)

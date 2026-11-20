@@ -1,0 +1,823 @@
+% Version: 2026.1.0.0
+% WHAT: Formal companion for artifact-read scope in Engineering Studio AI.
+% WHY: Runtime artifact lookup needs a checkable, fail-closed read boundary.
+% HOW: Prove an exact-slot invariant under explicit namespace assumptions.
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,tabularx,ragged2e}
+\usepackage{enumitem}
+\usepackage[final]{microtype}
+\usepackage{fancyhdr,lastpage}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Exact-Slot Artifact Reads in Engineering Studio AI},
+  pdfsubject={Engineering Studio AI formal companion}
+}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Engineering Studio AI}
+\rhead{Exact-slot artifact reads}
+\cfoot{\thepage\ of \pageref{LastPage}}
+\setlength{\headheight}{15pt}
+\setlength{\emergencystretch}{2em}
+\setlist[enumerate]{leftmargin=*}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}[theorem]{Definition}
+\newcommand{\denied}{\bot}
+\newcommand{\regular}{\operatorname{regular}}
+\newcommand{\slot}{\operatorname{slot}}
+\newcommand{\resolve}{\operatorname{resolve}}
+\newcommand{\select}{\operatorname{select}}
+
+\title{Exact-Slot Artifact Reads in Engineering Studio AI\\
+\large A formal companion to the OpenAI Dev Week paper}
+\date{2026-11-20}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Engineering Studio exposes stage artifacts through JSON previews, single
+downloads, and run-level archives. These surfaces rely on a shared lookup
+that, at the examined baseline, checks run membership and file existence.
+Existence alone does not establish which declared slot a selector may
+read. This companion defines an exact-slot acceptance predicate and proves
+its namespace safety, local completeness, and finite trace composition.
+The model distinguishes grammar, registration, stage membership, canonical
+resolution, and regular-file observation. It assumes a trusted storage
+root and stable selection through open. Its conclusion is conditional
+path confinement. Multi-user authorization, physical file identity
+across names, content integrity, and attacker-controlled mutation require
+separate controls and evidence.
+\end{abstract}
+
+\section*{Key Words}
+Artifact isolation; namespace; canonical path; read boundary; audit;
+stable observation; proof of refinement.
+
+\section*{Executive Summary}
+A selectable name must first match the declared identifier grammar and the
+corresponding run and stage registries. Derive exactly one expected slot
+from validated components and the canonical configuration root. Admit a
+resolved path only if it equals that slot under the namespace comparison
+contract and a regular-file check succeeds. The transport keeps its
+existing missing-artifact behavior. Evaluation of an uploaded report or of
+a model response supplies no premises of the proof. Maintainers verify the
+namespace assumptions and independent reviewers bind proof, code, and local
+gate evidence to the candidate before accepting the claim.
+
+\section*{Key Findings}
+The predicate limits the selected pathname to one declared slot. It is
+locally complete for eligible, stable, readable slots under the explicit
+observation contract. A per-lookup proof composes over a finite trace
+without implying that an archive is a transaction or that two run records
+belong to distinct principals.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Artifact-read results, Part I. Hypotheses are summarized by their dependent result.}
+\begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}X l@{}}
+\toprule
+Case & Result and limit & Source \\
+\midrule
+Alphabet & One restricted component, subject to host name availability. & \ref{def:inputs} \\
+Run registration & Unknown labels are outside the lookup domain. & \ref{def:inputs} \\
+Declared stage & Membership precedes filesystem observation. & \ref{def:inputs} \\
+Root & Canonical configuration is trusted and fixed for the lookup. & \ref{def:namespace} \\
+Expected entry & Exactly four components below the root are prescribed. & \ref{def:namespace} \\
+Path aliases & A different canonical slot cannot satisfy equality. & \ref{thm:boundary} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\begin{table}[!htbp]
+\centering\small
+\caption{Artifact-read results, Part II. Hypotheses are summarized by their dependent result.}
+\begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}X l@{}}
+\toprule
+Case & Result and limit & Source \\
+\midrule
+Unavailable entry & No selected artifact is produced by a failed observation. & \ref{def:rule} \\
+File class & A directory is insufficient. Empty regular bytes can qualify. & \ref{thm:boundary} \\
+Case variants & Exact component equality can deny host-equivalent spellings. & \ref{thm:boundary} \\
+Handoff & Stable identity through open is a premise of byte selection. & \ref{thm:boundary} \\
+Finite trace & Every admitted request satisfies the same local invariant. & \ref{thm:boundary} \\
+Archive & Composition limits member names without an atomic ZIP guarantee. & \ref{thm:boundary} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\begin{table}[!htbp]
+\centering\small
+\caption{Symbols for the exact-slot artifact-read model}
+\begin{tabularx}{\linewidth}{@{}lX l@{}}
+\toprule
+Symbol & Domain and meaning & Source \\
+\midrule
+$\Sigma$ & Unicode scalar values in a decoded candidate name. & \ref{def:inputs} \\
+$A$ & Restricted ASCII alphabet for run labels. & \ref{def:inputs} \\
+$D$ & Finite set of registered run labels at admission. & \ref{def:inputs} \\
+$S$ & Finite set of declared workflow stages. & \ref{def:inputs} \\
+$x$ & Candidate run label, a finite string in $\Sigma^*$. & \ref{def:inputs} \\
+$y$ & Candidate stage label, a finite string in $\Sigma^*$. & \ref{def:inputs} \\
+$R$ & Canonical trusted directory path. & \ref{def:namespace} \\
+$E$ & The unique expected slot for the given pair. & \ref{def:namespace} \\
+$C$ & Canonical observation of the proposed entry. & \ref{def:namespace} \\
+$\equiv$ & Namespace equality on normalized absolute paths. & \ref{def:namespace} \\
+$\denied$ & A distinguished unavailable decision. & \ref{def:rule} \\
+$L_i$ & Selection for request $i$ in a finite trace. & \ref{thm:boundary} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\clearpage
+\tableofcontents
+\listoftables
+\clearpage
+
+\section{Scope and source}
+The baseline is Engineering Studio AI commit
+\nolinkurl{55efcd55a266a629b19ae4926038fdebe5fb0768}. In
+\texttt{RunStore.artifact\_path}, a registered run selects a candidate
+under the configured storage directory. At that revision the pathname
+is returned if it exists. The JSON preview and both download surfaces
+consume the same lookup~\cite{runtime}. The run snapshot companion~\cite{snapshot} studies a different
+operation, namely publication of \texttt{run.json}; its atomic visibility
+result does not establish confinement for artifact reads.
+The milestone considered here changes shared read selection only. It
+keeps transport schemas and recovery behavior outside the change.
+
+\section{Model and theorem}
+
+\begin{definition}[Inputs and declared names]
+\label{def:inputs}
+Let $\Sigma^*$ be the set of finite decoded input strings.
+Let $A\subset\Sigma$ consist exactly of the ASCII uppercase and
+lowercase letters, ASCII decimal digits, underscore, and hyphen.
+Let $A^+$ be the nonempty finite strings on $A$.
+Let $D\subseteq\Sigma^*$ be the finite run register at admission
+and $S\subseteq A^+$ the finite declared stage set.
+The pair $(x,y)\in\Sigma^*\times\Sigma^*$ is eligible when
+\begin{equation}
+\label{eq:eligible}
+x\in D\cap A^+,\qquad y\in S.
+\end{equation}
+Membership is tested on the actual values presented to the shared
+lookup. Storage portability additionally depends on the host.
+\end{definition}
+
+\begin{definition}[Canonical namespace and slot]
+\label{def:namespace}
+A path is modeled as a volume or root identifier followed by a
+finite sequence of components. Joining a simple component appends
+that component to the sequence, without normalizing away any prefix.
+Let $R$ be the canonical absolute path of the trusted storage root.
+For an eligible pair define the expected path by
+\begin{equation}
+\label{eq:slot}
+E=\slot_R(x,y)=R/x/\texttt{artifacts}/y/\texttt{output.md}.
+\end{equation}
+The slash here denotes typed component concatenation. The observation
+$\resolve(E)$ produces a normalized absolute path $C$ or an unavailable
+result $\denied$. A relative configured root is resolved before forming
+$E$. Unavailable root resolution also reports $\denied$.
+Write $C\equiv E$ for equality of the normalized absolute path component tuples,
+including its anchor and case-sensitive string components.
+This choice may be stricter than host lookup equality. A regular-file
+observation $\regular(C)$ is true only when the platform successfully
+classifies $C$ as a regular file.
+\end{definition}
+
+\begin{definition}[Selection rule]
+\label{def:rule}
+A lookup returns $L=\denied$ when any required observation is
+unavailable or any gate fails. Otherwise it returns the observed $C$.
+Equivalently,
+\begin{equation}
+\label{eq:rule}
+L=
+\begin{cases}
+C & \text{if \eqref{eq:eligible} holds and $R$ is available,}\\
+  & \quad \text{$C=\resolve(E)\ne\denied$, $C\equiv E$, and $\regular(C)$},\\
+\denied & \text{otherwise.}
+\end{cases}
+\end{equation}
+An admitted pathname is a certificate of selection under the
+hypotheses, subject to a later read succeeding. It does not
+contain the result bytes.
+\end{definition}
+
+\begin{theorem}[Exact-slot selection and finite composition]
+\label{thm:boundary}
+Assume the hypotheses below. For one request, if $L\ne\denied$ then
+\begin{equation}
+\label{eq:claim}
+x\in D\cap A^+,\qquad y\in S,\qquad L\equiv\slot_R(x,y).
+\end{equation}
+The selected entry is a regular file at admission. Any successful
+handoff read opens the file at that slot under the observation
+premise. Conversely, an eligible pair with an available root,
+equal resolved slot, and successful regular-file observation is
+admitted. In a finite trace, the implication holds for every
+admitted request using its own registry and observation cut.
+\end{theorem}
+
+\noindent\textbf{Proof type:} Direct by exhaustive cases, with finite
+induction for trace composition.
+
+\noindent\textbf{Hypotheses:}
+\begin{enumerate}[label=H\arabic*.,ref=\arabic*]
+\item\label{hyp:names} Inputs are decoded strings checked by exact
+grammar and exact registry membership before path construction.
+Declared stages and the two fixed suffix components join as simple
+components on the selected host.
+\item\label{hyp:root} $R$ is the canonical path of a trusted storage root.
+A configured alias is interpreted relative to that canonical root.
+The application controls the directory, and a successful path equality
+compares coherent volumes and exact component spellings.
+\item\label{hyp:io} Successful resolution and classification report
+facts about the same namespace observation. Missing entries, unusable
+names, and errors that are handled by the lookup never become positive
+classification or equality evidence.
+\item\label{hyp:stable} A successful handoff-open selects the file
+identified by the admitted observation, or fails. This premise excludes
+an identity swap between observation and open. The guarantee concerns
+the namespace slot and does not identify the sole name of an inode.
+\item\label{hyp:trace} Each request in the finite trace obeys
+H\ref{hyp:names}--H\ref{hyp:stable} for its own observations. Each
+transport reads only paths returned by the shared boundary.
+\end{enumerate}
+
+\noindent\textbf{Proof dependencies:}
+\begin{enumerate}
+\item Definitions~\ref{def:inputs}--\ref{def:rule} supply the typed
+domains, expected path function, and total decision predicate.
+\item Exact finite set membership and component concatenation support
+the single-request proof. H\ref{hyp:root} supplies the equality premise.
+\item H\ref{hyp:stable} connects selection to open. Induction on the
+number of processed requests lifts the local result to a finite trace.
+\end{enumerate}
+
+\begin{proof}
+We prove the local statement by cases over the first failing gate and
+the trace statement by induction on the prefix length $n$.
+
+\begin{enumerate}
+\item \textbf{Domain and outputs.}
+Fix the request label pair $(x,y)$ and the state in which its guards
+run. By Definition~\ref{def:inputs} both labels are strings, hence exact
+equality and membership in the finite sets are defined. No cardinal
+requirement on $D$ is needed. In particular, $D=\varnothing$ is a valid
+input state. Although $S$ is finite, its size places no upper bound on
+the lengths of the supplied strings. The lookup output is either a
+path or the distinguished value $\denied$; these alternatives are
+disjoint by their types. We use this distinction before comparing any
+paths. If $L=\denied$, \eqref{eq:claim} has a false antecedent.
+In that case the theorem makes no assertion that a directory, run,
+or stage is absent. Denial also covers failures to obtain sufficiently
+reliable observations. If $L\ne\denied$, the rule promises a path,
+not yet a descriptor or a byte string. In the cases below, the
+first failing gate prevents construction of a later positive result.
+
+\item \textbf{Disjoint exhaustion of the decisions.}
+Consider in order stage membership, run spelling, run registration,
+availability of root and candidate observations, canonical equality,
+and file classification. Each completed Boolean gate has an accepted
+or rejected value. Each unavailable observation maps to denial under
+H\ref{hyp:io}. Assign an execution to its first failure if there is
+one. An execution cannot have two different first failures because
+gate positions are totally ordered by their evaluation sequence.
+If no gate fails, all gates needed by \eqref{eq:rule} succeed. This
+gives the remaining case. The partition remains valid if the file
+classification is never reached on a mismatch: a skipped gate has no
+value used to overrule the earlier failure. In particular, a directory
+found during a denied lookup cannot become an artifact merely because
+another component of the request was valid. An infinite environment
+failure or a task that never returns is outside the model of completed
+lookups; the safety implication is conditional on an actual result.
+
+\item \textbf{Stage boundary.}
+Suppose the stage gate fails, so $y\notin S$. Under
+H\ref{hyp:names} the gate compares the complete input string against
+the fixed stage register. Thus a request can fail even if its run
+name is well-formed and registered. It can also fail for an otherwise
+existing file. The membership condition in \eqref{eq:eligible} does
+not become true from either fact. With $S=\varnothing$, this argument
+denies every request. For a singleton set, only the one declared label
+can reach later gates. If stage membership succeeds, $S\subseteq A^+$
+establishes that the accepted label is nonempty and uses only the
+restricted alphabet. The lookup does not infer membership from the
+existence of a directory, from output contents, from a substring, or
+from a stage label in a model response. Counting admissible stage
+labels therefore depends on the workflow declaration and not on the
+number of entries visible in the filesystem.
+
+\item \textbf{Run spelling.}
+Now assume $y\in S$. If $x$ is empty, then $x\notin A^+$ by the
+definition of positive word length. If it is nonempty but contains
+any symbol outside $A$, set membership also fails. These two
+conditions are exhaustive for failure of spelling. They cover distinct
+issues: accepting all-ASCII strings with no length check would
+admit the empty word, and accepting every nonempty decoded string
+would admit strings with structurally meaningful filesystem symbols.
+Conversely, if the length is positive and every character belongs to
+$A$, the lexical gate succeeds. This check is on the original decoded
+value presented to the lookup. It grants no additional normalization,
+Unicode folding, whitespace trimming, or second decoding operation.
+A string consisting solely of one allowed character is a legitimate
+grammar boundary. Its usability on a host requires separate evidence.
+The alphabet excludes volume punctuation, component separators, and
+dot components by direct inspection, including their use inside
+otherwise ordinary-looking labels. There is no assertion that a very
+long word names a valid host entry.
+
+\item \textbf{Run registration.}
+If the lexical gate succeeds but $x\notin D$, no expected slot is
+selected by the rule. Registration is an equality test on the stored
+keys, not a filesystem search. When a directory for that string is
+present but the register has no corresponding entry, the request is
+still denied. When a registered value fails the grammar, its mere
+presence in the register does not make the spelling valid. Thus the
+run labels eligible for filesystem checks are the intersection in
+\eqref{eq:eligible}. If $D$ is empty, the intersection is empty.
+If $D$ has one eligible member, at most that member proceeds.
+Multiple observations or multiple stored states for the same key do
+not create different strings in the set. This claim treats whichever
+registry snapshot the lookup actually observed as the authority.
+A later modification to the registry is outside this admission
+decision. It does not add a statement about freshness of an already
+issued descriptor.
+
+\item \textbf{Expected slot exists as a name.}
+Assume both run gates and the stage gate succeed. From the preceding
+cases, $x$ and $y$ are nonempty simple lexical components in the
+sense of H\ref{hyp:names}. The suffixes \texttt{artifacts} and
+\texttt{output.md} are fixed and usable components of the intended
+layout, rather than input. Concatenation in \eqref{eq:slot} gives
+the unique ordered tuple with prefix $R$ and those four suffix
+components. This uniqueness is syntactic. It does not assume an
+entry exists at the tuple, nor that the pathname has only one host
+spelling. If $R$ has no additional directory components beyond its
+volume anchor, suffix concatenation is still defined in the model.
+For nested roots or equal strings in distinct volumes, equality keeps
+the full root and all components. Thus the canonical-name test cannot
+be replaced by a string-prefix check that discards component or
+volume identity.
+
+\item \textbf{Available root and namespace stability.}
+If the configured root cannot be resolved to the modeled $R$,
+\eqref{eq:slot} cannot be used as a certificate and the request is
+denied. If the root is available, it is taken from trusted
+configuration, never from a run or stage label. In the model a
+configuration alias may designate the trusted directory, and the
+slots are calculated relative to its canonical form. This allows
+administrative placement of the storage root without treating an
+arbitrary per-run alias as configuration. The proof holds the choice
+fixed while evaluating a request. Later deployment changes to the
+working directory, configured root, or filesystem mount require a
+new observation. We assume that a successful canonical form denotes
+the actual trusted root and does not become a different root before
+the selected read. Without this premise a syntactically well-formed
+tuple alone could be relative to an untrusted namespace.
+
+\item \textbf{Unavailable candidate.}
+For a registered and well-formed pair under the available root,
+attempt the candidate observation within the namespace contract.
+If this returns $\denied$, the equality condition has no witness.
+A missing parent, unavailable volume, or handled I/O failure cannot
+supply a canonical path with positive regular-file evidence.
+Strict resolution is the chosen implementation contract.
+A missing component therefore denies selection at resolution.
+For comparison, under a non-strict resolver a partial normalization
+could instead reach the final type check. It would still be denied
+if the classification cannot return true. The two branches are distinct operationally but
+give the same no-selection result. A request with a host-reserved
+name illustrates why lexical spelling and name availability are
+separate. The alphabet does not decide host device names, path-length
+limits, permissions, or share availability. The model requires the
+platform to produce coherent absolute-path and regular-file evidence;
+a reserved name lacking this evidence cannot be admitted.
+
+\item \textbf{Equality contrast.}
+Suppose resolution produces an absolute path $C$. If $C\not\equiv E$,
+the failed equality suffices for denial, regardless of the type or
+contents of the resolved entry. This covers a resolved entry under
+another root, and also a resolved entry under the same root but at a
+different declared slot. The second case is the reason for checking
+exact slot equality instead of descendant membership alone.
+For paths in distinct volumes H\ref{hyp:root} prevents a false
+equality merely because remaining components have the same spelling.
+For paths in the same volume but with different effective components,
+the same premise denies equality. In particular, if an alias occurs
+at an intermediate component and canonicalization changes a
+significant component, the mismatch is visible without inspecting
+payload bytes. This argument uses a positive mismatch and does not
+claim that all filesystem redirections are detectable by path
+comparison.
+
+\item \textbf{Equality and alias limits.}
+If $C\equiv E$, the check compared the actual tuples of
+normalized components, including the anchor. Each component
+comparison is exact, including case. This comparison is
+intentionally stricter than name equality on a host that can
+look up several spellings of the same object.
+The registry also uses exact string membership. One spelling
+might therefore be registered while a second is not, even if
+the host accepts both spellings of an emitted pathname.
+A lexically valid case variant that resolves to a different
+tuple is denied deterministically. If the resolver preserves
+both different spellings as reported names, admitting both
+does not establish distinct physical ownership. Conversely, if
+the resolver canonicalizes both spellings to the same tuple,
+at most the one whose expected tuple is equal to it can satisfy
+the equality gate. Exact component equality is therefore a
+strengthening of the logical slot boundary, but the theorem
+does not infer a one-to-one map between admitted pathnames
+and physical objects. A deployment requiring such a map
+would need a separate storage invariant and evidence.
+
+\item \textbf{Entry classification.}
+Suppose all earlier gates succeeded. If $\regular(C)$ is not true,
+the final gate denies selection. A directory is not a regular file,
+even when its name ends with the expected text. Other nonregular
+filesystem types are also excluded by the classification premise.
+A permissions problem that yields no positive evidence cannot be
+treated as a regular-file observation. If the platform succeeds in
+classifying $C$ as regular, size is not considered in this model.
+In particular, an empty regular file satisfies this type condition;
+it is not equivalent to absence. A regular file with bytes that are
+not decodable as the expected text can pass this specific namespace
+gate. Payload validation, successful file reads, and successful
+transport encoding are separate predicates and require different
+error handling. Classifying one pathname also says nothing about
+other names for the same physical file.
+
+\item \textbf{Sound selection.}
+Consider the final member of the partition, where all gates succeed.
+The run spelling and registration gates give $x\in D\cap A^+$ by
+intersection introduction. Stage membership gives $y\in S$.
+The available root and eligible labels make \eqref{eq:slot} defined.
+The candidate observation gives $C=\resolve(E)\ne\denied$ and
+the equality gate gives $C\equiv E$.
+The classification gives $\regular(C)$.
+Using all conditions in \eqref{eq:rule}, we get $L=C$.
+Substitution into the canonical equality yields
+$L\equiv\slot_R(x,y)$. This is exactly \eqref{eq:claim}.
+We also get that the admitted entry is regular at the observation.
+The preceding branches all deny selection and hence add no exceptions
+to the implication. This proves the single-request selection
+property, including for a zero-byte eligible payload and any run
+whose declared stage set contains just its selected stage.
+
+\item \textbf{Completeness under the rule.}
+For the converse, assume an eligible pair, available root, available
+candidate with equal resolved slot, and a successful regular-file
+observation for that candidate. Eligibility entails membership in
+both run predicates and in $S$ by conjunction elimination.
+Thus none of the three input gates fail. The available root allows
+construction of the same $E$ from the fixed configuration.
+Availability and equality rule out both candidate failure and mismatch.
+The regular-file observation rules out the last kind of failure.
+The unique remaining partition member returns $C$ by
+\eqref{eq:rule}. This is completeness relative to the listed observations
+and depends on their consistent collection. It does not claim every
+registered run has every stage ready, or every relevant file is
+available, or every admitted request is authorized for the particular
+caller. A namespace state can satisfy the trust premises while no
+positive selection is possible because the store is still empty.
+
+\item \textbf{Read handoff.}
+Fix a positive selection $L=C$. By H\ref{hyp:stable}, a successful
+open during the intended transport handoff selects the same file
+as the admitted observation, or does not hand off a file at all.
+If open succeeds, combining this premise with \eqref{eq:claim}
+gives the read of the exact slot. If it fails, there is no successful
+read to which that conclusion applies. This reasoning is a
+conditional refinement, not a claim that obtaining a path pins a
+descriptor. An intervening identity replacement can break the
+premise even if the pathname strings at both times are equal.
+Conversely, an admitted open can continue to use a descriptor that
+already denotes the selected object; the proof need not assume
+that its bytes stay immutable afterward, beyond what is necessary
+for the statement about the selection itself. The present theorem
+does not quantify over partial reads or successful parse results.
+It is not a model of every system call of the transport.
+
+\item \textbf{Trace base and induction hypothesis.}
+Let $T$ be the finite number of completed requests. For each integer
+$n$ with $0\le n\le T$, let the prefix property be: every positive
+selection among the first $n$ results satisfies \eqref{eq:claim}
+using the observations for its own request, and every successful
+read in that prefix uses the corresponding selected slot.
+For $n=0$ there is no request index in the prefix, so this
+universal property holds by the empty-domain rule. No evidence
+about the presence of a root directory is entailed by the base case.
+If $T=0$, the base case is already the whole proof of trace
+composition. Otherwise, assume the prefix property for an arbitrary
+$n<T$. The next index $n+1$ is in the finite range.
+The $n$-prefix result is unchanged as a statement about past
+observations. It does not say that every old decision remains
+current after another lookup.
+
+\item \textbf{Trace induction step.}
+Apply H\ref{hyp:trace} to request $n+1$. Its local string labels and
+registry are now the fixed values of the single-request proof.
+If the request is denied, no positive selection is added. If it is
+admitted, the single-request soundness conclusion applies.
+If there is an associated successful handoff read, the handoff
+argument applies under the same request's observation contract.
+The trace prefix of length $n+1$ contains exactly the first $n$
+requests and that one next request. Combining the induction
+hypothesis with the established next case gives the property for
+length $n+1$. Both possibilities for its result were exhaustive.
+Induction on finite natural numbers proves the property up to
+$T$. It does not require requests to be probabilistically
+independent. It also does not imply an atomic joint snapshot when
+a consumer iterates over a sequence of successful selections.
+
+\item \textbf{Run-level enumeration.}
+For a run archive, suppose the caller enumerates declared stage
+labels and invokes the shared boundary on each one. Each iteration
+is one of the trace requests just proved safe. A denied lookup
+supplies no member for that iteration. A successful lookup selects
+only its own prescribed slot. If there are no eligible files, the
+model permits no included members. If the enumeration uses each
+member of $S$ once, the number of selected slots is at most
+$|S|$, including the zero and singleton cases. Repeated enumeration of
+the same stage can repeat a valid result and is not excluded by the
+read-boundary proof. Stable order and archive names can be preserved
+separately by keeping the existing stage ordering contract. The
+contents may however come from different observation cuts. In
+particular, tracking an earlier successful lookup does not make a
+later archive operation transactional or make rollback reconstruct
+the earlier file set.
+
+\item \textbf{Independence audit.}
+No lemma uses a model provider score, elapsed time, a fixed file
+size, or evidence about a particular project domain. Positive
+membership does not certify the competence of the producing agent.
+The proof needs no numerical probability bounds. It reasons about
+coherent namespace predicates and stable file identity at the
+handoff instead. The registration predicate is not an actor
+authorization policy: two distinct callers presenting the same
+eligible pair receive the same namespace decision under the same
+observations. Nor does the classification premise address hardlinks:
+a regular file at one authorized slot can have another physical name
+without violating any path equality. Mount mappings can create similar
+physical identity questions. Content provenance, integrity checks,
+ownership, and isolation of the storage writer can therefore strengthen
+a system without being consequences of \eqref{eq:claim}.
+The proof also imposes no progress guarantee on I/O that never completes.
+
+\item \textbf{Why weaker premises are insufficient.}
+For a formal contrast, take two distinct canonical slots $E$ and
+$F$ within the trusted root, with an observation for the expected
+entry that selects $F$ as a regular file. Existence and root descent
+are both true while equality $F\equiv E$ is false. A rule using only
+either weaker fact can admit a wrong slot in this model. For a
+different contrast, assume selection observes $E$ at one cut but
+a later open follows a different file identity. Even if a prior
+canonical equality was true, that earlier fact does not imply
+identity of the two opens. This model violates H\ref{hyp:stable}
+and shows why it cannot be removed. The examples are logical
+systems of observations, not claims about a production
+environment. The proof gives no recipe for making either state
+occur. A deployment allowing hostile namespace mutation needs
+a different, descriptor-level ownership argument.
+
+
+\item \textbf{Finite candidate and observation counts.}
+For an operational scope audit, write $D_A=D\cap A^+$.
+Construct the set of eligible request pairs
+$U=D_A\times S$. Finite product counting applies because these
+are finite sets, and for each distinct first coordinate the pairs
+with that coordinate form a disjoint subset indexed by $S$.
+Consequently
+\begin{equation}
+\label{eq:count}
+ |U|=|D_A|\,|S|.
+\end{equation}
+Either zero factor forces zero eligible pairs. If both factors
+are positive, there is at least one such pair, irrespective of
+whether it has any file. Now define the map from $U$ to
+equivalence classes of expected slots by applying
+\eqref{eq:slot} and taking the class for $\equiv$.
+Its image has cardinality at most $|U|$ by finite image
+counting. This bound counts logical candidates, not inode
+identifiers, directory entries, open handles, or users.
+If the slot map is injective under host equality, each eligible
+pair has a different class, so the image cardinality is
+exactly \eqref{eq:count}. If any two distinct pairs map to
+the same class, a count using distinct names can exceed the
+number of slot classes. That possibility is permitted by
+H\ref{hyp:root}; a deployment requiring unique physical
+ownership would need a stronger invariant. A single request
+returns at most one pathname because $R$, $x$, $y$, the suffix,
+and $\resolve$ fix the observation used in the rule.
+The lookup does not recursively enumerate the filesystem.
+This count offers no bound for a filesystem's own resolution
+effort, or for read time once a path is selected.
+
+\item \textbf{Declared stage projection and audit identity.}
+Let $(x_i,y_i)$, $1\le i\le T$, be the labels actually checked
+in the finite trace, and let $D_i$ and $R_i$ denote the
+registration snapshot and configured canonical root for that
+request. Define the admitted indices by
+\begin{equation}
+\label{eq:indices}
+ I=\{i\in\{1,\ldots,T\}:L_i\ne\denied\}.
+\end{equation}
+For every $i\in I$, define its audit row to contain the index,
+the evaluated run and stage, and the selected slot class.
+This is a function on $I$ because each index identifies one
+lookup decision and each positive observation names one class.
+The theorem entails the row's membership in
+$D_i\cap A^+$ and $S$, and entails its equality statement
+against $\slot_{R_i}(x_i,y_i)$.
+Conversely, a row that records only the class does not
+identify the input pair when the slot map is noninjective.
+A row that records just the pair does not identify the
+slot across configuration-root changes.
+These conclusions use only the existence or absence of
+preimages under the relevant projections.
+For zero admissions, $I=\varnothing$ and the audit row map
+has empty domain. No success should be inferred from an empty
+audit table. Repeated requests at different indices give distinct
+observations even when their admitted class is the same.
+The trace model supplies a reason to bind audit evidence to
+observations and candidate versions without requiring the
+application to emit raw paths or sensitive artifact bytes.
+
+\item \textbf{Temporal comparison of distinct decisions.}
+Take two completed requests with identical evaluated labels and
+run registration. Suppose that the canonical root and the
+resolved path are equivalent under $\equiv$ across the two
+observations, and both classify the slot as regular.
+Applying completeness to each request produces two admissions.
+By the transitivity of path equivalence, they select the same
+logical class of slot. This conclusion does not establish
+that the corresponding physical object or bytes were the same:
+H\ref{hyp:stable} speaks within a request, and has no relation
+between the two observations.
+Now hold labels, register, and root fixed but change the
+availability of the file between requests.
+A regular-file observation at one cut and an unavailable
+observation at the other can produce one admission and one denial.
+Neither result contradicts the trace statement because the
+proof uses a different observation for each decision.
+Thus caching a positive result indefinitely would not refine
+the model unless the required observation stays valid.
+For the opposite ordering, a denied lookup followed by a
+regular-file observation allows the second decision to admit.
+It does not mean the denial was incorrect when issued.
+Availability is a property of the request and namespace state
+together; stability of a string pair alone does not extend it.
+
+\item \textbf{Scope of monotonicity.}
+Suppose two registrations satisfy $D_1\subseteq D_2$.
+If $x\in D_1\cap A^+$, then $x\in D_2\cap A^+$, by the
+definition of subset and intersection. With all other
+observations held fixed and coherent, every earlier
+admission therefore remains admitted under the enlarged
+register. The same implication holds when the declared
+stage set is extended and an old stage remains unchanged.
+In each argument, \eqref{eq:rule} justifies reusing the
+same root, candidate, equality, and type witnesses.
+This is a restricted monotonicity result about sets
+with fixed filesystem observations. A namespace change
+can remove or invalidate an observation regardless of
+registry inclusion. Also, shrinking a register can
+cause rejection without changing any bytes.
+If a release is reverted, the old code need not compute
+the enlarged or strengthened predicate. No time-travel
+claim follows: a previously successful return remains
+part of the completed trace, even after policy changes.
+Rollback planning therefore needs a distinct release
+identity and an explicit statement about which earlier
+read decisions cannot be compensated.
+
+\item \textbf{Why a guard is needed at the shared boundary.}
+The model has no premise that all callers use the same
+frontend. Instead, H\ref{hyp:trace} requires each consumer
+to obtain its read path through the shared rule. Consider
+a family of consumer functions $f_j$ indexed by $j\in J$,
+where each function's domain is a completed selection
+and the accompanying request context.
+If a consumer receives $\denied$, it has no selected
+path to open; its response policy can map the result to
+an existing unavailable case or omit a collection member.
+If it receives a path, the assumption on consumers
+requires any successful selected open to use that path.
+For each $j$, the single-request result therefore applies
+independently of the presentation of the output.
+If $J$ is empty, this universal statement is vacuous.
+If an additional consumer independently constructs a
+different path, the hypothesis no longer holds for that
+consumer and the theorem supplies no safety conclusion.
+A bounded review can check the three concrete call sites
+even without making any promise about future tools.
+This argument separates a single library boundary from
+the transport contract: identical unavailable outcomes
+can intentionally hide the exact failed predicate.
+
+\item \textbf{Comparison of expected and observed spellings.}
+For clarity, suppose volume and normalized component representation
+are compared by the same exact tuple operation for both paths.
+For a given request the expected tuple has length $m+4$ when
+$m$ counts the root components in the chosen representation.
+The tuple equality test has only two cases. If the lengths
+differ, the tuples cannot be equal, regardless of the agreement
+of their shorter prefix. If the lengths agree, equality requires
+pointwise equality at every index. In this case an unequal
+volume counts as a differing anchor in the normalized
+representation; it cannot be hidden in the suffix.
+Likewise one differing run spelling, suffix literal, or stage
+spelling makes the equality false. A match on every index
+constructs the positive witness. This finite comparison does not
+rely on a case-folding relation. Host spellings that compare
+equal under a separate case-folding rule do not satisfy the test
+unless these exact components match. Names that are lexically
+distinct at an index can still alias an object below the
+comparison layer. In that event the theorem remains a statement
+about exact canonical observations and their selected names.
+No filesystem case policy has to be modified to apply the check.
+For the degenerate root representation with no trailing directory
+components, the four appended components still exist and volume
+comparison is still part of the full path comparison.
+Thus the exact check does not reduce to checking just the
+basename, final suffix, or the first shared path component.
+
+\item \textbf{Auditor checklist and limits.}
+A reproducibility record should identify the exact source revision,
+the model version, and the expected stage sequence. Check that the
+serialized request values and stage allowlist at the central lookup
+are the actual inputs to the grammar and membership predicates.
+Check that root canonicalization precedes slot construction and
+that equality and regular-file checks gate every positive return.
+Check that preview, single download, and archive consumers obtain
+their selected path only through that boundary. Confirm that
+rejection uses the existing missing-artifact path and does not leak
+storage locations. Report observations of unavailable aliases and
+platform features distinctly from clean tests. Verify that no
+directory or storage protocol under review invalidates
+H\ref{hyp:root} or H\ref{hyp:stable}. Record the test and resource
+bounds separately from the model: finite trace composition by itself
+proves neither bounded response time nor storage consumption.
+Independent review and local checks can verify a candidate against
+these obligations but cannot infer untested platform assumptions.
+\qedhere
+\end{enumerate}
+\end{proof}
+
+\section{Refinement and regression obligations}
+\label{sec:refinement}
+The inspectable refinement uses strict canonical resolution and exact comparison of the path component tuples. It is one defensive gate in
+\texttt{RunStore.artifact\_path}. Keep the established run registration
+check and stage vocabulary, and compare the candidate's canonical
+observation with its expected absolute slot. A returned canonical
+path denotes the same configured slot as the ordinary output layout.
+An I/O error later in a transport read is not translated by the lookup. File type and handled lookup I/O failures must be tested along with valid
+selection. Verify ordinary ready and missing artifacts, rejected
+selectors, disallowed or redirected slots, files in distinct
+known stages, and transport responses that depend on selection.
+This document makes a conditional safety claim about one namespace
+decision. The actual platform evidence must record which tests use
+real temporary paths, which simulate filesystem errors, and which
+cannot exercise alias behavior because of host privileges. Retain
+local source and dependency scanning results with the exact revision.
+An unavailable or stale advisory source cannot support an assertion
+that a dependency has no known advisory. The release record should
+bind the proof, regression evidence, and prior accepted revision so
+the source change can be reverted without silently rewriting run
+state or claiming that earlier disclosures can be undone.
+
+\begin{thebibliography}{9}
+\bibitem{runtime}
+Engineering Studio AI source at commit
+\nolinkurl{55efcd55a266a629b19ae4926038fdebe5fb0768}.
+See \texttt{src/engineering\_studio/runs.py} and the run and
+download API modules for the observed lookup and consumers.
+\bibitem{snapshot}
+Engineering Studio AI, \textit{Atomic Publication of Engineering
+Studio Run Snapshots}, OpenAI Dev Week companion, 2026.
+This companion supplies the distinct write-visibility model for
+the run history sidecar.
+\end{thebibliography}
+
+\clearpage
+\section*{Changelog}
+\addcontentsline{toc}{section}{Changelog}
+\begin{table}[!htbp]
+\centering\small
+\caption{Revision history}
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+Version & Date & Change \\
+\midrule
+2026.1.0.0 & 2026-11-20 & Introduced exact-slot read selection, limits
+of namespace evidence, and finite composition across artifact consumers. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\end{document}

@@ -86,6 +86,31 @@ def test_download_artifact_404_when_not_ready(client: TestClient) -> None:
     assert res.status_code == 404
 
 
+def test_artifact_routes_reject_disk_file_for_unlisted_stage(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """WHAT: Keep unlisted disk artifacts out of every read surface.
+
+    WHY: Preview and attachment must enforce the same stage boundary as ZIP.
+    HOW: Add a benign unlisted fixture after a real test run goes terminal.
+    """
+    run_id = client.post("/api/runs", json={"product_brief": "brief"}).json()["run_id"]
+    assert _wait_for_terminal(client, run_id)["status"] == "done"
+    unlisted = tmp_path / run_id / "artifacts" / "unlisted" / "output.md"
+    unlisted.parent.mkdir(parents=True)
+    unlisted.write_text("fixture only", encoding="utf-8")
+
+    for suffix in ("", "/download"):
+        response = client.get(f"/api/runs/{run_id}/artifacts/unlisted{suffix}")
+        assert response.status_code == 404
+        assert response.json() == {"detail": "artifact not ready"}
+
+    response = client.get(f"/api/runs/{run_id}/download")
+    assert response.status_code == 200
+    with zipfile.ZipFile(BytesIO(response.content)) as archive:
+        assert archive.namelist() == ["research-output.md"]
+
+
 def test_download_all_returns_zip_with_ready_artifacts(client: TestClient) -> None:
     run_id = client.post("/api/runs", json={"product_brief": "brief"}).json()["run_id"]
     _wait_for_terminal(client, run_id)

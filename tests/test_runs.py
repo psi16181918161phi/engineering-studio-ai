@@ -133,6 +133,113 @@ def test_artifact_path_resolves_for_a_known_run(monkeypatch, tmp_path) -> None:
     assert store.artifact_path(run_id, "business") is None
 
 
+def _recover_artifact_slot(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, run_id: str, stage: str
+) -> tuple[runs_module.RunStore, Path]:
+    """WHAT: Seed a recovered run and its artifact location.
+
+    WHY: Exercise the lookup without asynchronous workers or model I/O.
+    HOW: Restore a minimal run snapshot and return an isolated artifact path.
+    """
+    monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
+    run_path = tmp_path / run_id
+    artifact_path = run_path / "artifacts" / stage / "output.md"
+    artifact_path.parent.mkdir(parents=True)
+    (run_path / "run.json").write_text(json.dumps({"run_id": run_id}), encoding="utf-8")
+    store = runs_module.RunStore()
+    store.load_from_disk()
+    assert store.get(run_id) is not None
+    return store, artifact_path
+
+
+@pytest.mark.parametrize(
+    ("run_id", "stage"),
+    [
+        ("recovered-run", "unlisted"),
+        ("legacy run", "research"),
+    ],
+)
+def test_artifact_path_rejects_selectors_outside_the_declared_domain(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, run_id: str, stage: str
+) -> None:
+    """WHAT: Reject unlisted stages and unsupported recovered run IDs.
+
+    WHY: Registration and disk presence alone do not admit an artifact slot.
+    HOW: Place benign text in the fixture slot and verify lookup rejects it.
+    """
+    store, artifact_path = _recover_artifact_slot(monkeypatch, tmp_path, run_id, stage)
+    artifact_path.write_text("fixture only", encoding="utf-8")
+
+    assert store.artifact_path(run_id, stage) is None
+
+
+def test_artifact_path_rejects_directory_at_expected_slot(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Reject a directory in the artifact slot.
+
+    WHY: Existence does not establish the expected regular-file type.
+    HOW: Create the directory and confirm the same slot admits a regular file.
+    """
+    store, artifact_path = _recover_artifact_slot(monkeypatch, tmp_path, "recovered", "research")
+    artifact_path.mkdir()
+
+    assert store.artifact_path("recovered", "research") is None
+
+    artifact_path.rmdir()
+    artifact_path.write_text("fixture only", encoding="utf-8")
+    assert store.artifact_path("recovered", "research") == artifact_path.resolve(strict=True)
+
+
+def test_artifact_path_rejects_resolution_to_a_different_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Reject resolution outside the exact file slot.
+
+    WHY: A file can be under the same root and still belong to another slot.
+    HOW: Model the alias with a resolver double, avoiding link privileges.
+    """
+    store, artifact_path = _recover_artifact_slot(monkeypatch, tmp_path, "recovered", "research")
+    artifact_path.write_text("fixture only", encoding="utf-8")
+    sibling = artifact_path.with_name("other.md")
+    sibling.write_text("separate fixture", encoding="utf-8")
+    expected = artifact_path.resolve(strict=True)
+    target = sibling.resolve(strict=True)
+    original_resolve = Path.resolve
+
+    def resolve(path: Path, strict: bool = False) -> Path:
+        """Return the simulated target only for the expected fixture slot."""
+        return target if path == expected else original_resolve(path, strict=strict)
+
+    monkeypatch.setattr(Path, "resolve", resolve)
+
+    assert store.artifact_path("recovered", "research") is None
+
+
+def test_artifact_path_rejects_resolution_io_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Map lookup I/O errors to no artifact.
+
+    WHY: A resolution failure is not evidence of a readable file.
+    HOW: Inject a permission error only for the registered fixture slot.
+    """
+    store, artifact_path = _recover_artifact_slot(monkeypatch, tmp_path, "recovered", "research")
+    artifact_path.write_text("fixture only", encoding="utf-8")
+    expected = artifact_path.resolve(strict=True)
+    original_resolve = Path.resolve
+
+    def resolve(path: Path, strict: bool = False) -> Path:
+        """Raise an injected permission error for one synthetic artifact."""
+        if path == expected:
+            raise PermissionError("injected artifact lookup failure")
+        return original_resolve(path, strict=strict)
+
+    monkeypatch.setattr(Path, "resolve", resolve)
+
+    assert store.artifact_path("recovered", "research") is None
+
+
 def _fake_pipeline_raises_model_unavailable(
     product_brief: str,
     artifacts_root: Path,

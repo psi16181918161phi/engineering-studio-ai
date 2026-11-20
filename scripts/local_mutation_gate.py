@@ -119,6 +119,44 @@ def _coverage_mutations() -> tuple[Mutation, ...]:
     )
 
 
+def _workflow_mutations() -> tuple[Mutation, ...]:
+    """WHAT: Check the planner and executor boundaries under injected faults.
+
+    WHY: Validate dependency enforcement and exact artifact visibility.
+    HOW: Inject one graph or dispatch fault and run its focused local oracle.
+    """
+    return (
+        Mutation(
+            "accept-unresolved-artifact",
+            "agents/workflow.py",
+            "if unresolved:",
+            "if False:",
+            "tests/test_workflow.py",
+        ),
+        Mutation(
+            "accept-duplicate-stage",
+            "agents/workflow.py",
+            "if stage.stage_id in seen:",
+            "if False:",
+            "tests/test_workflow.py",
+        ),
+        Mutation(
+            "reverse-artifact-order",
+            "agents/orchestrator.py",
+            "for upstream_id in batch.upstream)",
+            "for upstream_id in reversed(batch.upstream))",
+            "tests/test_orchestrator.py",
+        ),
+        Mutation(
+            "reread-artifacts",
+            "agents/orchestrator.py",
+            "if upstream_id not in artifact_text:",
+            "if True:",
+            "tests/test_orchestrator.py",
+        ),
+    )
+
+
 _WORKER = """
 import importlib.machinery
 import os
@@ -250,7 +288,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
-    mutants = _parser_mutations() + _coverage_mutations()
+    mutants = _parser_mutations() + _coverage_mutations() + _workflow_mutations()
     baseline_tests = sorted({mutation.tests for mutation in mutants})
     with tempfile.TemporaryDirectory(prefix="studio-mutations-") as scratch:
         root = Path(scratch)

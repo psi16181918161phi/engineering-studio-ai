@@ -8,6 +8,7 @@ business sequencing logic runs, but no HTTP request is made.
 
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -139,6 +140,104 @@ def test_run_pipeline_reports_lifecycle_events_in_stage_order(
         statuses_by_stage.setdefault(stage, []).append(status)
     for stage, statuses in statuses_by_stage.items():
         assert statuses == ["running", "done"], f"{stage} had unexpected transitions: {statuses}"
+
+
+def test_workflow_preserves_full_prompts_artifact_order_and_barriers(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Check the executor's complete prompt and lifecycle contract.
+    WHY: Reordering, skipping empty artifacts, or reading sibling artifacts
+    early would change the prompts or observable run progress.
+    HOW: Record every input and artifact read with a deterministic fake agent,
+    then compare the full payload and events against independent expectations.
+    """
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+
+    waves = (
+        ("research",),
+        ("mechanical", "electrical", "firmware", "simulation"),
+        ("business",),
+        ("reviewer", "challenge", "exploratory_qa"),
+        ("validator",),
+        ("quality_gate",),
+    )
+    stage_order = tuple(stage for wave in waves for stage in wave)
+    content = {stage: f"artifact:: {stage}\n" for stage in stage_order}
+    content["electrical"] = ""
+    prompts: dict[str, str] = {}
+    read_count: Counter[str] = Counter()
+    original_read_text = Path.read_text
+
+    def _track_reads(
+        path: Path,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
+    ) -> str:
+        """WHAT: Count artifact reads and pass through all reads.
+        WHY: Empty artifacts should be cached just like nonempty artifacts.
+        HOW: Record only temporary stage artifacts and delegate to Path.
+        """
+        if path.parent.parent == tmp_path and path.name == "output.md":
+            read_count[path.parent.name] += 1
+        return original_read_text(path, encoding=encoding, errors=errors, newline=newline)
+
+    class _CaptureAgent(_FakeAgent):
+        """WHAT: Emit distinct artifacts and record full upstream prompts.
+        WHY: Truncated echoes cannot detect a missing suffix or separator.
+        HOW: Write known text by stage and save the complete prompt.
+        """
+
+        def run(self, system_prompt: str, user_prompt: str) -> Path:
+            """WHAT: Capture an input and publish its stage artifact.
+            WHY: Exercise genuine file reads and exact artifact concatenation.
+            HOW: Record the input and write the predetermined payload.
+            """
+            prompts[self.discipline] = user_prompt
+            artifact = self.artifacts_root / self.discipline / "output.md"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(content[self.discipline], encoding="utf-8")
+            return artifact
+
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _CaptureAgent)
+    monkeypatch.setattr(Path, "read_text", _track_reads)
+    events: list[tuple[str, str, str | None]] = []
+    brief = "A stable fixture product brief"
+
+    outputs = orchestrator.run_pipeline(brief, tmp_path, on_event=lambda *args: events.append(args))
+
+    disciplines = "\n\n".join(content[stage] for stage in waves[1])
+    package = f"{disciplines}\n\n{content['business']}"
+    reviewed = package + "\n\n" + "\n\n".join(content[stage] for stage in waves[3])
+    assert prompts == {
+        "research": brief,
+        **dict.fromkeys(waves[1], content["research"]),
+        "business": disciplines,
+        **dict.fromkeys(waves[3], package),
+        "validator": reviewed,
+        "quality_gate": f"{reviewed}\n\n{content['validator']}",
+    }
+    assert tuple(outputs) == stage_order
+    assert read_count == Counter(dict.fromkeys(stage_order[:-1], 1))
+    offset = 0
+    for wave in waves:
+        span = events[offset : offset + 2 * len(wave)]
+        assert set(span) == {
+            event
+            for stage in wave
+            for event in (
+                (stage, "running", None),
+                (stage, "done", str(outputs[stage])),
+            )
+        }
+        for stage in wave:
+            assert span.index((stage, "running", None)) < span.index(
+                (stage, "done", str(outputs[stage]))
+            )
+        offset += len(span)
+    assert offset == len(events)
 
 
 def test_run_pipeline_emits_error_event_and_reraises_on_specialist_failure(

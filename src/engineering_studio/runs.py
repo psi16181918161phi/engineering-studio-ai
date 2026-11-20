@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import threading
 import time
 import uuid
@@ -28,6 +29,7 @@ from engineering_studio.agents.orchestrator import STAGE_MODEL_ENV_VAR, STAGE_OR
 from engineering_studio.fireworks_client import ModelUnavailableError
 
 _LOGGER = logging.getLogger("engineering_studio")
+_RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9_-]+")
 
 # WHAT: Swap in the deterministic, no-network fake pipeline when explicitly
 # opted into via ENGINEERING_STUDIO_FAKE_PIPELINE=1.
@@ -147,18 +149,27 @@ class RunStore:
             return run.to_dict() if run else None
 
     def artifact_path(self, run_id: str, stage: str) -> Path | None:
-        """WHAT: Resolves a stage's artifact file if the run exists and it
-        has been written.
+        """WHAT: Locate a declared stage's regular artifact file.
 
-        RETURNS:
-            Path | None: The output.md path, or None if the run or file
-                does not exist.
+        WHY: Preview and download must address only the registered run's
+        exact slot in the workflow's stage catalog.
+        HOW: Validate both selectors, anchor at the configured root, and
+        compare the resolved slot component by component. Unavailable
+        lookups return None. The namespace must stay stable through reading.
         """
+        if stage not in STAGE_ORDER or _RUN_ID_PATTERN.fullmatch(run_id) is None:
+            return None
         with self._lock:
             if run_id not in self._runs:
                 return None
-        candidate = RUNS_ROOT / run_id / "artifacts" / stage / "output.md"
-        return candidate if candidate.exists() else None
+        try:
+            root = RUNS_ROOT.resolve(strict=True)
+            candidate = root / run_id / "artifacts" / stage / "output.md"
+            if candidate.resolve(strict=True).parts != candidate.parts:
+                return None
+            return candidate if candidate.is_file() else None
+        except OSError:
+            return None
 
     def start_run(self, product_brief: str) -> str:
         """WHAT: Registers a new run and launches it on a background thread.

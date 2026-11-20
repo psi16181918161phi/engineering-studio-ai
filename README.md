@@ -145,6 +145,28 @@ python demo/playwright_demo_script.py            # captures screenshots + video 
 See [docs/PLAYWRIGHT_INTEGRATION_PLAN.md](docs/PLAYWRIGHT_INTEGRATION_PLAN.md)
 for the full design (Mode A live-demo vs. Mode B CI-safe-mocked distinction).
 
+### Local CI
+
+Run the coverage, browser, and mutation gates from the repository root.
+
+```powershell
+python -m pytest --cov-branch
+# Optional when using installed Chrome in place of Playwright's bundled Chromium.
+$env:STUDIO_E2E_BROWSER_CHANNEL = "chrome"
+python -m pytest -o addopts= tests/e2e
+python scripts/local_mutation_gate.py --report .codex/evidence/mutation.json
+```
+
+Browser tests start a loopback server with the fake pipeline and a fresh
+run-history directory for each test. Local CI uses preinstalled dependencies.
+The mutation gate uses an offline, dependency-free injector plus pytest. It
+requires every declared parser and branch-regression mutant to be killed.
+It reports the baseline, mutation operators, source hashes, and killing tests.
+This rollout scope excludes unlisted modules, operators, and equivalent mutants
+and does not provide a repository-wide mutation score. The scope is defined
+by the two mutation catalogs in the script. A surviving mutant, stale anchor,
+test setup error, timeout, or missing result blocks the gate.
+
 ## Repository layout
 
 | Path | Purpose |

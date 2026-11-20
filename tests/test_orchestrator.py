@@ -91,9 +91,13 @@ def test_run_pipeline_review_stages_see_same_upstream_and_validator_sees_all(
 
     outputs = orchestrator.run_pipeline("build a small survey drone", tmp_path)
 
-    combined_with_business = "\n\n".join(
-        outputs[d].read_text(encoding="utf-8") for d in orchestrator.PARALLEL_DISCIPLINES
-    ) + "\n\n" + outputs["business"].read_text(encoding="utf-8")
+    combined_with_business = (
+        "\n\n".join(
+            outputs[d].read_text(encoding="utf-8") for d in orchestrator.PARALLEL_DISCIPLINES
+        )
+        + "\n\n"
+        + outputs["business"].read_text(encoding="utf-8")
+    )
 
     # _FakeAgent.run() echoes f"{discipline}: {user_prompt[:20]}" — every
     # REVIEW_STAGES member must have been called with the *same* upstream
@@ -192,6 +196,54 @@ def test_run_pipeline_emits_error_when_task_spec_lookup_fails(
         "research must transition running -> error, never stay stuck at running"
     )
     assert "docs/task-specs.md not found" in (research_events[-1][2] or "")
+
+
+def test_parallel_failures_preserve_first_error_and_report_both_stages(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """WHAT: Confirm the parallel join reports both failures and raises the first.
+
+    WHY: A sibling failure must not replace the selected error or be abandoned.
+    HOW: Fail two specialists and compare error events without assuming their timing.
+    """
+    monkeypatch.setenv("FIREWORKS_MODEL_RESEARCH", "accounts/fireworks/models/research")
+    monkeypatch.setenv("FIREWORKS_MODEL_SPECIALIST", "accounts/fireworks/models/specialist")
+    monkeypatch.setenv("FIREWORKS_BASE_URL", "https://example.invalid")
+    first = RuntimeError("mechanical failure")
+    second = RuntimeError("electrical failure")
+    failures = {"mechanical": first, "electrical": second}
+
+    class _FailingAgent(_FakeAgent):
+        """WHAT: Simulate two independent specialist failures.
+
+        WHY: Exercise the orchestrator's collection of more than one error.
+        HOW: Raise the stage's configured error or delegate to the offline fake.
+        """
+
+        def run(self, system_prompt: str, user_prompt: str) -> Path:
+            """WHAT: Fail a selected stage or write its usual fake artifact.
+
+            WHY: Isolate the failure to the parallel specialist group.
+            HOW: Look up an exception by discipline before invoking the fake.
+            """
+            error = failures.get(self.discipline)
+            if error is not None:
+                raise error
+            return super().run(system_prompt, user_prompt)
+
+    monkeypatch.setattr(orchestrator, "SpecialistAgent", _FailingAgent)
+    events: list[tuple[str, str, str | None]] = []
+
+    with pytest.raises(RuntimeError) as raised:
+        orchestrator.run_pipeline(
+            "build a small survey drone", tmp_path, on_event=lambda *args: events.append(args)
+        )
+
+    assert raised.value is first
+    assert {(stage, detail) for stage, status, detail in events if status == "error"} == {
+        ("mechanical", str(first)),
+        ("electrical", str(second)),
+    }
 
 
 def test_run_pipeline_marks_all_downstream_stages_error_when_specialist_client_unavailable(

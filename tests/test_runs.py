@@ -16,6 +16,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 import engineering_studio.runs as runs_module
 from engineering_studio.fireworks_client import ModelUnavailableError
 
@@ -36,7 +38,9 @@ def _fake_pipeline(
     return {"research": Path(artifacts_root) / "research" / "output.md"}
 
 
-def _wait_for_terminal(store: runs_module.RunStore, run_id: str, timeout: float = 2.0) -> dict[str, Any]:
+def _wait_for_terminal(
+    store: runs_module.RunStore, run_id: str, timeout: float = 2.0
+) -> dict[str, Any]:
     deadline = time.time() + timeout
     state = store.get(run_id)
     while state is not None and state["status"] not in {"done", "error"} and time.time() < deadline:
@@ -237,7 +241,15 @@ def test_load_from_disk_rehydrates_a_completed_run(monkeypatch, tmp_path) -> Non
     assert "20260101-000000-abcd1234" in listed_ids
 
 
-def test_load_from_disk_marks_interrupted_run_as_error(monkeypatch, tmp_path) -> None:
+@pytest.mark.parametrize("detail", [None, "worker already reported an error"])
+def test_load_from_disk_marks_interrupted_run_as_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, detail: str | None
+) -> None:
+    """WHAT: Recover interrupted runs with their diagnostic detail intact.
+
+    WHY: The restart fallback must not erase information captured before shutdown.
+    HOW: Exercise rehydration with and without a preexisting diagnostic.
+    """
     monkeypatch.setattr(runs_module, "RUNS_ROOT", tmp_path)
     run_dir = tmp_path / "20260101-000000-interrupted"
     run_dir.mkdir(parents=True)
@@ -247,6 +259,7 @@ def test_load_from_disk_marks_interrupted_run_as_error(monkeypatch, tmp_path) ->
                 "run_id": "20260101-000000-interrupted",
                 "product_brief": "a brief cut short",
                 "status": "running",
+                **({"detail": detail} if detail is not None else {}),
                 "created_at": 1234.0,
                 "stages": {
                     "research": {"status": "done", "detail": "ok", "updated_at": 1234.0},
@@ -267,11 +280,10 @@ def test_load_from_disk_marks_interrupted_run_as_error(monkeypatch, tmp_path) ->
     assert state["stages"]["research"]["status"] == "done"
     assert state["stages"]["mechanical"]["status"] == "error"
     assert "restart" in state["stages"]["mechanical"]["detail"]
-    # WHAT: The persisted run.json had no top-level "detail" (it predates
-    # this field / was never set), so the interrupted-on-restart fallback
-    # message must be filled in here too — a run-level error must always
-    # have *some* human-readable explanation, never a bare None.
-    assert "restart" in (state["detail"] or "")
+    if detail is None:
+        assert "restart" in (state["detail"] or "")
+    else:
+        assert state["detail"] == detail
 
 
 def test_load_from_disk_preserves_persisted_run_level_detail(monkeypatch, tmp_path) -> None:
@@ -290,7 +302,9 @@ def test_load_from_disk_preserves_persisted_run_level_detail(monkeypatch, tmp_pa
                 "status": "error",
                 "detail": "docs/task-specs.md not found (slug='research-problem-analysis-pass')",
                 "created_at": 1234.0,
-                "stages": {"research": {"status": "error", "detail": "same reason", "updated_at": 1234.0}},
+                "stages": {
+                    "research": {"status": "error", "detail": "same reason", "updated_at": 1234.0}
+                },
                 "models": {},
             }
         ),

@@ -66,8 +66,8 @@ DEMO_DIR = Path(__file__).resolve().parent
 if str(DEMO_DIR) not in sys.path:  # pragma: no cover - import path bootstrap
     sys.path.insert(0, str(DEMO_DIR))
 
-from playwright_demo_script import _slugify, _start_server  # noqa: E402
-from run_demo_sequence import _load_prompts  # noqa: E402
+from playwright_demo_script import _slugify, _start_server
+from run_demo_sequence import _load_prompts
 
 REPO_ROOT = DEMO_DIR.parent
 RECORDINGS_ROOT = REPO_ROOT / "demo" / "recordings" / "professional"
@@ -184,7 +184,7 @@ class Pacing:
         )
 
     @classmethod
-    def from_target_seconds(cls, target_seconds: float) -> "Pacing":
+    def from_target_seconds(cls, target_seconds: float) -> Pacing:
         """WHAT: Builds a `Pacing` whose total lands inside the mandatory
         [120, 300] second (2-5 minute) band.
 

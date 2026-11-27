@@ -186,3 +186,6 @@
 *.[Ww][Ee][Bb][Mm]
 
 /[Cc][Hh][Aa][Tt][Ss]/**
+
+# Local CI recipe outputs (.local-ci/run.sh)
+.local-ci/out/

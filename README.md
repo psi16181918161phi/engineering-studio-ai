@@ -167,6 +167,18 @@ and does not provide a repository-wide mutation score. The scope is defined
 by the mutation catalogs in the script. A surviving mutant, stale anchor,
 test setup error, timeout, or missing result blocks the gate.
 
+The git-autosync local CI service runs [`.local-ci/run.sh`](.local-ci/run.sh)
+on every `main` head and pull-request head. It runs in the image named in
+[`.local-ci/image`](.local-ci/image) (`python:3.14.10-slim`) and reports the
+result as the `local-ci/wsl` commit status. The built-in Python recipe
+uses Python 3.12, which `requires-python = ">=3.14"` rejects. The script runs
+the checks of the `test` job in `.github/workflows/ci.yml`: ruff, mypy, bandit,
+pip-audit and pytest with 100% line and branch coverage. It then runs the
+mutation gate, and it stops at the first failure. It does not run the Playwright
+tests in `tests/e2e`, because they need a browser with system packages, so run
+those locally. The job needs network access for `pip` and `pip-audit`. It uses
+no secrets.
+
 ### Workflow planning and execution
 
 `agents/workflow.py` declares six ordered batches and their exact ordered

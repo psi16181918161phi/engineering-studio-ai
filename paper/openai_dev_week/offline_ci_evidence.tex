@@ -1,0 +1,625 @@
+\clearpage
+\section{Offline CI: Acceptance Bound to a Candidate}
+\label{app:offline-ci-evidence}
+
+The governance addendum in Section~\ref{app:milestone-20260719}
+describes role and route coverage. A release gate also needs a way to
+decide whether the evidence it has actually applies to the candidate
+being evaluated. For the X Studio X expansion, this section proposes
+one local gate for that purpose. Its input is a frozen local snapshot;
+the result is a technical eligibility decision. The model assumes
+trustworthy snapshot acquisition and makes no empirical claim about
+the current implementation or any prior hackathon build.
+
+\begin{definition}[Candidate and local evidence snapshot]
+\label{def:offline-ci-snapshot}
+Let $c=(s,a,p)$, where $s$ is the exact source manifest, $a$ is the
+exact artifact manifest, and $p$ is the exact policy manifest, with
+equality componentwise. Each manifest is a canonical finite byte
+string representing its full policy-defined contents. The policy
+determines which toolchain, dependency, build-input, and environment
+identities are material and where they are bound. This is an exact
+identity model; a digest-based implementation needs a separately
+justified binding assumption.
+
+A validated policy determines a finite set $Q_p$ of required check
+identities and authorized producer and reviewer identities for each
+check. An identity of a check binds its procedure and configuration
+under $p$. Inputs are invalid if candidate or policy validation fails,
+if the snapshot cannot be read and authenticated as a whole, or if
+$Q_p$ is empty. An authenticated snapshot may contain no records.
+
+Let $E$ be the finite collection of records in the frozen snapshot.
+A receipt names a candidate, check, producer, and result (pass or
+fail). A review names the exact receipt and includes an explicit
+endorsement decision. A receipt is eligible for $(c,q)$ only when
+it is well formed, authenticated, exactly bound to $(c,q)$, and
+issued by an authorized producer for $q$. A review qualifies only
+when it is well formed, authenticated, issued by an authorized
+reviewer distinct from the receipt producer, and endorses the exact
+eligible receipt. An invalid individual record supplies no evidence;
+an invalid snapshot blocks the gate. Identity authenticity and the
+trustworthiness of attestation verification are model hypotheses.
+\end{definition}
+
+\begin{theorem}[Exact-candidate acceptance and stale-evidence isolation]
+\label{thm:offline-ci-acceptance}
+For validated inputs in Definition~\ref{def:offline-ci-snapshot},
+write $P_q$ for the existence of an eligible pass receipt with a
+qualifying review, and $F_q$ for the existence of an eligible fail
+receipt. A fail receipt needs no second review to veto readiness.
+For invalid inputs the decision is \textsc{Blocked}. For validated
+inputs, the gate applies the following rules in order:
+\begin{enumerate}
+\item \textsc{Blocked} if some $q\in Q_p$ has both $P_q$ and $F_q$.
+\item \textsc{Rejected} if some $q\in Q_p$ has $F_q$.
+\item \textsc{Blocked} if some $q\in Q_p$ lacks $P_q$.
+\item \textsc{Ready} otherwise.
+\end{enumerate}
+The decision is single-valued, independent of record order and
+duplicate copies, and \textsc{Ready} is equivalent to
+\begin{equation}
+\label{eq:offline-ci-ready}
+   \forall q\in Q_p,\quad P_q\land\neg F_q .
+\end{equation}
+Adding records bound exclusively to other candidates leaves the
+decision unchanged on an otherwise unchanged, valid snapshot.
+In particular, when moving to a different candidate, a snapshot
+containing only evidence for the previous candidate cannot make the
+new candidate ready.
+\end{theorem}
+
+\noindent\textbf{Proof type:} Direct, with finite case analysis and
+induction for the scan.
+
+\noindent\textbf{Hypotheses:}
+\begin{enumerate}[label=H\arabic*.]
+\item\label{hyp:offline-manifests} Candidate manifests have the exact,
+componentwise identity in Definition~\ref{def:offline-ci-snapshot}.
+\item\label{hyp:offline-validation} Valid inputs have a finite,
+nonempty required-check set and a finite, authenticated frozen snapshot.
+\item\label{hyp:offline-authentication} Eligibility and review
+qualification obey Definition~\ref{def:offline-ci-snapshot}, with
+trustworthy authentication and fixed authorization for the evaluation.
+\end{enumerate}
+
+\noindent\textbf{Proof dependencies:}
+\begin{enumerate}
+\item Definition~\ref{def:offline-ci-snapshot} supplies the input
+domains, validity rules, and witness predicates (H1--H3).
+\item Boolean excluded middle and finite set membership determine
+the per-check partition and the gate partition (H2--H3).
+\item Induction on finite prefixes proves the scan invariant (H2).
+\end{enumerate}
+
+\begin{proof}
+\begin{enumerate}
+\item \textbf{Validity and domains.}
+For a validated candidate, the components $s$, $a$, and $p$
+are byte strings in the specified manifest domains (H1).
+The equality test applies to these three objects,
+rather than to their names or their timestamps.
+The policy determines $Q_p$ and the applicable authorization rules
+before the evidence is considered.
+In particular, the appearance of a check in a receipt cannot
+add that check to $Q_p$, and its absence cannot remove a check.
+Validation supplies a finite nonempty set $Q_p$
+and a finite authenticated collection $E$ (H2).
+If any validation premise fails, the outer rule returns
+\textsc{Blocked} before forming any predicates.
+Thus a partial or unauthenticated read is distinguished from
+a valid snapshot with no evidence.
+This distinction matters even if both inputs give the same decision:
+only the latter can be used to report which checks lack evidence.
+
+\item \textbf{Eligible witnesses.}
+Fix an arbitrary $q\in Q_p$.
+Let $A_q$ be the set of receipt contents from $E$
+which are eligible for $(c,q)$ and report pass.
+Let $B_q$ be the set of receipt contents from $E$
+which are eligible for $(c,q)$ and report fail.
+For $r\in A_q$, let $V_r$ be the set of contents of qualifying
+reviews of $r$ in $E$.
+These are finite sets by taking subsets of the finite snapshot
+and identifying exact duplicate contents.
+Define
+\begin{align}
+   A_q^+ &= \{r\in A_q : V_r\ne\varnothing\},
+      \label{eq:offline-ci-reviewed}\\
+   P_q &\iff A_q^+\ne\varnothing,
+      \label{eq:offline-ci-pass}\\
+   F_q &\iff B_q\ne\varnothing .
+      \label{eq:offline-ci-fail}
+\end{align}
+Each predicate is Boolean because set membership is fixed
+by the validated snapshot and its fixed verification rules (H2--H3).
+A signed endorsement of a different receipt is outside $V_r$.
+An endorsement from the producer of $r$ is outside $V_r$,
+including when that producer is also authorized to review
+another contributor's work.
+If $A_q$ contains a receipt with no qualifying reviewer,
+that receipt is absent from $A_q^+$.
+It therefore cannot witness $P_q$.
+Conversely, a witness in $A_q^+$ supplies both a pass receipt
+and a qualifying review, by conjunction elimination on the
+membership condition in \eqref{eq:offline-ci-reviewed}.
+A failure only requires membership in $B_q$.
+Thus omitting or delaying a failure review cannot remove its veto.
+
+\item \textbf{Exhaustive per-check partition.}
+For the fixed $q$, excluded middle gives either $P_q$
+or $\neg P_q$, and either $F_q$ or $\neg F_q$.
+Taking the two splits together gives four cases:
+\begin{enumerate}
+\item $(P_q,F_q)=(0,0)$.
+The sets $A_q^+$ and $B_q$ are both empty.
+There may be an eligible pass without a qualifying review,
+or there may be no eligible receipts at all.
+Either way, there is no witness for acceptance at $q$.
+\item $(P_q,F_q)=(1,0)$.
+There exists a reviewed pass and there is no eligible fail.
+The existential test permits additional eligible passes,
+including passes still awaiting review.
+This case establishes acceptance for this check only.
+\item $(P_q,F_q)=(0,1)$.
+At least one eligible fail exists.
+An unreviewed pass does not change this case.
+The gate cannot use the lack of review to treat a known failure
+as missing evidence.
+\item $(P_q,F_q)=(1,1)$.
+Two result classes are present for the same candidate and check.
+The witnesses can come from the same producer on different
+executions or from different authorized producers.
+The gate presents the resulting conflict for resolution.
+It does not infer a preferred result from order or frequency.
+\end{enumerate}
+The cases are pairwise disjoint because unequal Boolean pairs
+differ in at least one coordinate.
+They are jointly exhaustive by the two splits just established.
+A difference in result between two candidates does not create
+this conflict because the eligible sets are constructed at fixed $c$.
+A difference between distinct checks of the same candidate
+also does not create this conflict because each check has its own
+eligible sets.
+
+\item \textbf{Partition at the gate.}
+For valid inputs introduce the sets
+\begin{align}
+   C &= \{q\in Q_p : P_q \land F_q\},
+      \label{eq:offline-ci-conflict}\\
+   N &= \{q\in Q_p : F_q\},
+      \label{eq:offline-ci-negative}\\
+   M &= \{q\in Q_p : \neg P_q\}.
+      \label{eq:offline-ci-missing}
+\end{align}
+These are subsets of $Q_p$ by set comprehension.
+In particular $C\subseteq N$ by conjunction elimination.
+The sets can overlap. We therefore partition by the following
+ordered tests, each conjoined with the negation of earlier tests:
+\begin{enumerate}
+\item $C\ne\varnothing$.
+A conflict witness exists, so the decision is \textsc{Blocked}.
+This also covers a simultaneous fail-only result at another
+check, and a simultaneous missing result at a third check.
+\item $C=\varnothing$ and $N\ne\varnothing$.
+There is an eligible failure with no conflicting reviewed
+pass at any check, and the decision is \textsc{Rejected}.
+This holds even if $M\ne\varnothing$.
+\item $C=N=\varnothing$ and $M\ne\varnothing$.
+There is neither conflict nor eligible failure,
+but at least one required check lacks a reviewed pass.
+The decision is \textsc{Blocked}.
+\item $C=N=M=\varnothing$.
+Every check has a reviewed pass and none has an eligible fail.
+The decision is \textsc{Ready}.
+\end{enumerate}
+For disjointness, two different cases disagree on the first
+set whose emptiness distinguishes them.
+For exhaustiveness, test emptiness of $C$, then of $N$ if $C$
+is empty, then of $M$ if both previous sets are empty.
+Each test has exactly two outcomes since the corresponding
+set is fixed.
+The partition with the initial validation branch added
+therefore assigns exactly one decision to every input.
+The two occurrences of \textsc{Blocked} for valid inputs
+represent different reasons and can retain their separate
+witness sets in a decision record.
+
+\item \textbf{Necessity and sufficiency.}
+Suppose the decision is \textsc{Ready}.
+Then the valid-input partition put it in its fourth case.
+In particular $M=\varnothing$ and $N=\varnothing$.
+For arbitrary $q\in Q_p$, $M=\varnothing$ implies
+$q\notin M$ and therefore $P_q$ by the definition of $M$.
+Likewise, $q\notin N$ implies $\neg F_q$.
+Universally generalizing this conjunction over $Q_p$
+yields \eqref{eq:offline-ci-ready}.
+Conversely, assume \eqref{eq:offline-ci-ready}
+for a validated input.
+If $M$ were nonempty then a member would witness
+$\neg P_q$, contrary to \eqref{eq:offline-ci-ready}.
+If $N$ were nonempty then a member would witness
+$F_q$, also a contradiction.
+Hence $M=N=\varnothing$.
+Because $C\subseteq N$, $C$ is empty as well.
+The fourth case gives \textsc{Ready}.
+The same formula evaluated on an empty $Q_p$ would be
+vacuously true, which explains why the validation condition
+must precede the equivalence.
+
+\item \textbf{Order and multiplicity.}
+Consider two valid representations of a frozen snapshot
+having the same set of record contents.
+For every $q\in Q_p$ and receipt content $r$,
+membership of $r$ in $A_q$ and $B_q$ depends only
+on whether $r$ appears and on its fixed eligibility properties.
+For a review, presence and qualification are likewise
+properties of its contents and the exact receipt it names.
+Therefore $V_r$ is equal in the two representations.
+It follows by set extensionality that $A_q^+$ is equal,
+then by the two existence tests that $P_q$ and $F_q$
+are equal in the two representations.
+This argument holds for every $q$.
+Consequently $C$, $N$, and $M$ are equal.
+The gate gives the same decision.
+A permutation and the insertion of exact duplicate copies
+both preserve the set of contents and are covered by this reasoning.
+This claim presupposes validity of both representations.
+Duplicating an authenticated record in a way that invalidates
+a signed envelope is outside that premise and triggers
+snapshot-level validation instead.
+
+\item \textbf{Isolation from evidence for other candidates.}
+Let $E'$ be a valid enlarged snapshot with every newly added
+receipt bound to a candidate $d\ne c$, and every added review
+bound exclusively to such receipts.
+Fix $q\in Q_p$.
+The exact-candidate conjunct fails for each added receipt,
+so $A_q$ and $B_q$ are unchanged.
+Each review which qualifies for a receipt in $A_q$ must
+name that exact receipt.
+A review bound exclusively to a receipt for $d\ne c$
+therefore cannot become a new member of $V_r$
+for any current $r\in A_q$.
+The sets $V_r$ are unchanged, hence so are
+$A_q^+$, $P_q$, and $F_q$.
+Applying this for each required $q$ leaves
+$C$, $N$, and $M$ unchanged, which gives the first
+isolation claim.
+The hypothesis excludes the addition of a review that
+endorses a current receipt. Such a review can supply the
+missing witness for a previously unreviewed pass.
+
+\item \textbf{Change of candidate.}
+Let $d=(s',a',p')$ and suppose $d\ne c$.
+Componentwise equality of tuples gives the negation of
+the conjunction $s'=s$, $a'=a$, and $p'=p$.
+At least one of these three equalities fails.
+In particular, a one-component change suffices.
+Under the new policy the check set may itself change,
+so use $Q_{p'}$ in the gate for $d$.
+If validation fails, the decision is \textsc{Blocked}.
+Otherwise choose any $q\in Q_{p'}$, which is possible
+because this set is nonempty.
+A receipt for $c$ cannot be eligible at $(d,q)$
+because its candidate field differs.
+A review of such a receipt cannot supply an eligible pass
+for $d$, because its endorsement preserves the exact
+receipt identity.
+If the snapshot contains only evidence for $c$,
+then both $A_q$ and $B_q$ are empty at $d$.
+It follows that $P_q$ and $F_q$ are both false.
+The same argument applies to every $q\in Q_{p'}$.
+Hence $C=N=\varnothing$, while $M=Q_{p'}\ne\varnothing$.
+The third valid-input case yields \textsc{Blocked}.
+This applies to artifact-only changes after a rebuild,
+source-only changes even if the artifact is identical, and
+policy-only changes with both source and artifact unchanged.
+A repeated use of the very same $c$ is outside the change
+hypothesis. A time-based expiry requirement, if desired,
+must be specified and bound by the policy.
+
+\item \textbf{Boundary cases and sharpness.}
+The following cases exercise each boundary of the predicates
+and show why the premises and precedence are useful.
+\begin{enumerate}
+\item \emph{Zero checks.}
+With $Q_p=\varnothing$, all three witness sets would be empty
+if formed. The decision is \textsc{Blocked} by validation,
+so an empty required-check manifest cannot create eligibility.
+\item \emph{Zero records.}
+With $Q_p\ne\varnothing$ and $E=\varnothing$,
+there are no eligible receipts and no reviews.
+For every $q$, $(P_q,F_q)=(0,0)$.
+Thus $M=Q_p$ and $C=N=\varnothing$.
+The result is \textsc{Blocked} for missing evidence.
+\item \emph{One check and one eligible failure.}
+Let $Q_p=\{q\}$ with one eligible failure and no reviews.
+Then $B_q$ is a singleton, $A_q^+$ is empty,
+and the gate is \textsc{Rejected}.
+This is the least nonempty failure witness case.
+\item \emph{One check and producer self-review.}
+Let $Q_p=\{q\}$ with an eligible pass $r$ and only its
+producer's endorsement.
+Distinctness fails, $V_r=\varnothing$, and $P_q$ is false.
+With no failure, the decision is \textsc{Blocked}.
+Adding a qualifying endorsement for the same $r$
+makes $P_q$ true and yields \textsc{Ready}.
+An endorsement of a different receipt leaves this case unchanged.
+\item \emph{Minimum complete success.}
+Let $Q_p=\{q\}$ with exactly one eligible pass and one
+qualifying review of it and no failure.
+Then $A_q^+$ is a singleton and the gate is \textsc{Ready}.
+Deleting either required witness removes $P_q$;
+an endorsement remaining after receipt removal cannot
+supply the missing receipt.
+\item \emph{Mixed required-check coverage.}
+For $Q_p=\{q_1,q_2\}$, let only $q_1$ have a reviewed pass
+and neither check have a failure.
+Then $M=\{q_2\}$, so one success does not
+satisfy the universal condition.
+If an eligible failure for $q_1$ is then added,
+$C=\{q_1\}$, still \textsc{Blocked}, now for conflict.
+If the failure is instead added for $q_2$,
+$N=\{q_2\}$ and $C=\varnothing$, giving \textsc{Rejected}.
+\item \emph{Maximal presence of conflicting evidence.}
+If every required check has both kinds of witnesses,
+then $C=N=Q_p$ and $M=\varnothing$.
+Since $Q_p\ne\varnothing$, the decision is
+\textsc{Blocked}, despite complete reviewed-pass coverage.
+At the other extreme one conflicting check suffices.
+\item \emph{One material component changes.}
+Keep two of $s$, $a$, and $p$ fixed and change the third.
+Tuple inequality follows in each of the three possibilities.
+Even if every check on the old candidate had a reviewed pass,
+no such receipt witnesses a pass on the new candidate.
+The transfer argument requires exact binding to all
+three components.
+\item \emph{Late authenticated failure.}
+Let a valid snapshot be ready and add an eligible failure
+for some required check $q$ while keeping its reviewed pass.
+Then $q\in C$ in the enlarged snapshot.
+The new decision is \textsc{Blocked}.
+The earlier decision pertains to the earlier snapshot.
+This case shows why readiness cannot be reused as a
+prediction about later evidence.
+\item \emph{Unlisted and malformed records.}
+A receipt for a check outside $Q_p$ cannot enter
+any required-check set.
+A malformed receipt for a required check cannot become
+eligible solely by naming the right check.
+An unauthenticated snapshot blocks the entire gate even
+when some contained bytes would describe passing results.
+These three cases separate relevance, individual eligibility,
+and snapshot validity.
+\end{enumerate}
+
+\item \textbf{Finite offline decision procedure.}
+One can compute the predicates by finite scans.
+Let $n$ be the number of record occurrences in $E$,
+including duplicates, and let $k=|Q_p|$.
+Both are nonnegative integers, with $k\ge 1$.
+An occurrence is a position in a local representation of $E$.
+For each $q$, use the following construction.
+\begin{enumerate}
+\item Set two Boolean flags to false.
+The first represents the existence of an independently
+reviewed pass found so far.
+The second represents the existence of an eligible failure
+found so far.
+The zero-position prefix is empty, so both statements
+are true descriptions of their respective flags.
+\item Scan the $n$ record positions.
+A position that is not an eligible receipt for $(c,q)$
+leaves both flags unchanged.
+An eligible failure sets the second flag and does not
+change the first.
+An eligible pass initiates a scan over the same finite
+snapshot for a qualifying review of that pass.
+\item Within the review scan, start with a false review flag.
+For each position, test qualification against the currently
+selected receipt.
+Update the review flag by logical disjunction with that test.
+For a prefix of length zero the flag is false by initialization.
+If it correctly describes existence in a prefix of length $j$,
+then after the next position it is true exactly when
+there is a witness in that prefix or at the new position.
+These are the only possibilities for a witness in the
+prefix of length $j+1$.
+Induction through length $n$ gives the qualifying-review
+existence test on the entire snapshot.
+\item For a pass, update the first main flag by disjunction
+with the final review flag.
+After any main prefix of length $i$, the first main flag is true
+exactly when a pass in the prefix has a review somewhere
+in the full snapshot.
+The second main flag is true exactly when the prefix contains
+an eligible failure.
+The empty prefix gives the base case.
+The three branches for the next record extend the invariant
+by considering whether the next position is a new witness
+of either class.
+They exhaust receipt and result possibilities by eligibility,
+which requires the result to be pass or fail.
+Induction through length $n$ identifies the final flags
+with $P_q$ and $F_q$.
+\item After repeating across the $k$ required checks, form
+$C$, $N$, and $M$ from the flags and apply the stated
+precedence. These final sets can be recorded alongside
+the decision, so a conflict does not erase evidence of
+another required check being missing.
+\end{enumerate}
+There are at most $kn$ receipt eligibility tests during the
+outer scans.
+Each scanned position can trigger at most one length-$n$
+review scan, so there are at most $kn^2$ qualification tests.
+The combined count of these two types of tests satisfies
+\begin{equation}
+\label{eq:offline-ci-tests}
+T_{\mathrm{scan}}\le k(n+n^2).
+\end{equation}
+For $n=0$ the right side is zero and there are no such tests,
+even though initialization and the final decision still run.
+For $n=1$ a snapshot with one pass receipt may initiate
+one qualification test, but that sole receipt cannot qualify
+as a separate review.
+The count describes predicate evaluations after validation.
+It is not a wall-time bound and omits manifest parsing,
+signature verification cost, and the work of the checks.
+The local scan requires all verification data to be provided
+locally. If a verification dependency is unavailable,
+validation cannot assert a ready result.
+
+\item \textbf{Minimal information for this gate.}
+The following indistinguishability arguments use the
+principle that a deterministic evaluator has the same
+result on equal inputs.
+They apply to a simplified evaluator that deliberately drops
+one of the specified distinctions.
+Each comparison can be realized with a singleton required
+set, an authenticated snapshot, and authorized identities.
+\begin{enumerate}
+\item Drop the artifact component from candidate binding.
+Use a candidate $c$ and evidence that makes $c$ ready.
+Evaluate the same evidence with an artifact-only change
+to $c$ and unchanged source and policy.
+The projected candidate is equal in the two evaluations,
+and the evidence and policy inputs are unchanged.
+The simplified evaluator therefore cannot distinguish them.
+The exact gate requires \textsc{Ready} for the first and
+\textsc{Blocked} for the second by candidate isolation.
+\item Drop the source component instead and use a source-only
+change, keeping artifact and policy fixed.
+The projection is again equal and the input evidence is
+unchanged.
+The exact gate distinguishes the two decisions by the same
+exact-binding test, even for builds producing equal outputs.
+\item Drop the policy component from receipt binding.
+Consider two policy manifests with the same required check,
+authorized identities, and check configuration, but different
+release-policy metadata declared material.
+Fix the source, artifact, and original evidence.
+A gate that has discarded all evidence about which policy
+was used cannot use that receipt to tell whether it was
+created under the original policy or the new policy.
+More explicitly, keep the new candidate fixed and compare
+two evidence collections that differ only in which policy is
+named by the receipt and its bound review.
+Under a projection that erases that distinction and keeps
+only the remaining logical fields, their evidence is equal.
+One collection makes the new candidate ready, and the
+other lacks evidence for it.
+This comparison concerns logical binding fields after
+authentication. It does not assume authenticators or raw
+record encodings remain identical.
+\item Drop the eligible-failure bit while retaining the
+reviewed-pass bit.
+Compare a snapshot containing a reviewed pass with one
+that adds an eligible failure.
+The reviewed-pass bit stays true.
+The exact result changes from \textsc{Ready} to
+\textsc{Blocked}. Consequently the pass bit alone is
+insufficient, even with only one required check.
+\item Drop the reviewed-pass bit while retaining the
+eligible-failure bit.
+Compare a reviewed pass with a snapshot missing its review.
+Both have false failure flags.
+The results are respectively \textsc{Ready} and
+\textsc{Blocked}, so the failure bit alone is insufficient.
+\end{enumerate}
+These examples show necessity of the distinctions for the
+stated gate decision under the specified projections.
+They do not claim minimal byte length for a receipt format,
+or rule out an alternative encoding of the same information.
+
+\item \textbf{Snapshot binding under change.}
+With fixed $c$ and unchanged eligibility and review rules,
+enlarging a valid snapshot can only preserve or add
+witnesses for $P_q$ and $F_q$.
+Indeed, membership of an old eligible receipt and of its
+old qualifying review is preserved, so their conjunction is
+preserved.
+Taking an existential quantifier over a larger collection
+cannot turn a true predicate of this kind false.
+This gives information growth at the predicate level.
+Readiness itself does not have that growth property.
+The late-failure case proves failure of upward closure.
+In the reverse direction, adding a qualifying review to an
+eligible pass with no failure can change \textsc{Blocked}
+to \textsc{Ready}, so readiness is not downward closed either.
+A later authenticated snapshot may exclude records under
+a revocation rule rather than merely append them.
+The theorem applies separately to that new validated
+snapshot. The witness-preservation claim does not apply
+when eligibility changes or a record is removed.
+For local use the evaluation and its evidence record must
+both identify the snapshot instance.
+An implementation must use a consistent snapshot at the
+decision point, or validate the relevant identities again
+before relying on the decision.
+No assumption in the theorem makes a separately
+executed read and release step atomic.
+
+\item \textbf{Independence audit and verification obligations.}
+The implications use finite-set membership,
+Boolean logic, and exact equality.
+They use no probabilistic independence, sample counts,
+cryptographic injectivity, wall-clock ordering, or
+network service status.
+Distinct authenticated identities give a separation condition
+on receipt authorship and review.
+They do not provide evidence about reviewer judgment,
+shared infrastructure, or collusion.
+A local implementation seeking to apply the theorem must
+first verify the following obligations on the evidence
+it proposes to accept:
+\begin{enumerate}
+\item Confirm that the exact candidate manifests bind every
+material input required by policy, including the material
+toolchain identities when applicable.
+\item Validate the snapshot as a whole, verify authorizations,
+and check that the required-check set is nonempty.
+\item Reconstruct the eligible receipts and verify each
+review against its exact receipt and distinct producer.
+\item Recompute the three sets in
+\eqref{eq:offline-ci-conflict}--\eqref{eq:offline-ci-missing}
+and reproduce the ordered decision.
+\item Bind use of the result to the same candidate and
+snapshot. If either changes, validate the intended pair
+and evaluate again before use.
+\end{enumerate}
+These obligations are premises for applying the result,
+not consequences of the decision.
+In particular the theorem leaves the quality of individual
+tests, operational attestation trust, and publication
+authority to separately evidenced policy and human approval.
+\qedhere
+\end{enumerate}
+\end{proof}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Offline evidence gate audit cases and their scope.}
+\label{tab:offline-ci-audit}
+\begin{tabularx}{\linewidth}{@{}p{0.28\linewidth}X p{0.15\linewidth}@{}}
+\toprule
+Case & Decision or limit & Source \\
+\midrule
+Empty required set & Blocked during validation. & \ref{def:offline-ci-snapshot} \\
+Unreadable snapshot & Blocked during validation. & \ref{def:offline-ci-snapshot} \\
+No eligible receipts & Blocked for missing pass evidence. & \ref{thm:offline-ci-acceptance} \\
+Producer self-review & Cannot establish a reviewed pass. & \ref{eq:offline-ci-reviewed} \\
+Review of another receipt & Cannot endorse this pass. & \ref{eq:offline-ci-reviewed} \\
+Failure without review & Veto applies upon eligibility. & \ref{eq:offline-ci-fail} \\
+Conflicting eligible results & Blocked even with complete pass coverage. & \ref{eq:offline-ci-conflict} \\
+Missing check and failure & Rejected if there is no conflict. & \ref{thm:offline-ci-acceptance} \\
+Complete reviewed passes & Ready if no eligible failure exists. & \ref{eq:offline-ci-ready} \\
+Duplicate or permuted records & Same result for valid representations. & \ref{thm:offline-ci-acceptance} \\
+Artifact-only change & Old candidate's records do not transfer. & \ref{thm:offline-ci-acceptance} \\
+Late eligible failure & Reevaluate the enlarged snapshot. & \ref{thm:offline-ci-acceptance} \\
+Local scan count & Bounds predicate evaluations after validation. & \ref{eq:offline-ci-tests} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\clearpage

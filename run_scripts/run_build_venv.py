@@ -162,6 +162,7 @@ def create_venv(python_executable: str, venv_dir: str) -> int:  # IMPURE
     result = subprocess.run(  # IMPURE
         [python_executable, "-m", "venv", venv_dir],
         cwd=str(_PROJECT_ROOT),
+        check=False,
     )
     return result.returncode
 
@@ -188,6 +189,7 @@ def install_requirements(venv_dir: str, requirements_file: str) -> int:  # IMPUR
     result = subprocess.run(  # IMPURE
         [pip_path, "install", "-r", requirements_file],
         cwd=str(_PROJECT_ROOT),
+        check=False,
     )
     return result.returncode
 

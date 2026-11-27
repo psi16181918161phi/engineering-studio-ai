@@ -1,40 +1,51 @@
-"""WHAT: Orchestrates the Engineering Studio AI pipeline: Research ->
-parallel specialist fan-out -> business/legal -> challenge -> quality gate.
-WHY: Single place that knows the pipeline ORDER (Workflow-position axis);
-every stage's actual work stays inside its own SpecialistAgent (SRP).
-HOW: Sequential Research pass, then a thread-pool fan-out of the parallel
-specialists (they don't depend on each other, only on Research), then the
-Business/Legal pass, the Challenge Division critique, and the Quality Gate
-verdict, each depending on everything produced before it. An optional
-`on_event` callback reports per-stage lifecycle transitions (running/done/
-error) so a caller such as the web command-and-control API can track live
-status without the orchestrator knowing anything about HTTP or threading.
+"""WHAT: Execute the Engineering Studio workflow against model clients.
+
+WHY: Keep provider calls, files, parallelism, and lifecycle events separate
+from the immutable dependency plan.
+HOW: Consume ordered batches from workflow.py and expose the same public
+stage metadata and run_pipeline entry point.
 """
 
 from __future__ import annotations
 
+import logging
 import os
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from engineering_studio.agents.specialist import SpecialistAgent
+from engineering_studio.agents.workflow import (
+    PARALLEL_DISCIPLINES,
+    REVIEW_STAGES,
+    WORKFLOW_PLAN,
+    StageBatch,
+    StageSpec,
+    WorkflowPlan,
+)
 from engineering_studio.fireworks_client import ModelClient
 from engineering_studio.task_specs import get_task_spec
 
-PARALLEL_DISCIPLINES = ("mechanical", "electrical", "firmware", "simulation")
+__all__ = [
+    "PARALLEL_DISCIPLINES",
+    "REVIEW_STAGES",
+    "STAGE_MODEL_ENV_VAR",
+    "STAGE_ORDER",
+    "STAGE_SPECS",
+    "EventCallback",
+    "run_pipeline",
+]
 
-# WHAT: Canonical, ordered list of every stage this orchestrator dispatches.
-# WHY: A single source of truth for display order — shared with the web API
-# (engineering_studio.runs) so the command-and-control dashboard always
-# reflects the actual dispatch order, never a hand-maintained duplicate.
-STAGE_ORDER: tuple[str, ...] = (
-    "research",
-    *PARALLEL_DISCIPLINES,
-    "business",
-    "challenge",
-    "quality_gate",
-)
+_LOGGER = logging.getLogger("engineering_studio")
+
+# Public metadata consumed by the run store, downloads, and fake executor.
+STAGE_SPECS = {
+    stage.stage_id: stage.task_slug for batch in WORKFLOW_PLAN.batches for stage in batch.stages
+}
+STAGE_ORDER = tuple(STAGE_SPECS)
+STAGE_MODEL_ENV_VAR = {
+    stage.stage_id: batch.model_env_var for batch in WORKFLOW_PLAN.batches for stage in batch.stages
+}
 
 # WHAT: Signature for the optional pipeline lifecycle observer.
 # ARGS: (stage, status, detail) where status is one of
@@ -61,7 +72,9 @@ def _client_for(model_env_var: str) -> ModelClient:
     return ModelClient(model=model)
 
 
-def _emit(on_event: EventCallback | None, stage: str, status: str, detail: str | None = None) -> None:
+def _emit(
+    on_event: EventCallback | None, stage: str, status: str, detail: str | None = None
+) -> None:
     """WHAT: Safely forwards a pipeline lifecycle event to an optional observer.
 
     ARGS:
@@ -74,14 +87,17 @@ def _emit(on_event: EventCallback | None, stage: str, status: str, detail: str |
     orchestrator depending on any particular transport (SSE, logging, ...).
 
     HOW: No-op when on_event is None; a misbehaving observer must never
-    break the pipeline, so exceptions raised by the callback are swallowed.
+    break the pipeline, so exceptions raised by the callback are logged at
+    debug level (for diagnosability) and otherwise swallowed, never re-raised.
     """
     if on_event is None:
         return
     try:
         on_event(stage, status, detail)
-    except Exception:  # noqa: BLE001 - observer failures are never fatal
-        pass
+    except Exception:
+        _LOGGER.debug(
+            "on_event observer raised for stage=%s status=%s", stage, status, exc_info=True
+        )
 
 
 def _run_stage(
@@ -93,7 +109,10 @@ def _run_stage(
     artifacts_root: Path,
     on_event: EventCallback | None,
 ) -> Path:
-    """WHAT: Runs exactly one stage (research or a single specialist call).
+    """WHAT: Runs exactly one declared stage.
+
+    WHY: Report each stage's lifecycle around its isolated artifact write.
+    HOW: Render its task specification and invoke the specialist.
 
     ARGS:
         discipline (str): Artifact folder name, e.g. "mechanical".
@@ -110,11 +129,15 @@ def _run_stage(
     RAISES:
         ModelUnavailableError: Propagated on model-call failure; an "error"
             event is emitted first so observers see why the stage stopped.
+        TaskSpecNotFoundError: Propagated if spec_slug has no matching Task
+            Specification; an "error" event is emitted first, same as any
+            other stage failure — a missing spec must never leave a stage
+            stuck at "running" forever.
     """
     _emit(on_event, discipline, "running")
-    agent = SpecialistAgent(discipline, client, artifacts_root)
-    spec = get_task_spec(spec_slug).replace("{PRODUCT_BRIEF}", product_brief)
     try:
+        agent = SpecialistAgent(discipline, client, artifacts_root)
+        spec = get_task_spec(spec_slug).replace("{PRODUCT_BRIEF}", product_brief)
         path = agent.run(spec, upstream)
     except Exception as exc:
         _emit(on_event, discipline, "error", str(exc))
@@ -123,120 +146,152 @@ def _run_stage(
     return path
 
 
-def run_pipeline(
+def _run_parallel_stages(
+    stages: tuple[StageSpec, ...],
+    client: ModelClient,
     product_brief: str,
+    upstream: str,
     artifacts_root: Path,
-    on_event: EventCallback | None = None,
+    on_event: EventCallback | None,
 ) -> dict[str, Path]:
-    """WHAT: Runs the full Research -> fan-out -> business -> challenge ->
-    quality-gate pipeline.
+    """WHAT: Runs a set of independent stages concurrently against the same
+    upstream context, collecting every result before returning.
 
     ARGS:
+        stages (tuple[StageSpec, ...]): Stage declarations in plan order.
+        client (ModelClient): Shared model backend for every stage.
         product_brief (str): One-sentence hackathon demo prompt.
+        upstream (str): Shared upstream artifact text passed as the user
+            prompt to every stage — the stages examine the same input
+            independently; they never feed each other (that reconciliation
+            is the Validator's job, not this function's).
         artifacts_root (Path): Root directory for all written artifacts.
-        on_event (EventCallback | None): Optional observer notified of every
-            stage's "running"/"done"/"error" transition, in STAGE_ORDER.
+        on_event (EventCallback | None): Optional lifecycle observer.
 
     RETURNS:
-        dict[str, Path]: Mapping of stage name to its output file. On a
-            mid-pipeline failure this only contains the stages that
-            completed before the raised exception.
+        dict[str, Path]: Mapping of stage name to its output file, covering
+            every stage in `stages` that completed successfully.
 
     RAISES:
-        ModelUnavailableError: Propagated from any stage on hard failure;
-            the pipeline stops rather than continuing with a gap.
+        ModelUnavailableError: Re-raised only after every in-flight stage
+            finishes (success or failure) — a slow sibling stage is never
+            abandoned mid-write just because another one failed first.
+
+    HOW: Same "submit all, collect all, re-raise the first error" pattern
+    already used for the PARALLEL_DISCIPLINES fan-out, generalized so the
+    Review/Challenge fan-out doesn't duplicate the ThreadPoolExecutor
+    bookkeeping.
     """
-    outputs: dict[str, Path] = {}
 
-    try:
-        research_client = _client_for("FIREWORKS_MODEL_RESEARCH")
-    except Exception as exc:
-        _emit(on_event, "research", "error", str(exc))
-        raise
-    research_path = _run_stage(
-        "research",
-        research_client,
-        "research-problem-analysis-pass",
-        product_brief,
-        product_brief,
-        artifacts_root,
-        on_event,
-    )
-    outputs["research"] = research_path
-    research_findings = research_path.read_text(encoding="utf-8")
-
-    try:
-        specialist_client = _client_for("FIREWORKS_MODEL_SPECIALIST")
-    except Exception as exc:
-        # WHAT: This one client is shared by every remaining stage; if it
-        # can't be built, none of them will ever run — mark all of them
-        # "error" (not left "pending") so the dashboard shows exactly why.
-        for stage in (*PARALLEL_DISCIPLINES, "business", "challenge", "quality_gate"):
-            _emit(on_event, stage, "error", str(exc))
-        raise
-
-    def _dispatch(discipline: str) -> tuple[str, Path]:
+    def _dispatch(stage: StageSpec) -> tuple[str, Path]:
+        """WHAT: Dispatch the stage. WHY: Retain its ID for ordered collection.
+        HOW: Forward its plan declaration and shared context to the stage runner.
+        """
         path = _run_stage(
-            discipline,
-            specialist_client,
-            f"{discipline}-specialist-pass",
+            stage.stage_id,
+            client,
+            stage.task_slug,
             product_brief,
-            research_findings,
+            upstream,
             artifacts_root,
             on_event,
         )
-        return discipline, path
+        return stage.stage_id, path
 
-    with ThreadPoolExecutor(max_workers=len(PARALLEL_DISCIPLINES)) as pool:
-        futures = {pool.submit(_dispatch, d): d for d in PARALLEL_DISCIPLINES}
+    results: dict[str, Path] = {}
+    with ThreadPoolExecutor(max_workers=len(stages)) as pool:
+        futures = {pool.submit(_dispatch, s): s for s in stages}
         first_error: BaseException | None = None
         for future in futures:
             try:
-                discipline, path = future.result()
-                outputs[discipline] = path
+                stage, path = future.result()
+                results[stage] = path
             except Exception as exc:  # noqa: BLE001 - collect, re-raise after all finish
                 if first_error is None:
                     first_error = exc
         if first_error is not None:
             raise first_error
+    return results
 
-    combined_upstream = "\n\n".join(
-        outputs[d].read_text(encoding="utf-8") for d in PARALLEL_DISCIPLINES
-    )
-    business_path = _run_stage(
-        "business",
-        specialist_client,
-        "cost-business-legal-pass",
-        product_brief,
-        combined_upstream,
-        artifacts_root,
-        on_event,
-    )
-    outputs["business"] = business_path
 
-    combined_with_business = combined_upstream + "\n\n" + business_path.read_text(encoding="utf-8")
-    challenge_path = _run_stage(
-        "challenge",
-        specialist_client,
-        "challenge-division-adversarial-pass",
-        product_brief,
-        combined_with_business,
-        artifacts_root,
-        on_event,
-    )
-    outputs["challenge"] = challenge_path
+def _upstream_text(
+    batch: StageBatch,
+    product_brief: str,
+    outputs: dict[str, Path],
+    artifact_text: dict[str, str],
+) -> str:
+    """WHAT: Build this batch's exact input text.
+    WHY: Ordered graph edges determine which artifacts each stage may see.
+    HOW: Read each referenced artifact once and preserve empty segments.
+    """
+    if not batch.upstream:
+        return product_brief
+    for upstream_id in batch.upstream:
+        if upstream_id not in artifact_text:
+            artifact_text[upstream_id] = outputs[upstream_id].read_text(encoding="utf-8")
+    return "\n\n".join(artifact_text[upstream_id] for upstream_id in batch.upstream)
 
-    combined_with_challenge = (
-        combined_with_business + "\n\n" + challenge_path.read_text(encoding="utf-8")
-    )
-    outputs["quality_gate"] = _run_stage(
-        "quality_gate",
-        specialist_client,
-        "quality-gate-final-verdict",
-        product_brief,
-        combined_with_challenge,
-        artifacts_root,
-        on_event,
-    )
 
+def _execute_plan(
+    plan: WorkflowPlan,
+    product_brief: str,
+    artifacts_root: Path,
+    on_event: EventCallback | None,
+) -> dict[str, Path]:
+    """WHAT: Execute a validated workflow plan.
+    WHY: Keep client acquisition, artifact reads, and events out of planning.
+    HOW: Walk dependency batches, reusing clients and draining parallel
+    siblings before beginning the next batch.
+    """
+    outputs: dict[str, Path] = {}
+    artifact_text: dict[str, str] = {}
+    clients: dict[str, ModelClient] = {}
+    for batch in plan.batches:
+        upstream = _upstream_text(batch, product_brief, outputs, artifact_text)
+        model_env = batch.model_env_var
+        if model_env not in clients:
+            try:
+                clients[model_env] = _client_for(model_env)
+            except Exception as exc:
+                for affected in plan.batches:
+                    if affected.model_env_var == model_env:
+                        for stage in affected.stages:
+                            _emit(on_event, stage.stage_id, "error", str(exc))
+                raise
+        client = clients[model_env]
+        if len(batch.stages) == 1:
+            stage = batch.stages[0]
+            outputs[stage.stage_id] = _run_stage(
+                stage.stage_id,
+                client,
+                stage.task_slug,
+                product_brief,
+                upstream,
+                artifacts_root,
+                on_event,
+            )
+        else:
+            outputs.update(
+                _run_parallel_stages(
+                    batch.stages,
+                    client,
+                    product_brief,
+                    upstream,
+                    artifacts_root,
+                    on_event,
+                )
+            )
     return outputs
+
+
+def run_pipeline(
+    product_brief: str,
+    artifacts_root: Path,
+    on_event: EventCallback | None = None,
+) -> dict[str, Path]:
+    """WHAT: Run the canonical Engineering Studio workflow.
+    WHY: Give CLI, SDK, and web callers one stable pipeline entry point.
+    HOW: Execute the shared graph and forward existing stage lifecycle
+    events. Exceptions propagate after in-flight siblings have finished.
+    """
+    return _execute_plan(WORKFLOW_PLAN, product_brief, artifacts_root, on_event)

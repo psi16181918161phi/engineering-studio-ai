@@ -176,7 +176,7 @@ def _coverage_available(python_exe: str) -> bool:  # IMPURE
     OUTPUTS: bool.
     """
     result = subprocess.run(  # IMPURE
-        [python_exe, "-m", "coverage", "--version"], capture_output=True
+        [python_exe, "-m", "coverage", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -212,7 +212,7 @@ def run_coverage_audit(
 
     cmd = _build_coverage_cmd(python_exe, coverage_data, threshold)
     print(f"[run_build_audit_coverage] auditing coverage ≥ {threshold}% from {coverage_data}")  # IMPURE
-    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 

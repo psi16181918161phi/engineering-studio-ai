@@ -48,8 +48,11 @@ flowchart TD
     E --> CB
     F --> CB
     S --> CB
-    CB --> CD["Challenge Division (critique)"]
-    CD --> QG["Quality Gate (verdict)"]
+    CB --> RV["Reviewer (critique)"]
+    CB --> CD["Challenge Division (adversarial critique)"]
+    RV --> VA["Validator (cross-consistency)"]
+    CD --> VA
+    VA --> QG["Quality Gate (verdict)"]
 ```
 
 <!-- Mermaid Variant B (interface-surface) theming per
@@ -142,11 +145,54 @@ python demo/playwright_demo_script.py            # captures screenshots + video 
 See [docs/PLAYWRIGHT_INTEGRATION_PLAN.md](docs/PLAYWRIGHT_INTEGRATION_PLAN.md)
 for the full design (Mode A live-demo vs. Mode B CI-safe-mocked distinction).
 
+### Local CI
+
+Run the coverage, browser, and mutation gates from the repository root.
+
+```powershell
+python -m pytest --cov-branch
+# Optional when using installed Chrome in place of Playwright's bundled Chromium.
+$env:STUDIO_E2E_BROWSER_CHANNEL = "chrome"
+python -m pytest -o addopts= tests/e2e
+python scripts/local_mutation_gate.py --report .codex/evidence/mutation.json
+```
+
+Browser tests start a loopback server with the fake pipeline and a fresh
+run-history directory for each test. Local CI uses preinstalled dependencies.
+The mutation gate uses an offline, dependency-free injector plus pytest. It
+requires every declared parser, branch-regression, and workflow mutant to be killed.
+It reports the baseline, mutation operators, source hashes, and killing tests.
+This rollout scope excludes unlisted modules, operators, and equivalent mutants
+and does not provide a repository-wide mutation score. The scope is defined
+by the mutation catalogs in the script. A surviving mutant, stale anchor,
+test setup error, timeout, or missing result blocks the gate.
+
+The git-autosync local CI service runs [`.local-ci/run.sh`](.local-ci/run.sh)
+on every `main` head and pull-request head. It runs in the image named in
+[`.local-ci/image`](.local-ci/image) (`python:3.14.10-slim`) and reports the
+result as the `local-ci/wsl` commit status. The built-in Python recipe
+uses Python 3.12, which `requires-python = ">=3.14"` rejects. The script runs
+the checks of the `test` job in `.github/workflows/ci.yml`: ruff, mypy, bandit,
+pip-audit and pytest with 100% line and branch coverage. It then runs the
+mutation gate, and it stops at the first failure. It does not run the Playwright
+tests in `tests/e2e`, because they need a browser with system packages, so run
+those locally. The job needs network access for `pip` and `pip-audit`. It uses
+no secrets.
+
+### Workflow planning and execution
+
+`agents/workflow.py` declares six ordered batches and their exact ordered
+artifact inputs. Plan validation rejects duplicate stages and edges to the
+same or a later batch. It runs without clients, artifact reads, or events.
+`agents/orchestrator.py` executes those batches and exposes the existing
+stage IDs, metadata, and lifecycle callbacks. Both fan-outs finish before
+their successors start, and peer review stages share the same input package.
+
 ## Repository layout
 
 | Path | Purpose |
 |---|---|
-| `src/engineering_studio/agents/` | One module per specialist (orchestrator, research, mechanical, electrical, firmware, simulation, business, challenge, quality_gate). |
+| `src/engineering_studio/agents/` | `orchestrator.py` — the pipeline conductor, dispatching every stage (research, mechanical, electrical, firmware, simulation, business, reviewer, challenge, validator, quality_gate) in order. `specialist.py` — a single generic `SpecialistAgent` class, parameterized by a discipline string, that every stage above is dispatched through. |
 | `src/engineering_studio/fireworks_client.py` | Thin Fireworks AI chat-completions client with a local-llama fallback (model routing, never single-vendor hard-coded). |
 | `src/engineering_studio/artifacts/` | Per-discipline output folders (gitignored contents; `.gitkeep` only). |
 | `src/engineering_studio/api/` | HTTP/SSE route definitions for the command-and-control dashboard (`runs.py`, `health.py`, `downloads.py` — per-stage and zip-all artifact downloads) — see folder `README.md`. |

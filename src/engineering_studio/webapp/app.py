@@ -25,8 +25,17 @@ from engineering_studio.api.downloads import router as downloads_router
 from engineering_studio.api.health import router as health_router
 from engineering_studio.api.models import router as models_router
 from engineering_studio.api.runs import router as runs_router
+from engineering_studio.runs import runs as _run_store
 
 load_dotenv()
+
+# WHAT: Rehydrate run history from `runs/<id>/run.json` sidecars written by
+# previous process lifetimes. WHY: RunStore is otherwise purely in-memory —
+# every run's status/history would vanish on every server restart even
+# though the underlying artifact files are untouched on disk. Safe to call
+# unconditionally at import time: a no-op when RUNS_ROOT doesn't exist yet
+# (fresh checkout, CLI-only usage, most test environments).
+_run_store.load_from_disk()
 
 # WHAT: Path to the sibling root-level frontend/ folder.
 # HOW: src/engineering_studio/webapp/app.py -> parents[0]=webapp,

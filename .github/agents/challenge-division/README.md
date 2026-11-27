@@ -24,6 +24,7 @@ agents themselves. Condensed from
 | `paranoid-devils-advocate.agent.md` | "What is everyone assuming that might be false?" |
 | `cost-sustainability.agent.md` | "Is this affordable/sustainable at scale, not just in the demo?" |
 | `project-prosecutor.agent.md` | "Argue the strongest case this project should NOT ship as-is." |
+| `engineering-cross-domain-review.agent.md` | "Do the disciplines actually agree with each other — no conflicting assumptions, incompatible interfaces, or integration gaps between Mechanical/Electrical/Firmware/Simulation/Business?" (supplements, does not replace, the 7 roles above) |
 
 ## Changelog
 

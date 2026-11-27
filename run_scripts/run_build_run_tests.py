@@ -201,6 +201,7 @@ def _pytest_available(python_exe: str) -> bool:
     result = subprocess.run(  # IMPURE
         [python_exe, "-m", "pytest", "--version"],
         capture_output=True,
+        check=False,
     )
     return result.returncode == 0
 
@@ -217,6 +218,7 @@ def _pytest_cov_available(python_exe: str) -> bool:
     result = subprocess.run(  # IMPURE
         [python_exe, "-c", "import pytest_cov"],
         capture_output=True,
+        check=False,
     )
     return result.returncode == 0
 
@@ -261,7 +263,7 @@ def run_tests(
 
     cmd = _build_pytest_cmd(python_exe, test_dir, source_dir, threshold, with_cov)
     print(f"[run_build_run_tests] running: {' '.join(cmd)}")  # IMPURE
-    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 

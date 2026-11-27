@@ -18,6 +18,8 @@ Domain Specialists fan out. Condensed from
 | `general-research-specialist.agent.md` | Broad prior-art / market scan for the product brief |
 | `subject-domain-research-specialist.agent.md` | Deep-dive on one named subject/domain (e.g. warehouse robotics norms) |
 | `problem-analysis-research-specialist.agent.md` | Frames the problem statement, open questions, constraints before design fan-out |
+| `technology-scout-specialist.agent.md` | Identifies and objectively compares candidate technologies (frameworks, models, infrastructure) — never selects one itself |
+| `benchmarking-specialist.agent.md` | Quantitative comparison of candidates (performance, token usage, latency, cost, scalability) to support the decision — never selects one itself |
 
 ## Changelog
 

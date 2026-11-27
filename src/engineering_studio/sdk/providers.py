@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from engineering_studio.fireworks_client import ModelClient
 
-__all__ = ["ModelInfo", "PROVIDERS", "ROLES", "build_model_client", "get_model_info"]
+__all__ = ["PROVIDERS", "ROLES", "ModelInfo", "build_model_client", "get_model_info"]
 
 # WHAT: The two provider profiles this factory currently understands.
 # WHY: Matches .env.example's two provider blocks (FIREWORKS_*, OPENAI_*).

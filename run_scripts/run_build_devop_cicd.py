@@ -133,7 +133,7 @@ def _check_pre_commit_available() -> bool:  # IMPURE
     OUTPUTS: bool.
     """
     result = subprocess.run(  # IMPURE
-        ["pre-commit", "--version"], capture_output=True
+        ["pre-commit", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -150,7 +150,7 @@ def _check_pyright_available(python_exe: str) -> bool:  # IMPURE
     if _is_bad_str(python_exe):
         raise TypeError("python_exe must be non-empty str")
     result = subprocess.run(  # IMPURE
-        [python_exe, "-m", "pyright", "--version"], capture_output=True
+        [python_exe, "-m", "pyright", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -167,7 +167,7 @@ def _check_mypy_available(python_exe: str) -> bool:  # IMPURE
     if _is_bad_str(python_exe):
         raise TypeError("python_exe must be non-empty str")
     result = subprocess.run(  # IMPURE
-        [python_exe, "-m", "mypy", "--version"], capture_output=True
+        [python_exe, "-m", "mypy", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -199,6 +199,7 @@ def run_pre_commit(config_path: str) -> int:  # IMPURE
         ["pre-commit", "run", "--all-files", "--config", config_path],
         cwd=str(_PROJECT_ROOT),
         env=_PYTHONPATH_ENV,
+        check=False,
     )
     return result.returncode
 
@@ -228,7 +229,7 @@ def run_type_check(python_exe: str, source_dir: str) -> int:  # IMPURE
         print("[run_build_devop_cicd] neither pyright nor mypy available — skipping type check.")  # IMPURE
         return 0
     print(f"[run_build_devop_cicd] running {tool_name} on {source_dir}")  # IMPURE
-    result = subprocess.run(tool_cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(tool_cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 

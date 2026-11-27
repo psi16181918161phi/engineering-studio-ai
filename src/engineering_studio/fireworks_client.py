@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 from typing import Any
+
 import requests
 
 from engineering_studio.exceptions import ModelUnavailableError

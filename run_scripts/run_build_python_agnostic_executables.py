@@ -170,7 +170,7 @@ def _pyinstaller_available(python_exe: str) -> bool:  # IMPURE
     OUTPUTS: bool.
     """
     result = subprocess.run(  # IMPURE
-        [python_exe, "-m", "PyInstaller", "--version"], capture_output=True
+        [python_exe, "-m", "PyInstaller", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -207,7 +207,7 @@ def build_executable(
         python_exe, entry_script, executable_name, dist_bin_dir, _PROJECT_ROOT
     )
     print(f"[run_build_python_agnostic_executables] building → {dist_bin_dir}/{executable_name}")  # IMPURE
-    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 

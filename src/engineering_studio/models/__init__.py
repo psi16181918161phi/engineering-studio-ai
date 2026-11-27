@@ -118,4 +118,4 @@ class PipelineResult(BaseModel):
         raise KeyError(f"no artifact recorded for discipline={discipline!r}")
 
 
-__all__ = ["ProductBrief", "SpecialistArtifact", "PipelineResult"]
+__all__ = ["PipelineResult", "ProductBrief", "SpecialistArtifact"]

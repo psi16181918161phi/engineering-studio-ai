@@ -12,17 +12,24 @@ FastAPI event loop is never blocked by a live model call.
 
 from __future__ import annotations
 
+import json
+import logging
 import os
+import re
 import threading
 import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from queue import SimpleQueue
+from tempfile import TemporaryDirectory
 from typing import Any
 
-from engineering_studio.agents.orchestrator import STAGE_ORDER
+from engineering_studio.agents.orchestrator import STAGE_MODEL_ENV_VAR, STAGE_ORDER
 from engineering_studio.fireworks_client import ModelUnavailableError
+
+_LOGGER = logging.getLogger("engineering_studio")
+_RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9_-]+")
 
 # WHAT: Swap in the deterministic, no-network fake pipeline when explicitly
 # opted into via ENGINEERING_STUDIO_FAKE_PIPELINE=1.
@@ -70,6 +77,10 @@ class RunState:
         run_id (str): Opaque, URL-safe identifier.
         product_brief (str): The one-sentence brief this run was launched with.
         status (str): "pending" | "running" | "done" | "error".
+        detail (str | None): Terminal-state explanation — the exception
+            message when status is "error", otherwise None. Persisted here
+            (not just published over SSE) so it survives a dropped/missed
+            connection and is retrievable later via list_runs()/get().
         created_at (float): Unix timestamp the run was created.
         stages (dict[str, StageState]): One entry per STAGE_ORDER id.
     """
@@ -77,27 +88,33 @@ class RunState:
     run_id: str
     product_brief: str
     status: str = "pending"
+    detail: str | None = None
     created_at: float = field(default_factory=time.time)
     stages: dict[str, StageState] = field(
         default_factory=lambda: {name: StageState() for name in STAGE_ORDER}
     )
+    models: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """WHAT: Renders this run as a JSON-serializable snapshot.
 
         RETURNS:
-            dict[str, Any]: Stable shape consumed by the frontend dashboard.
+            dict[str, Any]: Stable shape consumed by the frontend dashboard
+                (and, doubling as this run's on-disk persistence format —
+                see RunStore._persist_locked/load_from_disk below).
         """
         return {
             "run_id": self.run_id,
             "product_brief": self.product_brief,
             "status": self.status,
+            "detail": self.detail,
             "created_at": self.created_at,
             "stage_order": list(STAGE_ORDER),
             "stages": {
                 name: {"status": s.status, "detail": s.detail, "updated_at": s.updated_at}
                 for name, s in self.stages.items()
             },
+            "models": self.models,
         }
 
 
@@ -132,18 +149,27 @@ class RunStore:
             return run.to_dict() if run else None
 
     def artifact_path(self, run_id: str, stage: str) -> Path | None:
-        """WHAT: Resolves a stage's artifact file if the run exists and it
-        has been written.
+        """WHAT: Locate a declared stage's regular artifact file.
 
-        RETURNS:
-            Path | None: The output.md path, or None if the run or file
-                does not exist.
+        WHY: Preview and download must address only the registered run's
+        exact slot in the workflow's stage catalog.
+        HOW: Validate both selectors, anchor at the configured root, and
+        compare the resolved slot component by component. Unavailable
+        lookups return None. The namespace must stay stable through reading.
         """
+        if stage not in STAGE_ORDER or _RUN_ID_PATTERN.fullmatch(run_id) is None:
+            return None
         with self._lock:
             if run_id not in self._runs:
                 return None
-        candidate = RUNS_ROOT / run_id / "artifacts" / stage / "output.md"
-        return candidate if candidate.exists() else None
+        try:
+            root = RUNS_ROOT.resolve(strict=True)
+            candidate = root / run_id / "artifacts" / stage / "output.md"
+            if candidate.resolve(strict=True).parts != candidate.parts:
+                return None
+            return candidate if candidate.is_file() else None
+        except OSError:
+            return None
 
     def start_run(self, product_brief: str) -> str:
         """WHAT: Registers a new run and launches it on a background thread.
@@ -155,10 +181,12 @@ class RunStore:
             str: The newly created run id.
         """
         run_id = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
-        run = RunState(run_id=run_id, product_brief=product_brief)
+        models = {stage: os.environ.get(env_var, "") for stage, env_var in STAGE_MODEL_ENV_VAR.items()}
+        run = RunState(run_id=run_id, product_brief=product_brief, models=models)
         with self._lock:
             self._runs[run_id] = run
             self._subscribers[run_id] = []
+            self._persist_locked(run)
         thread = threading.Thread(
             target=self._execute, args=(run_id, product_brief), daemon=True
         )
@@ -189,6 +217,7 @@ class RunStore:
             run.stages[stage] = StageState(status=status, detail=detail)
             if run.status == "pending" and status == "running":
                 run.status = "running"
+            self._persist_locked(run)
         self._publish(run_id, {"type": "stage", "stage": stage, "status": status, "detail": detail})
 
     def _execute(self, run_id: str, product_brief: str) -> None:
@@ -214,7 +243,94 @@ class RunStore:
         with self._lock:
             run = self._runs[run_id]
             run.status = status
+            run.detail = detail
+            self._persist_locked(run)
         self._publish(run_id, {"type": "run", "status": status, "detail": detail})
+
+    def _persist_locked(self, run: RunState) -> None:
+        """WHAT: Writes one run's current state to `<run>/run.json`.
+
+        WHY: `RunState` otherwise lives only in this process's memory —
+        restarting the server (a redeploy, a crash) silently erased every
+        run's history and status. The artifacts themselves already survive
+        on disk (`<run>/artifacts/<stage>/output.md`); this sidecar makes
+        the bookkeeping around them (status, timestamps, which models ran)
+        survive too, so `load_from_disk()` can rehydrate it at startup.
+
+        HOW: The caller holds the store lock, so publications are serialized.
+        Write and close a private staging file on the same filesystem, then
+        replace the canonical path in one operation. A staging or replacement
+        failure leaves the previous snapshot intact. I/O failures are logged
+        without stopping the live pipeline. This provides atomic visibility
+        on filesystems with atomic replacement; no fsync is performed.
+        """
+        path = RUNS_ROOT / run.run_id / "run.json"
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot = json.dumps(run.to_dict())
+            with TemporaryDirectory(dir=path.parent, prefix=".run-state-") as directory:
+                staged = Path(directory) / path.name
+                staged.write_text(snapshot, encoding="utf-8")
+                os.replace(staged, path)
+        except OSError:
+            _LOGGER.warning("failed to persist run state for %s", run.run_id, exc_info=True)
+
+    def load_from_disk(self) -> None:
+        """WHAT: Rehydrates every run found under RUNS_ROOT/*/run.json into
+        memory, restoring history across a server restart.
+
+        WHY: Called once at web-app startup (see webapp/app.py) — without
+        it, every run's status/history is lost on redeploy even though the
+        underlying artifact files are still sitting on disk untouched.
+
+        HOW: Any run still "running" (or any stage still "running") when
+        the server stopped can never actually finish — its background
+        thread is gone — so it's rewritten as "error"/"interrupted" on
+        load rather than shown as perpetually "Running…" with no way to
+        ever complete. Malformed/unreadable run.json files are skipped,
+        never fatal to startup.
+        """
+        if not RUNS_ROOT.is_dir():
+            return
+        for run_dir in sorted(RUNS_ROOT.iterdir()):
+            run_json = run_dir / "run.json"
+            if not run_json.is_file():
+                continue
+            try:
+                data = json.loads(run_json.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                _LOGGER.warning("skipping unreadable run state at %s", run_json, exc_info=True)
+                continue
+
+            run = RunState(
+                run_id=data.get("run_id", run_dir.name),
+                product_brief=data.get("product_brief", ""),
+                status=data.get("status", "error"),
+                detail=data.get("detail"),
+                created_at=data.get("created_at", 0.0),
+                models=data.get("models", {}),
+            )
+            for name, stage_data in data.get("stages", {}).items():
+                if name not in run.stages:
+                    continue
+                status = stage_data.get("status", "pending")
+                detail = stage_data.get("detail")
+                if status == "running":
+                    status = "error"
+                    detail = "Interrupted by a server restart before this stage finished."
+                run.stages[name] = StageState(
+                    status=status,
+                    detail=detail,
+                    updated_at=stage_data.get("updated_at", 0.0),
+                )
+            if run.status == "running":
+                run.status = "error"
+                if run.detail is None:
+                    run.detail = "Interrupted by a server restart before this run finished."
+
+            with self._lock:
+                self._runs[run.run_id] = run
+                self._subscribers.setdefault(run.run_id, [])
 
 
 # WHAT: Process-global run registry.

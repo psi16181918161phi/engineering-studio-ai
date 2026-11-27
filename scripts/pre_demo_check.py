@@ -43,7 +43,7 @@ def _run(label: str, args: list[str]) -> tuple[str, bool, float]:
     """
     print(f"\n{'=' * 10} {label} {'=' * 10}")
     started = time.monotonic()
-    result = subprocess.run(args, cwd=REPO_ROOT)
+    result = subprocess.run(args, cwd=REPO_ROOT, check=False)
     duration = time.monotonic() - started
     return label, result.returncode == 0, round(duration, 2)
 

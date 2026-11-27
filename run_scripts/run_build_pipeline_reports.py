@@ -134,7 +134,7 @@ def _coverage_available(python_exe: str) -> bool:  # IMPURE
     OUTPUTS: bool.
     """
     result = subprocess.run(  # IMPURE
-        [python_exe, "-m", "coverage", "--version"], capture_output=True
+        [python_exe, "-m", "coverage", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -169,7 +169,7 @@ def generate_html_report(
         "-d", html_dir,
     ]
     print(f"[run_build_pipeline_reports] generating HTML report → {html_dir}")  # IMPURE
-    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 
@@ -198,7 +198,7 @@ def generate_json_report(
         "-o", json_out,
     ]
     print(f"[run_build_pipeline_reports] generating JSON report → {json_out}")  # IMPURE
-    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 

@@ -139,7 +139,7 @@ def _build_available(python_exe: str) -> bool:  # IMPURE
     OUTPUTS: bool.
     """
     result = subprocess.run(  # IMPURE
-        [python_exe, "-m", "build", "--version"], capture_output=True
+        [python_exe, "-m", "build", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -154,7 +154,7 @@ def _twine_available(python_exe: str) -> bool:  # IMPURE
     OUTPUTS: bool.
     """
     result = subprocess.run(  # IMPURE
-        [python_exe, "-m", "twine", "--version"], capture_output=True
+        [python_exe, "-m", "twine", "--version"], capture_output=True, check=False
     )
     return result.returncode == 0
 
@@ -180,7 +180,7 @@ def build_package(python_exe: str, dist_dir: str) -> int:  # IMPURE
     Path(dist_dir).mkdir(parents=True, exist_ok=True)  # IMPURE
     cmd = [python_exe, "-m", "build", "--outdir", dist_dir]
     print(f"[run_build_pypi_package] building package → {dist_dir}")  # IMPURE
-    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 
@@ -206,7 +206,7 @@ def check_package(python_exe: str, dist_dir: str) -> int:  # IMPURE
         return 0
     cmd = [python_exe, "-m", "twine", "check"] + artefacts
     print(f"[run_build_pypi_package] twine check on {len(artefacts)} artefact(s)")  # IMPURE
-    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT))  # IMPURE
+    result = subprocess.run(cmd, cwd=str(_PROJECT_ROOT), check=False)  # IMPURE
     return result.returncode
 
 

@@ -36,14 +36,17 @@ _STAGE_LABELS: dict[str, str] = {
     "firmware": "Firmware Specialist",
     "simulation": "Simulation Specialist",
     "business": "Cost / Business / Legal",
+    "reviewer": "Reviewer",
     "challenge": "Challenge Division",
+    "exploratory_qa": "Exploratory QA",
+    "validator": "Validator",
     "quality_gate": "Quality Gate",
 }
 
 # WHAT: Pause between each stage transition, in seconds.
 # WHY: Long enough for a Playwright screenshot/video capture to observe a
 # distinct "running" frame per stage; short enough to keep the full e2e
-# suite fast (8 stages * ~0.3s ~= 2.4s of sleep per run).
+# suite fast (11 stages * ~0.3s ~= 3.3s of sleep per run).
 _STAGE_DELAY_SECONDS = 0.3
 
 

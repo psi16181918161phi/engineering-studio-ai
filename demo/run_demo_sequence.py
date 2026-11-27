@@ -41,7 +41,7 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:  # pragma: no cover - import path bootstrap
     sys.path.insert(0, str(SRC_ROOT))
 
-from engineering_studio.exceptions import ModelUnavailableError  # noqa: E402
+from engineering_studio.exceptions import ModelUnavailableError
 
 DEFAULT_PROMPTS_FILE = REPO_ROOT / "demo" / "demo_prompts.json"
 DEFAULT_ARTIFACTS_ROOT = REPO_ROOT / "runs" / "demo_sequence"
